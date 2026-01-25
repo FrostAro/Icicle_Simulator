@@ -1,0 +1,33 @@
+# 编译输出
+*.out
+*.o
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.db
+
+# 构建目录
+build/
+
+# IDE相关
+.vscode/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# 生成的数据文件
+*.txt
+!CMakeLists.txt
+output/
+
+
+
+# 其他忽略项
+*.zip
+temp.text
+text.text
+
