@@ -16,8 +16,8 @@ std::string Action::getActionName() { return this->name; }
 std::string AttackAction::name = "AttackAction";
 std::vector<std::unique_ptr<DamageListener>> AttackAction::listeners = {};
 
-AttackAction::AttackAction(Skill *skill)
-                : skill(skill){}
+AttackAction::AttackAction(std::string skillName)
+                : skillName(skillName){}
 
 void AttackAction::addListener(std::unique_ptr<DamageListener> listener)
 {
@@ -41,8 +41,9 @@ void AttackAction::deleteListener(int buffID)
 
 void AttackAction::execute(const double, Person *p)
 {
+    const Skill* skillPtr = p->getCurtainPointerForAction(this->skillName);
     // 临时修改
-    const auto damageInfo = p->Damage(this->skill);
+    const auto damageInfo = p->Damage(skillPtr);
     // 遍历监听，触发回调
     for (const auto &listener : AttackAction::listeners)
     {

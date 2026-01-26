@@ -1,3 +1,4 @@
+// 如果使用某些vsc中的runner插件，可以将下面这些取消注释
 // #include "action.cpp"
 // #include "action.h"
 // #include "autoAttack.cpp"
@@ -25,7 +26,7 @@ int main()
     //for(int i = 0; i < 2; i++)
     //{
     // 使用同一个种子保证模拟数值前后随机数一致，确保提升数据的相对准确
-    //srand(static_cast<unsigned int>(time(nullptr)));
+    srand(static_cast<unsigned int>(time(nullptr)));
     int deltaTime = 1;
     int currentTime = 0;
     auto p = std::make_unique<Mage_Icicle>(

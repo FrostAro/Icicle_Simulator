@@ -296,7 +296,7 @@ void Flood::trigger(Person *p)
     p->triggerAction<CreateBuffAction>(0, FloodBuff::name);
 }
 
-std::string Flood::getSkillName()
+std::string Flood::getSkillName() const 
 {
     return Flood::name;
 }
@@ -330,10 +330,10 @@ void Ultimate::setSkillType()
 void Ultimate::trigger(Person *p)
 {
     p->triggerAction<CreateBuffAction>(0, UltiIncreaseBuff::name);
-    p->triggerAction<AttackAction>(0, this);
+    p->triggerAction<AttackAction>(0, this->getSkillName());
 }
 
-std::string Ultimate::getSkillName()
+std::string Ultimate::getSkillName() const
 {
     return Ultimate::name;
 }
@@ -356,6 +356,7 @@ IceArrow::IceArrow(Person *p) : InstantSkill()
     this->isNoReleasing = true;
 
     this->IceArrow::setSkillType();
+    // 问题处
     p->triggerAction<ResourceRevertAction>(1);
 }
 
@@ -368,11 +369,11 @@ void IceArrow::setSkillType()
 void IceArrow::trigger(Person *p)
 {
 
-    p->triggerAction<AttackAction>(0, this); // 冰箭本体伤害
-    p->triggerAction<AttackAction>(0, this); // 冰箭爆炸伤害
+    p->triggerAction<AttackAction>(0, this->getSkillName()); // 冰箭本体伤害
+    p->triggerAction<AttackAction>(0, this->getSkillName()); // 冰箭爆炸伤害
 }
 
-std::string IceArrow::getSkillName()
+std::string IceArrow::getSkillName() const
 {
     return IceArrow::name;
 }
@@ -415,16 +416,16 @@ void Spear::trigger(Person *p)
 {
 
     p->triggerAction<EnergyConsumeAction>(this->energyReduce);
-    //p->triggerAction<AttackAction>(0, this);
+    //p->triggerAction<AttackAction>(0, this->getSkillName());
     if (p->findBuffInBuffList(DoubleSpearBuff::name) != -1)
     {
-        p->triggerAction<AttackAction>(0, this);
+        p->triggerAction<AttackAction>(0, this->getSkillName());
     }
-    p->triggerAction<AttackAction>(0, this);
+    p->triggerAction<AttackAction>(0, this->getSkillName());
     p->triggerAction<EnergyRevertAction>(this->energyReduce / 2);
 }
 
-std::string Spear::getSkillName()
+std::string Spear::getSkillName() const
 {
     return Spear::name;
 }
@@ -466,11 +467,11 @@ void PierceSpear::trigger(Person *p)
 {
     for (int i = 0; i < 3; i++)
     {
-        p->triggerAction<AttackAction>(0, this);
+        p->triggerAction<AttackAction>(0, this->getSkillName());
     }
 }
 
-std::string PierceSpear::getSkillName()
+std::string PierceSpear::getSkillName() const
 {
     return PierceSpear::name;
 }
@@ -526,13 +527,13 @@ void Meteorite::trigger(Person *p)
 
     for (int i = 0; i < 4; i++)
     {
-        p->triggerAction<AttackAction>(0, this);
+        p->triggerAction<AttackAction>(0, this->getSkillName());
     }
     this->damageIncreaseAdd = 0;
     this->finalIncreaseAdd = 0;
 }
 
-std::string Meteorite::getSkillName()
+std::string Meteorite::getSkillName() const
 {
     return Meteorite::name;
 }
@@ -581,11 +582,11 @@ void SynergyMeteorite::trigger(Person *p)
 
     for (int i = 0; i < 4; i++)
     {
-        p->triggerAction<AttackAction>(0, this);
+        p->triggerAction<AttackAction>(0, this->getSkillName());
     }
 }
 
-std::string SynergyMeteorite::getSkillName()
+std::string SynergyMeteorite::getSkillName() const
 {
     return SynergyMeteorite::name;
 }
@@ -622,7 +623,7 @@ void WaterDrop::trigger(Person *p)
     p->triggerAction<CreateBuffAction>(0, IceRevertBuff::name);
 }
 
-std::string WaterDrop::getSkillName()
+std::string WaterDrop::getSkillName() const
 {
     return WaterDrop::name;
 }
@@ -655,10 +656,10 @@ void FrostComet::setSkillType()
 
 void FrostComet::trigger(Person *p)
 {
-    p->triggerAction<AttackAction>(0, this);
+    p->triggerAction<AttackAction>(0, this->getSkillName());
 }
 
-std::string FrostComet::getSkillName()
+std::string FrostComet::getSkillName() const
 {
     return FrostComet::name;
 }
@@ -691,14 +692,14 @@ void FantasyImpact::setSkillType()
 
 void FantasyImpact::trigger(Person *p)
 {
-    p->triggerAction<AttackAction>(0, this);
+    p->triggerAction<AttackAction>(0, this->getSkillName());
     // 二重：幻想冲击有50%几率再触发一次
     if (p->isSuccess(0.5) ) {
-        p->triggerAction<AttackAction>(0, this);
+        p->triggerAction<AttackAction>(0, this->getSkillName());
     }
 }
 
-std::string FantasyImpact::getSkillName()
+std::string FantasyImpact::getSkillName() const
 {
     return FantasyImpact::name;
 }
@@ -737,7 +738,7 @@ void MukuChief::trigger(Person *p)
     p->triggerAction<CreateBuffAction>(0, MukuChiefBuff::name);
 }
 
-std::string MukuChief::getSkillName()
+std::string MukuChief::getSkillName() const
 {
     return MukuChief::name;
 }
@@ -783,7 +784,7 @@ void MukuScout::trigger(Person *p)
     p->triggerAction<CreateBuffAction>(0, MukuScoutBuff::name);
 }
 
-std::string MukuScout::getSkillName()
+std::string MukuScout::getSkillName() const
 {
     return MukuScout::name;
 }
@@ -824,10 +825,10 @@ void Radial::setSkillType()
 void Radial::trigger(Person* p)
 {
     p->triggerAction<EnergyConsumeAction>(20);
-    p->triggerAction<AttackAction>(0, this);
+    p->triggerAction<AttackAction>(0, this->getSkillName());
 }
 
-std::string Radial::getSkillName(){ return Radial::name; }
+std::string Radial::getSkillName() const{ return Radial::name; }
 
 bool Radial::canEndFacilitation(Person* p){ return p->present_energy < 12; }
 

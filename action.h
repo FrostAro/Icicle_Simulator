@@ -51,10 +51,10 @@ class AttackAction : public Action
 private:
     static std::string name;
     static std::vector<std::unique_ptr<DamageListener>> listeners;
-    Skill* skill;
+    std::string skillName;
 
 public:
-    explicit AttackAction(Skill* skill);
+    explicit AttackAction(std::string skillName);
     
     void execute(double n, Person *p) override;     //double n未使用
     static void addListener(std::unique_ptr<DamageListener> listener);  

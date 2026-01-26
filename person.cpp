@@ -52,7 +52,7 @@ Person::Person(const double Attributes, const double critical, const double quic
     // 设置幸运倍率
     setLuckyMultiplying();
 
-    //buffList.reserve(15);
+    // buffList.reserve(15);
 }
 
 Person::~Person()
@@ -61,7 +61,7 @@ Person::~Person()
     clearBuffs();
 }
 
-DamageInfo Person::Damage(Skill *skill)
+DamageInfo Person::Damage(const Skill *skill)
 {
     // 攻击力×倍率×(M)×减伤区+(精炼攻击+元素攻击)×倍率×(N)+固定值】×增伤×元素伤害×全能增幅×梦境增伤x技能最终伤害加成x爆伤期望
     if (skill)
@@ -91,11 +91,15 @@ DamageInfo Person::Damage(Skill *skill)
             damage *= 1 + this->criticicalDamage + skill->criticalIncreaseAdd;
         }
 
-        bool isLucky = this->isSuccess(this->Lucky);
         double luckyDamage = 0;
-        if (isLucky && skill->getCanTriggerLucky())
+        bool isLucky = false;
+        if (skill->getCanTriggerLucky())
         {
-            luckyDamage = this->luckyDamage();
+            isLucky = this->isSuccess(this->Lucky);
+            if (isLucky)
+            {
+                luckyDamage = this->luckyDamage();
+            }
         }
 
         if (this->findBuffInBuffList(FloodBuff::name) != -1)
@@ -106,8 +110,7 @@ DamageInfo Person::Damage(Skill *skill)
         DamageInfo info(skill->getSkillName(), damage,
                         luckyDamage, this->isSuccess(this->Critical), isLucky);
         // 加入伤害信息列表
-        this->damageListInfo.emplace_back(skill->getSkillName(), damage,
-                                          luckyDamage, this->isSuccess(this->Critical), isLucky);
+        this->damageListInfo.push_back(info);
         // if(info.skillName == Spear::name)
         // {
         //     std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Damage - skill: " << info.skillName << " damaged" << std::endl;
@@ -139,7 +142,7 @@ void Person::updateSkills(int deltaTime)
 
 void Person::updateNowReleasingSkill(int deltaTime)
 {
-    if (!this->nowReleasingSkill)   // 当前无释放技能
+    if (!this->nowReleasingSkill) // 当前无释放技能
         return;
 
     if (this->nowReleasingSkill->getReleasingTime() > 0)
@@ -158,7 +161,7 @@ void Person::updateNowReleasingSkill(int deltaTime)
     if (this->nowReleasingSkill->getIsFacilitation())
     { // 若是引导性技能，则检查是否结束引导
         FacilitationSkill *facilitationSkillPtr = dynamic_cast<FacilitationSkill *>(this->nowReleasingSkill.get());
-        if(!facilitationSkillPtr)
+        if (!facilitationSkillPtr)
         {
             this->nowReleasingSkill.reset();
             this->nowReleasingSkill = nullptr;
@@ -172,7 +175,7 @@ void Person::updateNowReleasingSkill(int deltaTime)
             this->nowReleasingSkill = nullptr;
             //  向autoAttack传递技能释放完成消息，提醒autoAttack可以进行下一次技能释放
             std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-              << "]: Action  - facilitation skill finish " << std::endl;
+                      << "]: Action  - facilitation skill finish " << std::endl;
             this->autoAttackPtr->updateSkillFinish();
             return;
         }
@@ -187,7 +190,7 @@ void Person::updateNowReleasingSkill(int deltaTime)
 
     //  清空当前释放技能
     if (!this->nowReleasingSkill->getIsFacilitation())
-    {// 非引导性技能释放完成后清空
+    { // 非引导性技能释放完成后清空
         this->nowReleasingSkill.reset();
         this->nowReleasingSkill = nullptr;
         //  向autoAttack传递技能释放完成消息，提醒autoAttack可以进行下一次技能释放
@@ -201,7 +204,7 @@ void Person::updateContinuousList(int deltaTime)
     for (int i = 0; i < static_cast<int>(continuousSkillList.size()); ++i)
     {
         Skill *skill = continuousSkillList[i].get();
-        if(!skill)
+        if (!skill)
             continue;
         // 早期返回：跳过不需要更新的技能
         if (skill->getDuration() < 0)
@@ -389,29 +392,27 @@ void Person::cleanupFinishedBuffs()
     }
 }
 
+// 本质是冰箭的延迟构造导致了回复堆积的问题
 void Person::updateAction(int /* deltaTime */)
 {
-    int maxProcessPerTick = 50; // 每tick最多处理事件数
-    int processedCount = 0;     // 已处理的事件数
+    unsigned short maxProcessPerTick = this->autoAttackPtr->getMaxProcessPerTick(); // 每tick最多处理事件数
+    int processedCount = 0;      // 已处理的事件数
 
+    // AttackAction中skill*原始指针的问题，在使用原始指针时，指向对象已经被释放
     while (processedCount < maxProcessPerTick && !this->actionQueue.empty())
     {
-        // 检查 actionPtr 是否为空，避免空指针解引用
-        if (this->actionQueue.front().actionPtr == nullptr)
+        // 获取队头元素（拷贝或移动）
+        auto frontAction = std::move(this->actionQueue.front()); // 移动，避免拷贝
+        this->actionQueue.pop();
+
+        // 检查 actionPtr 是否为空
+        if (frontAction.actionPtr == nullptr)
         {
-            // 如果 actionPtr 为空，直接出队并跳过
-            this->actionQueue.pop();
-            continue;
+            continue; // 跳过空指针
         }
 
-        // 保存队头元素的引用，避免多次访问 front()
-        auto &frontAction = this->actionQueue.front();
-
-        // 执行并让队头元素出队
+        // 执行操作
         frontAction.actionPtr->execute(frontAction.number, this);
-        frontAction.actionPtr.reset();
-        frontAction.actionPtr = nullptr;
-        this->actionQueue.pop();
         processedCount++;
     }
 
@@ -550,7 +551,7 @@ void Person::createSkill(std::unique_ptr<Skill> newSkill)
 
     int a = this->findSkillInSkillCDList(this->nowReleasingSkill->getSkillName());
     if (a != -1)
-    {// 如果为CD技能，则更新CD和层数
+    { // 如果为CD技能，则更新CD和层数
         // 更新技能的层数和CD
         this->skillCDList.at(a)->getStackRef() -= 1;
         if (this->skillCDList.at(a)->getMaxStack() > 1)
@@ -876,6 +877,18 @@ double Person::getEnergyReduceDOWN() const { return energyReduceDOWN; }
 
 const AutoAttack *Person::getAutoAttack() const { return this->autoAttackPtr.get(); }
 const Skill *Person::getNowReleasingSkill() const { return this->nowReleasingSkill.get(); }
+
+const Skill* Person::getCurtainPointerForAction(std::string skillName) const 
+{
+    for (const auto& skillPtr : this->pointerListForAction) 
+    {
+        if (skillPtr && skillPtr->getSkillName() == skillName) 
+        {
+            return skillPtr.get();
+        }
+    }
+    return nullptr;
+}
 
 Mage_Icicle::Mage_Icicle(const double attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                          const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,

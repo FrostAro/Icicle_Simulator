@@ -23,6 +23,7 @@ protected:
     bool isOutBurst = false;                                                // 是否处于爆发状态
     int nextOutBurstType = 1;                                               // 0为小爆发，1为大爆发,构造函数默认为1
     bool signalForRepeatedlyOutBurst = false;                               // 防止连续出现爆发触发判定的标志位
+    unsigned short maxProcessPerTick = 50;                                             // 每tick最大处理技能数，默认50（可以在子类重写）
 
     Person *p;
 
@@ -59,6 +60,7 @@ public:
     bool getIsReleasingSkill() const;
     bool getIsOutBurst() const;
     int getNextOutBurstType() const;
+    unsigned short getMaxProcessPerTick() const;
 
     AutoAttack(Person *p);
     virtual ~AutoAttack() = default;

@@ -177,6 +177,7 @@ double &AutoAttack::setTimer() { return AutoAttack::timer; }
 bool AutoAttack::getIsReleasingSkill() const { return this->isReleasingSkill; }
 bool AutoAttack::getIsOutBurst() const { return this->isOutBurst; }
 int AutoAttack::getNextOutBurstType() const { return this->nextOutBurstType; }
+unsigned short AutoAttack::getMaxProcessPerTick() const { return this->maxProcessPerTick; }
 
 // 法师：冰矛 autoAttack
 AutoAttack_Mage_Icicle::AutoAttack_Mage_Icicle(Person *p) : AutoAttack(p)
@@ -319,7 +320,7 @@ void AutoAttack_Mage_Icicle::update(int deltaTime)
     this->p->updateBuffs(deltaTime);
     this->p->updateSkills(deltaTime);
     this->p->updateSkillsCD(deltaTime);
-    // this->p->updateAction(deltaTime);
+    this->p->updateAction(deltaTime);
 }
 
 void AutoAttack_Mage_Icicle::largeOutBurst()

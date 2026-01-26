@@ -78,7 +78,7 @@ public:
 	bool reduceReleasingTime();
 	bool reduceReleasingTime(double n);
 	
-	virtual std::string getSkillName() = 0;
+	virtual std::string getSkillName() const  = 0;
 	bool hasSkillType(skillTypeEnum type) const;	//判断技能是否有某种skilltype
 
 	int getSkillID() const;
@@ -185,7 +185,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit IceArrow(Person *p);
 };
@@ -200,7 +200,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit Flood(Person *p);
 };
@@ -213,7 +213,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit Ultimate(Person *p);
 };
@@ -227,7 +227,7 @@ public:
 	
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit Spear(Person *p);
 };
@@ -240,7 +240,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit PierceSpear(Person *p);
 };
@@ -253,7 +253,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit Meteorite(Person *p);
 };
@@ -266,7 +266,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit SynergyMeteorite(Person *p);
 };
@@ -279,7 +279,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit WaterDrop(Person *p);
 };
@@ -292,7 +292,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit FrostComet(Person *p);
 };
@@ -305,7 +305,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 
 	explicit FantasyImpact(Person *p);
 };
@@ -317,7 +317,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 	void setPassiveEffect(Person *p) override;
     void removePassiveEffect(Person *p) override;
 
@@ -331,7 +331,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 	void setPassiveEffect(Person *p) override;
     void removePassiveEffect(Person *p) override;
 
@@ -346,7 +346,7 @@ public:
 
 	void setSkillType() override;
 	void trigger(Person *p) override;
-	std::string getSkillName() override;
+	std::string getSkillName() const override;
 	bool canEndFacilitation(Person *p) override;
 
 	explicit Radial(Person *p);

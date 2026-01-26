@@ -43,6 +43,7 @@ class Person
 {
 private:
     // 私有成员：只在内部使用，不对外暴露
+	std::vector<std::unique_ptr<Skill>> pointerListForAction{};
     std::unique_ptr<Skill> nowReleasingSkill = nullptr;		// 当前正在释放的技能
     int propertyTransformationCoeffcient_General = 0;		// 一般属性转化系数
     int propertyTransformationCoeffcient_Almighty = 0;		// 全能属性转化系数
@@ -130,7 +131,7 @@ public:
         const int atk, const  int refindatk, const  int elementatk, const double attackSpeed, const double castingSpeed,
         const double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const  int totalTime);
 
-	DamageInfo Damage(Skill *skill);
+	DamageInfo Damage(const Skill *skill);
 	double luckyDamage() const;
 
 	// 属性值设置
@@ -308,6 +309,8 @@ public:
     
     // Getter for nowReleasingSkill
     const Skill* getNowReleasingSkill() const;
+
+	const Skill* getCurtainPointerForAction(std::string skillName) const;
 };
 
 // 模板函数实现
@@ -318,7 +321,8 @@ void Person::triggerAction(double count, Args &&...args)
 	auto it = std::make_unique<T>(std::forward<Args>(args)...);
 	if(it)
 	{
-		it->execute(count,this);
+		//it->execute(count,this);
+		this->actionQueue.push(ActionInfo(count,std::move(it)));
 	}
 	//this->actionQueue.push(ActionInfo(count,std::make_unique<T>(std::forward<Args>(args)...)));
 }

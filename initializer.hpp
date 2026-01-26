@@ -38,6 +38,8 @@ protected:
         SkillCreator::creatorMap.insert({Skill_::name,
                                 [](Person* p) { return std::make_unique<Skill_>(p); }});
         std::cout << "[DEBUG] Registered skill: " << Skill_::name << std::endl;
+        p->pointerListForAction.push_back(
+                std::make_unique<Skill_>(p));
     }
 
     // 1.为BuffCreator添加一个新的buff元素
