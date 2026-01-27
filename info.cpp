@@ -1,6 +1,6 @@
-#include "info.h"
-#include "action.h"
-#include "autoAttack.h"
+#include "Info.h"
+#include "Action.h"
+#include "AutoAttack.h"
 #include <iostream>
 #include <algorithm>
 

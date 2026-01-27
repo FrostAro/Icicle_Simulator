@@ -2,10 +2,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "action.h"
-#include "skill.h"
-#include "buff.h"
-#include "info.h"
+#include "Action.h"
+#include "Skill.h"
+#include "Buff.h"
+#include "Info.h"
 #include <algorithm>
 #include <random>
 #include <unordered_map>

@@ -1,9 +1,9 @@
-#include "action.h"
-#include "autoAttack.h"
-#include "creators.hpp"
-#include "info.h"
-#include "listener.hpp"
-#include "person.h"
+#include "Action.h"
+#include "AutoAttack.h"
+#include "Creators.hpp"
+#include "Info.h"
+#include "Listener.hpp"
+#include "Person.h"
 #include <algorithm>
 #include <iostream>
 #include <memory>

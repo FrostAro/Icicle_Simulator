@@ -1,12 +1,12 @@
-#include "person.h"
+#include "Person.h"
 #include <cstddef>
 // #include <random>
 #include <ctime>
 #include <memory>
-#include "action.h"
-#include "autoAttack.h"
-#include "buff.h"
-#include "skill.h"
+#include "Action.h"
+#include "AutoAttack.h"
+#include "Buff.h"
+#include "Skill.h"
 #include <iostream>
 
 Person::Person(const double Attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,

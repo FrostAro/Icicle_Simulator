@@ -4,8 +4,8 @@
 #include <functional>
 #include <memory>
 #include <vector>
-#include "skill.h"
-#include "buff.h"
+#include "Skill.h"
+#include "Buff.h"
 
 class Initializer_Mage_Icicle;
 

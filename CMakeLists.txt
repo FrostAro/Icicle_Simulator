@@ -17,12 +17,12 @@ endif()
 
 add_executable(dps_simulator
     main.cpp
-    action.cpp
-    autoAttack.cpp
-    buff.cpp
-    info.cpp
-    person.cpp
-    skill.cpp
+    Action.cpp
+    AutoAttack.cpp
+    Buff.cpp
+    Info.cpp
+    Person.cpp
+    Skill.cpp
 )
 
 # 针对不同构建类型设置编译选项

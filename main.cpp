@@ -10,9 +10,9 @@
 // #include "skill.cpp"
 // #include "initializer.hpp"
 
-#include "person.h"
-#include "autoAttack.h"
-#include "initializer.hpp"
+#include "Person.h"
+#include "AutoAttack.h"
+#include "Initializer.hpp"
 #include <memory>
 #include <vector>
 extern void printDamageStatistics(std::unordered_map<std::string, DamageStatistics> damageStatsMap,int totalTime );
@@ -26,14 +26,14 @@ int main()
     //for(int i = 0; i < 2; i++)
     //{
     // 使用同一个种子保证模拟数值前后随机数一致，确保提升数据的相对准确
-    srand(static_cast<unsigned int>(time(nullptr)));
+    srand(static_cast<unsigned int>(2));
     int deltaTime = 1;
     int currentTime = 0;
     auto p = std::make_unique<Mage_Icicle>(
                          /*三维属性*/ 4593,
                          /*暴击*/ 36,
                          /*急速*/ 1.05,
-                         /*幸运*/ 51.49,
+                         /*幸运*/ 51.7,
                          /*精通*/ 6,
                          /*全能*/ 17.58,
                          /*攻击(物理攻击/魔法攻击)*/ 3111,

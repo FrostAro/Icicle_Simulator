@@ -1,8 +1,8 @@
-#include "skill.h"
-#include "autoAttack.h"
-#include "buff.h"
-#include "person.h"
-#include "action.h"
+#include "Skill.h"
+#include "AutoAttack.h"
+#include "Buff.h"
+#include "Person.h"
+#include "Action.h"
 #include <iostream>
 
 int Skill::ID = 0;

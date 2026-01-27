@@ -1,10 +1,10 @@
-#include "buff.h"
-#include "action.h"
-#include "autoAttack.h"
-#include "info.h"
-#include "listener.hpp"
-#include "person.h"
-#include "skill.h"
+#include "Buff.h"
+#include "Action.h"
+#include "AutoAttack.h"
+#include "Info.h"
+#include "Listener.hpp"
+#include "Person.h"
+#include "Skill.h"
 #include <iostream>
 #include <string>
 

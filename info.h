@@ -1,6 +1,6 @@
 #pragma once
-#include "action.h"
-#include "skill.h"
+#include "Action.h"
+#include "Skill.h"
 #include <memory>
 #include <string>
 #include <map>

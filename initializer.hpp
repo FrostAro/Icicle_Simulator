@@ -1,11 +1,11 @@
 #pragma once
 #include "Skill.h"
-#include "buff.h"
-#include "info.h"
-#include "person.h"
-#include "autoAttack.h"
-#include "creators.hpp"
-#include "skill.h"
+#include "Buff.h"
+#include "Info.h"
+#include "Person.h"
+#include "AutoAttack.h"
+#include "Creators.hpp"
+#include "Skill.h"
 #include <vector>
 #include <iostream>
 

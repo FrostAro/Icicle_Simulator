@@ -1,8 +1,8 @@
-#include "autoAttack.h"
-#include "action.h"
-#include "person.h"
-#include "buff.h"
-#include "skill.h"
+#include "AutoAttack.h"
+#include "Action.h"
+#include "Person.h"
+#include "Buff.h"
+#include "Skill.h"
 #include <iostream>
 
 double AutoAttack::timer = 0;

@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "creators.hpp"
-#include "info.h"
-#include "person.h"
+#include "Creators.hpp"
+#include "Info.h"
+#include "Person.h"
 
 class AutoAttack
 {
@@ -17,13 +17,13 @@ protected:
     static double timer;                                                    // 计时器
     std::vector<PriorSkillInfo> priorSkillList{};                           // 优先级技能列表
     std::vector<PriorSkillInfo> skillPriority{};                            // 有序的优先级列表，优先级越高越靠前
-    std::vector<judgeConditionStruct> judgingConditionsForCreateSkill{};   // 创建技能的判定条件列表
+    std::vector<judgeConditionStruct> judgingConditionsForCreateSkill{};    // 创建技能的判定条件列表
 
     bool isReleasingSkill = false;                                          // 是否正在释放技能
     bool isOutBurst = false;                                                // 是否处于爆发状态
     int nextOutBurstType = 1;                                               // 0为小爆发，1为大爆发,构造函数默认为1
     bool signalForRepeatedlyOutBurst = false;                               // 防止连续出现爆发触发判定的标志位
-    unsigned short maxProcessPerTick = 50;                                             // 每tick最大处理技能数，默认50（可以在子类重写）
+    unsigned short maxProcessPerTick = 50;                                  // 每tick最大处理技能数，默认50（可以在子类重写）
 
     Person *p;
 
