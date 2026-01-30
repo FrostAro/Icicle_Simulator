@@ -8,7 +8,6 @@
 #include "Creators.hpp"
 #include "Skill.h"
 #include <vector>
-#include <iostream>
 
 class Initializer
 {

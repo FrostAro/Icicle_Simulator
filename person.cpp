@@ -7,7 +7,6 @@
 #include "AutoAttack.h"
 #include "Buff.h"
 #include "Skill.h"
-#include <iostream>
 
 Person::Person(const double Attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
@@ -395,10 +394,9 @@ void Person::cleanupFinishedBuffs()
     }
 }
 
-// 本质是冰箭的延迟构造导致了回复堆积的问题
-void Person::updateAction(int /* deltaTime */)
+void Person::updateAction(int  deltaTime)
 {
-    unsigned short maxProcessPerTick = this->autoAttackPtr->getMaxProcessPerTick(); // 每tick最多处理事件数
+    unsigned short maxProcessPerTick = this->autoAttackPtr->getMaxProcessPerTick() * deltaTime; // 每tick最多处理事件数
     int processedCount = 0;      // 已处理的事件数
 
     // AttackAction中skill*原始指针的问题，在使用原始指针时，指向对象已经被释放

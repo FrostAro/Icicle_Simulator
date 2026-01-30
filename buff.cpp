@@ -6,7 +6,6 @@
 #include "Logger.h"
 #include "Person.h"
 #include "Skill.h"
-#include <iostream>
 #include <string>
 
 int Buff::ID = 0;

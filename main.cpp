@@ -16,76 +16,92 @@
 #include "Logger.h"
 #include <memory>
 #include <vector>
-extern void printDamageStatistics(std::unordered_map<std::string, DamageStatistics> damageStatsMap,int totalTime );
+extern void printDamageStatistics(const std::unordered_map<std::string, DamageStatistics>& damageStatsMap,const int totalTime);
+extern void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatistics>> &damageStatisticsList,int times,const int maxTime,const int deltaTime, unsigned int seed = 154624252);
+extern void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, DamageStatistics>>
+                           &damageStatisticsList,const int maxTime);
+extern void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, DamageStatistics>>
+                           &damageStatisticsList,const int maxTime, 
+                           std::function<void(
+                            const std::vector<std::unordered_map<std::string, DamageStatistics>>& damageStatisticsList,
+                            const int maxTime)> 
+                            specialSummaryFunction);
 
 int main()
 {
-    Logger::initialize(Logger::Level::DEBUG);  // 初始化日志系统
+    Logger::initialize(Logger::Level::DEBUG); // 初始化日志系统
     // 伤害统计结果列表（用于处理进行了循环的数据）
     std::vector<std::unordered_map<std::string, DamageStatistics>> damageStatisticsList;
-    int maxTime = 18000;
+    const int maxTime = 18000;
+    const int deltaTime = 1;
     // 可以使用循环应对不同情况与属性数值的模拟
-    //for(int i = 0; i < 2; i++)
-    //{
     // 使用同一个种子保证模拟数值前后随机数一致，确保提升数据的相对准确
-    srand(static_cast<unsigned int>(2));
-    int deltaTime = 1;
-    int currentTime = 0;
-    auto p = std::make_unique<Mage_Icicle>(
-                         /*三维属性*/ 4593,
-                         /*暴击*/ 36,
-                         /*急速*/ 1.05,
-                         /*幸运*/ 51.7,
-                         /*精通*/ 6,
-                         /*全能*/ 17.58,
-                         /*攻击(物理攻击/魔法攻击)*/ 3111,
-                         /*精炼攻击*/ 820,
-                         /*元素攻击*/ 35,
-                         /*攻击速度*/ 0.1,
-                         /*施法速度*/ 0,
-                         /*爆伤额外值(用于调试)*/ 0,
-                         /*增伤额外值(用于调试)*/ 0,
-                         /*元素增伤额外值(用于调试)*/ 0,
-                         /*程序运行总tick*/ maxTime);
-    auto Initializer = std::make_unique<Initializer_Mage_Icicle>(p.get());
-    Initializer->Initialize();
-    std::cout << "Starting simulation..." << std::endl;
-    while (currentTime < maxTime)
-    {
-        // std::cout << "Current time: " << currentTime << std::endl;
-        p->autoAttackPtr->update(deltaTime);
-        currentTime += deltaTime;
-        p->autoAttackPtr->setTimer() += deltaTime;
-    }
-
-
-
-    p->calculateDamageStatistics();
-    std::cout << "Simulation ended." << std::endl;
-    printDamageStatistics(p->damageStatsMap, maxTime);
-    damageStatisticsList.push_back(p->damageStatsMap);
-    //}
-
-
+    executeSimulation(damageStatisticsList, 2, maxTime, deltaTime /*,1(随机数种子，默认为time(nullptr)*/);
 
     // 如果有进行循环，在这里进行汇总输出
-    if(damageStatisticsList.size() > 1)
-    {
-        std::cout << "Summary of multiple simulations:" << std::endl;
-        // 汇总逻辑
-        // 这里可以根据需要实现汇总多个damageStatisticsList的逻辑
-        for(const auto& statsMap : damageStatisticsList)
-        {
-            // 每次循环结果独立输出，如果有需要可以自行写一个对于damageStatisticsList的汇总函数
-            printDamageStatistics(statsMap, maxTime);
-        }
-    }
+    summaryCirculationPrint(damageStatisticsList, maxTime);
 
     return 0;
 }
 
+// 模拟主函数
+void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatistics>> 
+                            &damageStatisticsList,
+                       int times,
+                       const int maxTime,
+                       const int deltaTime,
+                       unsigned int seed)
+{
+    if (times <= 0)
+        return;
+    while (times > 0)
+    {
+        if (times > 1)
+        {
+            if(seed != 154624252)
+                srand(static_cast<unsigned int>(seed));
+            else
+                srand(static_cast<unsigned int>(time(nullptr)));
+        }
+        int currentTime = 0;
+        // 在此处修改角色各个属性
+        auto p = std::make_unique<Mage_Icicle>(
+            /*三维属性*/ 4593,
+            /*暴击*/ 36,
+            /*急速*/ 1.05,
+            /*幸运*/ 51.7,
+            /*精通*/ 6,
+            /*全能*/ 17.58,
+            /*攻击(物理攻击/魔法攻击)*/ 3111,
+            /*精炼攻击*/ 820,
+            /*元素攻击*/ 35,
+            /*攻击速度*/ 0.1,
+            /*施法速度*/ 0,
+            /*爆伤额外值(用于调试)*/ 0,
+            /*增伤额外值(用于调试)*/ 0,
+            /*元素增伤额外值(用于调试)*/ 0,
+            /*程序运行总tick*/ maxTime);
+        auto Initializer = std::make_unique<Initializer_Mage_Icicle>(p.get());
+        Initializer->Initialize();
+        std::cout << "Starting simulation..." << std::endl;
+        while (currentTime < maxTime)
+        {
+            // std::cout << "Current time: " << currentTime << std::endl;
+            p->autoAttackPtr->update(deltaTime);
+            currentTime += deltaTime;
+            p->autoAttackPtr->setTimer() += deltaTime;
+        }
 
-void printDamageStatistics(std::unordered_map<std::string, DamageStatistics> damageStatsMap,int totalTime )
+        p->calculateDamageStatistics();
+        std::cout << "Simulation ended." << std::endl;
+        printDamageStatistics(p->damageStatsMap, maxTime);
+        damageStatisticsList.push_back(p->damageStatsMap);
+        times--;
+    }
+}
+
+void printDamageStatistics(const std::unordered_map<std::string, DamageStatistics>& damageStatsMap, 
+                           const int totalTime)
 {
     std::cout << "skill Damage Statistics:" << std::endl;
     for (const auto &info : damageStatsMap)
@@ -128,4 +144,35 @@ void printDamageStatistics(std::unordered_map<std::string, DamageStatistics> dam
               << " Lucky rate:" << (totalLuckyDamageCount / totalDamageCount) * 100 << "%"
               << " Crit rate:" << (totalCritCount / totalDamageCount) * 100 << "%"
               << std::endl;
+}
+
+// 默认操作：重新打印一遍每次循环的数据
+void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, DamageStatistics>>
+                           &damageStatisticsList,const int maxTime)
+{
+    if(damageStatisticsList.size() <= 1) 
+        return;
+    std::cout << "Summary of multiple simulations:" << std::endl;
+    // 汇总逻辑
+    for (const auto &statsMap : damageStatisticsList)
+    {
+        // 每次循环结果独立输出，如果有需要可以自行写一个对于damageStatisticsList的汇总函数
+        printDamageStatistics(statsMap, maxTime);
+    }
+}
+
+// 根据传入的函数实现执行不同操作
+void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, DamageStatistics>>
+                           &damageStatisticsList,const int maxTime, 
+                           std::function<void(
+                            const std::vector<std::unordered_map<std::string, DamageStatistics>>& damageStatisticsList,
+                            const int maxTime)> 
+                            specialSummaryFunction)
+{
+    if(damageStatisticsList.size() <= 1) 
+        return;
+    std::cout << "Summary of multiple simulations:" << std::endl;
+    // 汇总逻辑
+    // 这里可以根据需要实现汇总多个damageStatisticsList的逻辑
+    specialSummaryFunction(damageStatisticsList, maxTime);
 }
