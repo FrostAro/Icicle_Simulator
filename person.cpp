@@ -101,18 +101,6 @@ DamageInfo Person::Damage(const Skill *skill)
                 luckyDamage = this->luckyDamage();
             }
         }
-        std::cout << skill->getSkillName() << " Damage Calculation Debug:" << std::endl;
-        std::cout << std::endl;
-        std::cout << this->damageIncrease << " " << skill->damageIncreaseAdd << std::endl;
-        std::cout << this->attributesIncrease << " " << this->attributeRatio << std::endl;
-        std::cout << this->attackIncrease << " " << this->luckyMultiplying << std::endl;
-        std::cout << this->damageReduce << std::endl;
-        std::cout << skill->getMutiplying() << " " << skill->multiplyingIncrease << std::endl;
-        std::cout << this->elementIncrease << " " << skill->elementIncreaseAdd << std::endl;
-        std::cout << this->almightyIncrease << " " << skill->almightyIncreaseAdd << std::endl;
-        std::cout << this->dreamIncrease << " " << skill->dreamIncreaseAdd << std::endl;
-        std::cout << skill->finalIncreaseAdd << std::endl;
-        std::cout << std::endl;
 
         if (this->findBuffInBuffList(FloodBuff::name) != -1)
         {
@@ -186,8 +174,9 @@ void Person::updateNowReleasingSkill(int deltaTime)
             this->nowReleasingSkill.reset();
             this->nowReleasingSkill = nullptr;
             //  向autoAttack传递技能释放完成消息，提醒autoAttack可以进行下一次技能释放
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                      << "]: Action  - facilitation skill finish " << std::endl;
+            Logger::debugAction(AutoAttack::getTimer(),
+                                "FacilitationSkill",
+                                " - facilitation skill finish ");
             this->autoAttackPtr->updateSkillFinish();
             return;
         }
@@ -394,7 +383,9 @@ void Person::cleanupFinishedBuffs()
         }
         else if ((*it)->shouldBeRemoved())
         {
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Buff    - buff: " << (*it)->getBuffName() << " is being removed." << std::endl;
+            Logger::debugBuff(AutoAttack::getTimer(),
+                                (*it)->getBuffName(),
+                                " - is being removed.");
             it = buffList.erase(it);
         }
         else
@@ -599,9 +590,6 @@ void Person::createNoReleasingSkill(std::unique_ptr<Skill> newSkill)
 
 void Person::createBuff(std::unique_ptr<Buff> buff)
 {
-    std::cout << "[BUFF_DEBUG] Buff created by person: " << buff->getBuffName()
-              << ", id: " << buff->getBuffID()
-              << std::endl;
     buffList.push_back(std::move(buff));
 }
 

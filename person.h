@@ -6,6 +6,7 @@
 #include "Skill.h"
 #include "Buff.h"
 #include "Info.h"
+#include "Logger.h"
 #include <algorithm>
 #include <random>
 #include <unordered_map>

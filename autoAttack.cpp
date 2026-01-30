@@ -1,9 +1,9 @@
 #include "AutoAttack.h"
 #include "Action.h"
+#include "Logger.h"
 #include "Person.h"
 #include "Buff.h"
 #include "Skill.h"
-#include <iostream>
 
 double AutoAttack::timer = 0;
 
@@ -36,7 +36,8 @@ void AutoAttack::finishOutBurst()
 {
     this->isOutBurst = false;
     this->resetPriority();
-    std::cout << "[DEBUG,timer=" << this->timer << "]: Auto    - finish out burst " << std::endl;
+    Logger::debugAutoAttack(this->timer,
+                              "Finish Out Burst");
 }
 
 void AutoAttack::changePriority(std::string skillName, int priority)
@@ -264,7 +265,8 @@ void AutoAttack_Mage_Icicle::checkAndSetOutBurstState()
         // 如果未处于爆发状态时搜寻到FloodBuff创建之后，标志着进入爆发状态
         this->isOutBurst = true;
         this->signalForRepeatedlyOutBurst = false;
-        std::cout << "[DEBUG,timer=" << this->timer << "]: Auto    - set out burst state" << std::endl;
+        Logger::debugAutoAttack(this->timer,
+                                  "Set Out Burst State");
     }
 }
 
@@ -343,7 +345,8 @@ void AutoAttack_Mage_Icicle::largeOutBurst()
         this->changePriority(Meteorite::name, 1);
 
         this->signalForRepeatedlyOutBurst = true;
-        std::cout << "[DEBUG,timer=" << this->timer << "]: Auto    - large out burst" << std::endl;
+        Logger::debugAutoAttack(this->timer,
+                                  "Large Out Burst");
     }
 }
 
@@ -365,7 +368,9 @@ void AutoAttack_Mage_Icicle::smallOutBurst()
         this->changePriority(Meteorite::name, 1);
 
         this->signalForRepeatedlyOutBurst = true;
-        std::cout << "[DEBUG,timer=" << this->timer << "]: Auto    - small out burst" << std::endl;
+
+        Logger::debugAutoAttack(this->timer,
+                                  "Small Out Burst");
     }
 }
 //

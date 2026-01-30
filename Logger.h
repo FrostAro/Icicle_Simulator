@@ -161,7 +161,7 @@ public:
          * @param flush 是否立即刷新
          * @param timeFmt 时间戳格式
          */
-        Config(Level lvl, bool colors = true, bool timestamp = true,
+        Config(Level lvl, bool colors = true, bool timestamp = false,
                bool showLvl = true, bool threadId = false, bool flush = false,
                const std::string& timeFmt = "%Y-%m-%d %H:%M:%S") :
             level(lvl), useColors(colors), showTimestamp(timestamp),

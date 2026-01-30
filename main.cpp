@@ -13,12 +13,14 @@
 #include "Person.h"
 #include "AutoAttack.h"
 #include "Initializer.hpp"
+#include "Logger.h"
 #include <memory>
 #include <vector>
 extern void printDamageStatistics(std::unordered_map<std::string, DamageStatistics> damageStatsMap,int totalTime );
 
 int main()
 {
+    Logger::initialize(Logger::Level::DEBUG);  // 初始化日志系统
     // 伤害统计结果列表（用于处理进行了循环的数据）
     std::vector<std::unordered_map<std::string, DamageStatistics>> damageStatisticsList;
     int maxTime = 18000;

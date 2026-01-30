@@ -262,21 +262,15 @@ Total Damage Count: XXXX, Total Lucky Damage Count: XXX, Lucky rate: XX.XX%, Cri
 
 ### 性能优化建议
 
-**减少DEBUG输出：**如需提高性能，可注释掉各cpp文件中的std::cout语句
+**减少DEBUG输出：**如需提高性能，可注释掉各cpp文件中的日志打印，或将日志类型改为INFO
 **调整模拟时间：**减少totalTime参数可缩短模拟时间
 **批量模拟：**在main.cpp中使用循环进行多次模拟，比较属性提升
 
-## 关于程序代码本身(碎碎念)
-
-**关于main()函数：**
-
-在main()函数中，可以写一个循环来对各种情况和属性进行模拟，而不用每次都要手改`Person`构造函数中的数值  
-
-关于程序输出的DEBUG信息是用于告诉使用者程序模拟细节，如果只想要统计信息，由于`cout`代码比较分散，需要crtl+F在各个cpp文件找一下对应的cout代码并注释掉  
+## 关于程序代码本身(碎碎念)  
 
 **关于拓展：**
 
-程序目前加入了初始化器，程序中所有的类都已经支持拓展，如果想拓展一个新职业的模拟，需要对`Skill`，`Buff`，`Action`，`AutoAttack`，`Initializer`类进行拓展，根据需要也可以拓展`Info`和`Listener`类  
+程序目前加入了初始化器，程序中所有的类都已经支持拓展，如果想拓展一个新职业的模拟，需要对`Skill`，`Buff`，`Action`，`AutoAttack`，`Initializer`类进行拓展，根据需要也可以拓展`Info`和`Listener`类，详情请看ExtendExample  
 
 **关于因子：**
 

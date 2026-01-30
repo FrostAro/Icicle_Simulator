@@ -3,9 +3,9 @@
 #include "Creators.hpp"
 #include "Info.h"
 #include "Listener.hpp"
+#include "Logger.h"
 #include "Person.h"
 #include <algorithm>
-#include <iostream>
 #include <memory>
 
 std::string Action::name = "Action";
@@ -128,9 +128,10 @@ void ResourceRevertAction::deleteListener(int buffID)
 void ResourceRevertAction::execute(const double n, Person *p)
 {
     p->revertResource(static_cast<int>(n));
-    std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-              << "]: Action  - resource revert triggered - resourceNumber:"
-              << p->resourceNum << std::endl;
+    Logger::debugAction(AutoAttack::getTimer(),
+                        this->getActionName(),
+                        "ResourceRevertAction executed, resourceNumber: " +
+                        std::to_string(p->resourceNum));
     // 遍历监听，触发回调
     for (const auto &listener : ResourceRevertAction::listeners)
     {
@@ -303,8 +304,6 @@ void CDRefreshAction::deleteListener(int buffID)
 
 void CDRefreshAction::execute(const double n, Person *p)
 {
-    // std::cout << "CD Refresh Action executed for skill type: " <<
-    // this->skillName << std::endl;
 
     Skill *skill = nullptr;
     int index = p->findSkillInSkillCDList(this->skillName);
@@ -388,15 +387,21 @@ void CreateSkillAction::execute(double, Person *p)
     int a = p->findSkillInSkillCDList(this->skillName);
     if (a != -1)
     {
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Skill  "
-                  << " - skill: " << this->skillName
-                  << " - Stack: " << p->getSkillCDListRef().at(a)->getStackRef() << "/"
-                  << p->getSkillCDListRef().at(a)->getMaxStack() << std::endl;
+        Logger::debugAction(AutoAttack::getTimer(),
+                          this->getActionName(),
+                          "Skill Created: " + this->skillName +
+                          ", Stack: " +
+                          std::to_string(
+                              p->getSkillCDListRef().at(a)->getStackRef()) +
+                          "/" +
+                          std::to_string(
+                              p->getSkillCDListRef().at(a)->getMaxStack()));
     }
     else
     {
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Skill  "
-                  << " - skill: " << this->skillName << std::endl;
+        Logger::debugAction(AutoAttack::getTimer(),
+                          this->getActionName(),
+                          "Skill Created: " + this->skillName);
     }
 }
 
@@ -449,10 +454,12 @@ void CreateBuffAction::execute(double n, Person *p)
                 existingBuff->addStack(n);
             }
             existingBuff->resetDuration();
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Action "
-                      << " - Buff Stack Increased: " << this->buffName
-                      << ", - buffID: " << existingBuff->getBuffID()
-                      << ", Stack: " << existingBuff->getStack() << std::endl;
+
+            Logger::debugAction(AutoAttack::getTimer(),
+                              this->getActionName(),
+                              "Buff Stack Increased: " + this->buffName +
+                              ", buffID: " + std::to_string(existingBuff->getBuffID()) +
+                              ", Stack: " +  std::to_string(existingBuff->getStack()));
             return; // 无需创建新buff
         }
 
@@ -461,9 +468,11 @@ void CreateBuffAction::execute(double n, Person *p)
         {
             // 不允许多种同类存在，只刷新持续时间
             existingBuff->resetDuration();
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Action "
-                      << " - Buff Refreshed: " << this->buffName
-                      << ", - buffID: " << existingBuff->getBuffID() << std::endl;
+
+            Logger::debugAction(AutoAttack::getTimer(),
+                              this->getActionName(),
+                              "Buff Refreshed: " + this->buffName +
+                              ", buffID: " + std::to_string(existingBuff->getBuffID()));
             return; // 无需创建新buff
         }
         // 如果允许重复，则继续创建新buff
@@ -474,8 +483,9 @@ void CreateBuffAction::execute(double n, Person *p)
     auto it = BuffCreator::createBuff(this->buffName, p, n);
     if (it == nullptr)
     {
-        std::cout << "[ERROR,timer=" << AutoAttack::getTimer()
-                  << "]: Failed to create buff: " << this->buffName << std::endl;
+        Logger::debugAction(AutoAttack::getTimer(),
+                          this->getActionName(),
+                          "Failed to create buff: " + this->buffName);
         return;
     }
 
@@ -483,10 +493,11 @@ void CreateBuffAction::execute(double n, Person *p)
     int newBuffID = it->getBuffID();
 
     // 添加到buff列表
-    std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Action "
-              << " - Buff Created: " << this->buffName
-              << ", - buffID: " << newBuffID << std::endl;
     p->createBuff(std::move(it));
+    Logger::debugAction(AutoAttack::getTimer(),
+                          this->getActionName(),
+                          "Buff Created: " + this->buffName +
+                          ", buffID: " + std::to_string(newBuffID));
 }
 
 std::string CreateBuffAction::getActionName() { return CreateBuffAction::name; }

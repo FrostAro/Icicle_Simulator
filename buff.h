@@ -34,7 +34,7 @@ public:
 
     virtual void update(double deltaTime) = 0;  // 每tick更新buff逻辑
     virtual bool shouldBeRemoved() = 0;         // 应该被移除的条件
-    virtual std::string getBuffName();      
+    virtual std::string getBuffName() const;      
 
     void addStack(double n);
     bool operator==(const Buff &other) const;   // 通过buffID对比buff是否相等
@@ -68,7 +68,7 @@ public:
     void listenerCallback(const DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     explicit SpearCritialBuff(Person *p);
     SpearCritialBuff(Person *p, double n);
@@ -84,7 +84,7 @@ public:
     void listenerCallback(const DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     SpearCritialToRevertIceBuff(Person *p, double n);
     ~SpearCritialToRevertIceBuff() override;
@@ -100,7 +100,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     explicit IceCountBuff(Person *p);
     IceCountBuff(Person *p, double n);
@@ -118,7 +118,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     FloodBuff(Person *p, double n);
     ~FloodBuff() override;
@@ -134,7 +134,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     DoubleSpearBuff(Person *p, double n);
 };
@@ -149,7 +149,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     IceRevertBuff(Person *p, double n);
 };
@@ -164,7 +164,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     explicit ConsumedEnergyCountBuff(Person *p);
     ConsumedEnergyCountBuff(Person *p, double n);
@@ -181,7 +181,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     EndlessColdBuff(Person *p, double n);
 };
@@ -196,7 +196,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     UltiIncreaseBuff(Person *p, double n);
     ~UltiIncreaseBuff() override;
@@ -212,7 +212,7 @@ public:
     void listenerCallback(const DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     MeteoriteRefreshBuff(Person *p, double n);
     ~MeteoriteRefreshBuff() override;
@@ -228,7 +228,7 @@ public:
     void listenerCallback(const DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     FrostCometBuff(Person *p, double n);
     ~FrostCometBuff() override;
@@ -244,7 +244,7 @@ public:
     void listenerCallback(const DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     MeteoriteSynergyBuff(Person *p, double n);
     ~MeteoriteSynergyBuff() override;
@@ -260,7 +260,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     MukuChiefBuff(Person *p, double n);
     ~MukuChiefBuff() override;
@@ -277,7 +277,7 @@ public:
     void listenerCallback(const DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     MukuScoutBuff(Person *p, double n);
     ~MukuScoutBuff() override;
@@ -294,7 +294,7 @@ public:
     void listenerCallback(double n);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     SimulateNormalAttackToRevertIceBuff(Person *p, double n);
 };
@@ -309,7 +309,7 @@ public:
     void listenerCallback(const DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     PierceSpearBuff(Person *p, double n);
     ~PierceSpearBuff() override;
@@ -325,7 +325,7 @@ public:
     void listenerCallback(const DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     EquipmentSetEffectBuff(Person *p, double n);
     ~EquipmentSetEffectBuff() override;
@@ -345,7 +345,7 @@ public:
     void listenerCallback(const DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     FantasyImpactBuff(Person *p, double n);
     ~FantasyImpactBuff() override;
@@ -367,7 +367,7 @@ public:
     void listenerCallback(const DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
-    std::string getBuffName() override;
+    std::string getBuffName() const override;
 
     ExtremeLuckDivisor(Person *p, double n);
     ~ExtremeLuckDivisor();

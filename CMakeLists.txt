@@ -23,6 +23,7 @@ add_executable(dps_simulator
     Info.cpp
     Person.cpp
     Skill.cpp
+    Logger.cpp
 )
 
 # 针对不同构建类型设置编译选项

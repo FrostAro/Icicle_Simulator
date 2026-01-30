@@ -3,6 +3,7 @@
 #include "AutoAttack.h"
 #include "Info.h"
 #include "Listener.hpp"
+#include "Logger.h"
 #include "Person.h"
 #include "Skill.h"
 #include <iostream>
@@ -44,7 +45,7 @@ int Buff::getID() { return Buff::ID; }
 
 void Buff::resetDuration() { this->duration = this->maxDuration; }
 
-std::string Buff::getBuffName() { return this->name; }
+std::string Buff::getBuffName() const { return this->name; }
 
 int Buff::getBuffID() const { return this->buffID; }
 double Buff::getStack() const { return this->stack; }
@@ -104,15 +105,18 @@ void SpearCritialBuff::listenerCallback(const DamageInfo &info)
         this->p->changeCriticalDamage(this->stack * this->number);
 
         this->resetDuration();
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                  << "]: Buff    - buff: " << this->getBuffName() << " triggered "
-                  << std::endl;
+        Logger::debugBuff(AutoAttack::getTimer(),
+                            this->getBuffName(),
+                            " - Stack - " +
+                            std::to_string(this->stack) +
+                            " / " +
+                            std::to_string(this->maxStack));
     }
 }
 
 void SpearCritialBuff::update(const double) {}
 bool SpearCritialBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string SpearCritialBuff::getBuffName() { return SpearCritialBuff::name; }
+std::string SpearCritialBuff::getBuffName() const { return SpearCritialBuff::name; }
 
 SpearCritialBuff::~SpearCritialBuff()
 {
@@ -145,9 +149,9 @@ void SpearCritialToRevertIceBuff::listenerCallback(
     {
         if (this->p->isSuccess(this->number))
         {
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                      << "]: Buff    - buff: " << this->name << " triggered "
-                      << std::endl;
+            Logger::debugBuff(AutoAttack::getTimer(),
+                                this->getBuffName(),
+                                " - triggered ");
             this->p->triggerAction<CreateSkillAction>(0, IceArrow::name);
         }
     }
@@ -155,10 +159,7 @@ void SpearCritialToRevertIceBuff::listenerCallback(
 
 void SpearCritialToRevertIceBuff::update(const double) {}
 bool SpearCritialToRevertIceBuff::shouldBeRemoved() { return false; }
-std::string SpearCritialToRevertIceBuff::getBuffName()
-{
-    return SpearCritialToRevertIceBuff::name;
-}
+std::string SpearCritialToRevertIceBuff::getBuffName() const { return SpearCritialToRevertIceBuff::name; }
 
 SpearCritialToRevertIceBuff::~SpearCritialToRevertIceBuff()
 {
@@ -210,9 +211,9 @@ void IceCountBuff::update(const double)
 {
     if (this->p->findBuffInBuffList<FloodBuff>() == -1 && this->stack >= 20)
     {
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                  << "]: Buff    - buff: " << this->getBuffName() << " triggered "
-                  << std::endl;
+        Logger::debugBuff(AutoAttack::getTimer(),
+                            this->getBuffName(),
+                            " - triggered ");
         this->p->triggerAction<CreateBuffAction>(this->stack,
                                                  EndlessColdBuff::name);
         this->stack = 0;
@@ -220,7 +221,7 @@ void IceCountBuff::update(const double)
 }
 
 bool IceCountBuff::shouldBeRemoved() { return false; }
-std::string IceCountBuff::getBuffName() { return IceCountBuff::name; }
+std::string IceCountBuff::getBuffName() const { return IceCountBuff::name; }
 
 // 灌注
 std::string FloodBuff::name = "FloodBuffBuff";
@@ -258,7 +259,7 @@ FloodBuff::~FloodBuff()
 }
 
 bool FloodBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string FloodBuff::getBuffName() { return FloodBuff::name; }
+std::string FloodBuff::getBuffName() const { return FloodBuff::name; }
 
 // 双倍冰矛
 std::string DoubleSpearBuff::name = "DoubleSpearBuff";
@@ -276,7 +277,7 @@ bool DoubleSpearBuff::shouldBeRemoved()
     return this->duration < 0 ||
            this->p->findBuffInBuffList(FloodBuff::name) == -1;
 }
-std::string DoubleSpearBuff::getBuffName() { return DoubleSpearBuff::name; }
+std::string DoubleSpearBuff::getBuffName() const { return DoubleSpearBuff::name; }
 
 // 玄冰回复
 std::string IceRevertBuff::name = "IceRevertBuff";
@@ -320,7 +321,7 @@ void IceRevertBuff::update(const double)
     }
 }
 bool IceRevertBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string IceRevertBuff::getBuffName() { return IceRevertBuff::name; }
+std::string IceRevertBuff::getBuffName() const { return IceRevertBuff::name; }
 
 // 能量消耗计数
 std::string ConsumedEnergyCountBuff::name = "ConsumedEnergyCountBuff";
@@ -362,9 +363,12 @@ void ConsumedEnergyCountBuff::update(double)
     if (static_cast<int>(stack) % 25 == 0 && this->stack != 0)
     {
         this->p->triggerAction<CDReduceAction>(this->number, WaterDrop::name);
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                  << "]: Buff    - buff: " << this->getBuffName() << " triggered "
-                  << std::endl;
+        Logger::debugBuff(AutoAttack::getTimer(),
+                            this->getBuffName(),
+                            " - Stack - " +
+                            std::to_string(this->stack) +
+                            " / " +
+                            std::to_string(this->maxStack));
     }
 }
 
@@ -374,10 +378,7 @@ ConsumedEnergyCountBuff::~ConsumedEnergyCountBuff()
 }
 
 bool ConsumedEnergyCountBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string ConsumedEnergyCountBuff::getBuffName()
-{
-    return ConsumedEnergyCountBuff::name;
-}
+std::string ConsumedEnergyCountBuff::getBuffName() const { return ConsumedEnergyCountBuff::name; }
 
 // 无尽苦寒
 std::string EndlessColdBuff::name = "EndlessColdBuff";
@@ -396,12 +397,13 @@ void EndlessColdBuff::listenerCallback(double) {}
 void EndlessColdBuff::update(double)
 {
     this->p->triggerAction<CDRefreshAction>(0, Meteorite::name);
-    // std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Buff    - buff:
-    // " << EndlessColdBuff::name <<" triggered " << std::endl;
+    // Logger::debugBuff(AutoAttack::getTimer(),
+    //                     this->getBuffName(),
+    //                     " - triggered "); 
 }
 
 bool EndlessColdBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string EndlessColdBuff::getBuffName() { return EndlessColdBuff::name; }
+std::string EndlessColdBuff::getBuffName() const { return EndlessColdBuff::name; }
 
 // 大招冰伤
 std::string UltiIncreaseBuff::name = "UltiIncreaseBuff";
@@ -418,7 +420,7 @@ UltiIncreaseBuff::UltiIncreaseBuff(Person *p, double) : Buff(p)
 void UltiIncreaseBuff::listenerCallback(double) {}
 void UltiIncreaseBuff::update(const double) {}
 bool UltiIncreaseBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string UltiIncreaseBuff::getBuffName() { return UltiIncreaseBuff::name; }
+std::string UltiIncreaseBuff::getBuffName() const { return UltiIncreaseBuff::name; }
 
 UltiIncreaseBuff::~UltiIncreaseBuff()
 {
@@ -452,23 +454,24 @@ void MeteoriteRefreshBuff::listenerCallback(const DamageInfo &info) const
             (info.skillName == Spear::name))
         {
             this->p->triggerAction<CDRefreshAction>(0, Meteorite::name);
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                      << "]: Buff    - buff: " << this->name << " triggered "
-                      << std::endl;
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                      << "]: Buff    - Meteorite: Stack - "
-                      << this->p->getSkillCDListRef().at(a)->getStackRef() << " / "
-                      << this->p->getSkillCDListRef().at(a)->getMaxStack() << std::endl;
+            Logger::debugBuff(AutoAttack::getTimer(),
+                                this->getBuffName(),
+                                " - triggered by skill: " + info.skillName);
+            Logger::debugBuff(AutoAttack::getTimer(),
+                                this->getBuffName(),
+                                " - Meteorite: Stack - " +
+                                std::to_string(
+                                    this->p->getSkillCDListRef().at(a)->getStackRef()) +
+                                " / " +
+                                std::to_string(
+                                    this->p->getSkillCDListRef().at(a)->getMaxStack()));
         }
     }
 }
 
 void MeteoriteRefreshBuff::update(const double) {}
 bool MeteoriteRefreshBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string MeteoriteRefreshBuff::getBuffName()
-{
-    return MeteoriteRefreshBuff::name;
-}
+std::string MeteoriteRefreshBuff::getBuffName() const { return MeteoriteRefreshBuff::name; }
 
 MeteoriteRefreshBuff::~MeteoriteRefreshBuff()
 {
@@ -497,9 +500,9 @@ void FrostCometBuff::listenerCallback(const DamageInfo &info) const
     {
         if (this->p->isSuccess(this->number))
         {
-            std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                      << "]: Buff    - buff: " << this->name << " triggered "
-                      << std::endl;
+            Logger::debugBuff(AutoAttack::getTimer(),
+                                this->getBuffName(),
+                                " - triggered by skill: " + info.skillName);
             this->p->triggerAction<CreateSkillAction>(0, FrostComet::name);
         }
     }
@@ -507,7 +510,7 @@ void FrostCometBuff::listenerCallback(const DamageInfo &info) const
 
 void FrostCometBuff::update(const double) {}
 bool FrostCometBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string FrostCometBuff::getBuffName() { return FrostCometBuff::name; }
+std::string FrostCometBuff::getBuffName() const { return FrostCometBuff::name; }
 
 FrostCometBuff::~FrostCometBuff()
 {
@@ -561,7 +564,7 @@ void MeteoriteSynergyBuff::listenerCallback(const DamageInfo &info) const
 
 void MeteoriteSynergyBuff::update(const double) {}
 bool MeteoriteSynergyBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string MeteoriteSynergyBuff::getBuffName()
+std::string MeteoriteSynergyBuff::getBuffName() const
 {
     return MeteoriteSynergyBuff::name;
 }
@@ -580,22 +583,25 @@ MukuChiefBuff::MukuChiefBuff(Person *p, double) : Buff(p)
     this->duration = 2000;
     this->maxDuration = this->duration;
 
-    std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Action   "
-              << " - before person Crit Count + 4480, persent: "
-              << p->Critical
-              << std::endl;
+    Logger::debugBuff(AutoAttack::getTimer(),
+                        this->getBuffName(),
+                        " - before person Crit Count + 4480, persent: " +
+                        std::to_string(p->Critical));
+
     p->changeCriticalCount(4480);
-    std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Action   "
-              << " - after person Crit Count + 4480, persent: "
-              << p->Critical
-              << std::endl;
+
+    Logger::debugBuff(AutoAttack::getTimer(),
+                        this->getBuffName(),
+                        " - after person Crit Count + 4480, persent: " +
+                        std::to_string(p->Critical));
+
     p->changeCriticalDamage(0.4);
 }
 
 void MukuChiefBuff::listenerCallback(double) {}
 void MukuChiefBuff::update(const double) {}
 bool MukuChiefBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string MukuChiefBuff::getBuffName() { return MukuChiefBuff::name; }
+std::string MukuChiefBuff::getBuffName() const { return MukuChiefBuff::name; }
 
 MukuChiefBuff::~MukuChiefBuff()
 {
@@ -618,7 +624,7 @@ MukuScoutBuff::MukuScoutBuff(Person *p, double) : Buff(p)
 void MukuScoutBuff::listenerCallback(const DamageInfo &) {}
 void MukuScoutBuff::update(const double) {}
 bool MukuScoutBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string MukuScoutBuff::getBuffName() { return MukuScoutBuff::name; }
+std::string MukuScoutBuff::getBuffName() const { return MukuScoutBuff::name; }
 
 MukuScoutBuff::~MukuScoutBuff()
 {
@@ -645,7 +651,7 @@ bool SimulateNormalAttackToRevertIceBuff::shouldBeRemoved()
 {
     return this->duration < 0;
 }
-std::string SimulateNormalAttackToRevertIceBuff::getBuffName()
+std::string SimulateNormalAttackToRevertIceBuff::getBuffName() const
 {
     return SimulateNormalAttackToRevertIceBuff::name;
 }
@@ -660,9 +666,9 @@ void SimulateNormalAttackToRevertIceBuff::update(const double)
     {
         this->p->triggerAction<CreateSkillAction>(0, IceArrow::name);
         this->revertTimer = 0;
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                  << "]: Buff    - buff: " << this->getBuffName() << " triggered "
-                  << std::endl;
+        Logger::debugBuff(AutoAttack::getTimer(), 
+                        this->getBuffName(),
+                        " triggered ");
     }
 }
 
@@ -692,16 +698,17 @@ void PierceSpearBuff::listenerCallback(const DamageInfo &info)
     {
         this->p->triggerAction<CreateSkillAction>(0, PierceSpear::name);
         this->stack = 0;
-        std::cout << "[DEBUG,timer=" << AutoAttack::getTimer()
-                  << "]: Buff    - buff: " << this->getBuffName() << " triggered "
-                  << std::endl;
+
+        Logger::debugBuff(AutoAttack::getTimer(), 
+                        this->getBuffName(),
+                        " triggered ");
     }
 }
 
 void PierceSpearBuff::update(const double) {}
 
 bool PierceSpearBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string PierceSpearBuff::getBuffName() { return PierceSpearBuff::name; }
+std::string PierceSpearBuff::getBuffName() const { return PierceSpearBuff::name; }
 
 PierceSpearBuff::~PierceSpearBuff()
 {
@@ -749,7 +756,7 @@ void EquipmentSetEffectBuff::update(const double)
 }
 
 bool EquipmentSetEffectBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string EquipmentSetEffectBuff::getBuffName()
+std::string EquipmentSetEffectBuff::getBuffName() const
 {
     return EquipmentSetEffectBuff::name;
 }
@@ -816,7 +823,7 @@ void FantasyImpactBuff::update(const double)
 }
 
 bool FantasyImpactBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string FantasyImpactBuff::getBuffName() { return FantasyImpactBuff::name; }
+std::string FantasyImpactBuff::getBuffName() const { return FantasyImpactBuff::name; }
 
 FantasyImpactBuff::~FantasyImpactBuff()
 {
@@ -842,7 +849,7 @@ ExtremeLuckDivisor::ExtremeLuckDivisor(Person *p, double) : Divisor(p)
 void ExtremeLuckDivisor::listenerCallback(const DamageInfo &) {}
 void ExtremeLuckDivisor::update(const double) {}
 bool ExtremeLuckDivisor::shouldBeRemoved() { return this->duration < 0; }
-std::string ExtremeLuckDivisor::getBuffName() { return ExtremeLuckDivisor::name; }
+std::string ExtremeLuckDivisor::getBuffName() const { return ExtremeLuckDivisor::name; }
 
 ExtremeLuckDivisor::~ExtremeLuckDivisor()
 {

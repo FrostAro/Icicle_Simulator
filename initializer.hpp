@@ -1,4 +1,5 @@
 #pragma once
+#include "Logger.h"
 #include "Skill.h"
 #include "Buff.h"
 #include "Info.h"
@@ -27,7 +28,8 @@ protected:
     void equipCertainSkill(std::string skillName)
     {
         this->equippedSkills.emplace_back(skillName);
-        std::cout << "[DEBUG] skill is equipped: " << skillName << std::endl;
+        Logger::debug("Initializer",
+                      "Equipped skill: " + skillName);
         
     }
 
@@ -37,7 +39,8 @@ protected:
     {
         SkillCreator::creatorMap.insert({Skill_::name,
                                 [](Person* p) { return std::make_unique<Skill_>(p); }});
-        std::cout << "[DEBUG] Registered skill: " << Skill_::name << std::endl;
+        Logger::debug("Initializer",
+                      "Registered skill: " + Skill_::name);
         p->pointerListForAction.push_back(
                 std::make_unique<Skill_>(p));
     }
@@ -47,9 +50,6 @@ protected:
     template<typename Buff_>
     void registerCertainBuff()
     {
-        // BuffCreator::creatorMap[Buff_::name] =
-        //                         [](Person* p,double n = 0) { return std::make_unique<Buff_>(p,n); };
-        //std::cout << "[DEBUG] Registered buff: " << Buff_::name << std::endl;
         BuffCreator::creatorMap.insert({Buff_::name,
                         [](Person* p,double n = 0) { return std::make_unique<Buff_>(p,n); }});
         bool isInherent = false;
@@ -57,7 +57,8 @@ protected:
         isInherent = temp->getIsInherent();
         if(isInherent)
         {
-            std::cout << "[DEBUG] buff is inherent: " << Buff_::name << std::endl;
+            Logger::debug("Initializer",
+                          "Inherent Buff Registered: " + Buff_::name);
             this->inherentBuffs.emplace_back(temp->getBuffName());
         }
         Buff::resetID();
