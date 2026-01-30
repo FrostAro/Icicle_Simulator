@@ -101,6 +101,18 @@ DamageInfo Person::Damage(const Skill *skill)
                 luckyDamage = this->luckyDamage();
             }
         }
+        std::cout << skill->getSkillName() << " Damage Calculation Debug:" << std::endl;
+        std::cout << std::endl;
+        std::cout << this->damageIncrease << " " << skill->damageIncreaseAdd << std::endl;
+        std::cout << this->attributesIncrease << " " << this->attributeRatio << std::endl;
+        std::cout << this->attackIncrease << " " << this->luckyMultiplying << std::endl;
+        std::cout << this->damageReduce << std::endl;
+        std::cout << skill->getMutiplying() << " " << skill->multiplyingIncrease << std::endl;
+        std::cout << this->elementIncrease << " " << skill->elementIncreaseAdd << std::endl;
+        std::cout << this->almightyIncrease << " " << skill->almightyIncreaseAdd << std::endl;
+        std::cout << this->dreamIncrease << " " << skill->dreamIncreaseAdd << std::endl;
+        std::cout << skill->finalIncreaseAdd << std::endl;
+        std::cout << std::endl;
 
         if (this->findBuffInBuffList(FloodBuff::name) != -1)
         {
