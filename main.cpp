@@ -16,16 +16,41 @@
 #include "Logger.h"
 #include <memory>
 #include <vector>
-extern void printDamageStatistics(const std::unordered_map<std::string, DamageStatistics>& damageStatsMap,const int totalTime);
-extern void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatistics>> &damageStatisticsList,int times,const int maxTime,const int deltaTime, unsigned int seed = 154624252);
-extern void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, DamageStatistics>>
-                           &damageStatisticsList,const int maxTime);
-extern void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, DamageStatistics>>
-                           &damageStatisticsList,const int maxTime, 
-                           std::function<void(
-                            const std::vector<std::unordered_map<std::string, DamageStatistics>>& damageStatisticsList,
-                            const int maxTime)> 
-                            specialSummaryFunction);
+extern void printDamageStatistics(
+        const std::unordered_map<std::string, DamageStatistics>& damageStatsMap,
+        const int totalTime);
+extern void executeSimulation(
+        std::vector<std::unordered_map<std::string, DamageStatistics>> &damageStatisticsList,
+        int times,// 循环次数
+        const int maxTime,// 最大运行时间
+        const int deltaTime,// 每次update执行多少tick（默认为1）
+        unsigned int seed = 154624252// 随机数种子
+    );
+extern void summaryCirculationPrint(
+        const std::vector<std::unordered_map<std::string, DamageStatistics>>&damageStatisticsList,
+        const int maxTime
+    );
+extern void summaryCirculationPrint(
+        const std::vector<std::unordered_map<std::string, DamageStatistics>>&damageStatisticsList,
+        const int maxTime, 
+        std::function<void(
+            const std::vector<std::unordered_map<std::string, DamageStatistics>>& damageStatisticsList,
+            const int maxTime)> 
+            specialSummaryFunction// 这里可以根据需要自定义实现汇总多个damageStatisticsList的逻辑
+        );
+
+/** damageStatistics类              // 对一次模拟中，一类技能的输出数据的总结
+ *  std::string skillName; 		 	// 伤害类型
+ *  double totalTime;				// 总时间
+ *  double damageCount;				// 伤害次数
+ *  double damage;					// 伤害值
+ *  double luckyDamageCount;		// 幸运伤害次数
+ *  double luckyDamage;				// 幸运伤害值
+ *  double CritDamageCount;			// 暴击伤害次数
+ * 
+ *  std::unordered_map<std::string, DamageStatistics>
+ *          & damageStatsMa   // 统合所有技能的输出数据，用技能名一一对应
+ */
 
 int main()
 {
@@ -36,7 +61,7 @@ int main()
     const int deltaTime = 1;
     // 可以使用循环应对不同情况与属性数值的模拟
     // 使用同一个种子保证模拟数值前后随机数一致，确保提升数据的相对准确
-    executeSimulation(damageStatisticsList, 2, maxTime, deltaTime /*,1(随机数种子，默认为time(nullptr)*/);
+    executeSimulation(damageStatisticsList, 1, maxTime, deltaTime /*,1(随机数种子，默认为time(nullptr)*/);
 
     // 如果有进行循环，在这里进行汇总输出
     summaryCirculationPrint(damageStatisticsList, maxTime);
@@ -52,11 +77,12 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
                        const int deltaTime,
                        unsigned int seed)
 {
-    if (times <= 0)
+    int totalTimes = times;
+    if (times <= 0) 
         return;
     while (times > 0)
     {
-        if (times > 1)
+        if (totalTimes > 1)
         {
             if(seed != 154624252)
                 srand(static_cast<unsigned int>(seed));

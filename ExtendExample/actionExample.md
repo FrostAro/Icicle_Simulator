@@ -5,7 +5,7 @@
 ```cpp
 class Action {
     // 重要成员
-    static std::string name;                         // action名称（静态）
+    static std::string name;                          // action名称（静态）
 
     // 必须实现的成员函数
     virtual void execute(double n, Person *p) = 0;    // 执行action的逻辑
@@ -21,7 +21,7 @@ class Action {
 
 ## 2.拓展新的Action
 
-### 2.1.在Action.cpp中声明
+### 2.1.在Action.h中声明
 
 ```cpp
 class NewAction : public Action {

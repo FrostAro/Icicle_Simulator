@@ -64,7 +64,7 @@ std::string SpearCritialBuff::name = "SpearCritialBuff";
 SpearCritialBuff::SpearCritialBuff(Person *p) : Buff(p)
 {
     this->number = 0.015; // 用作每层给予的爆伤数值
-    this->maxStack = 0;
+    this->maxStack = 10;
     this->duration = 600;
     this->maxDuration = this->duration;
     this->isStackable = true;
@@ -80,6 +80,7 @@ SpearCritialBuff::SpearCritialBuff(Person *p) : Buff(p)
 SpearCritialBuff::SpearCritialBuff(Person *p, const double n) : Buff(p)
 {
     this->stack = n;
+    this->maxStack = 10;
     this->number = 0.015;
     this->duration = 1000;
     this->maxDuration = this->duration;
@@ -95,7 +96,8 @@ SpearCritialBuff::SpearCritialBuff(Person *p, const double n) : Buff(p)
 void SpearCritialBuff::listenerCallback(const DamageInfo &info)
 {
     if (info.isCritical &&
-        (info.skillName == Spear::name || info.skillName == PierceSpear::name))
+        (info.skillName == Spear::name 
+          || info.skillName == PierceSpear::name))
     {
         this->addStack(1);
 

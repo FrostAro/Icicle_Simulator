@@ -24,8 +24,9 @@ class FacilitationSkill : public virtual Skill {
 
 ## 2.扩展新技能步骤
 
-1.**选择继承类型**（InstantSkill/ContinuousSkill/FacilitationSkill）
-2.**在skill.h中声明**
+### 2.1.选择继承类型（InstantSkill/ContinuousSkill/FacilitationSkill）
+
+### 2.2.在skill.h中声明
 
 ```cpp
 class NewSkill : public InstantSkill {  // 以InstantSkill为例
@@ -44,7 +45,7 @@ public:
 };
 ```
 
-3.**在skill.cpp中实现**
+### 2.3.在skill.cpp中实现
 
 ```cpp
 // 静态名称
