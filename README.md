@@ -20,7 +20,7 @@ GCC/Clang/MSVC 支持C++17
 
 ```bash
 # 克隆项目
-git clone <repository-url>
+git clone https://github.com/FrostAro/Icicle_Simulator.git
 cd dps_simulator
 
 # 创建构建目录
