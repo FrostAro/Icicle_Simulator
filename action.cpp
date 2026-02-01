@@ -43,7 +43,7 @@ void AttackAction::execute(const double, Person *p)
 {
     const Skill* skillPtr = p->getCurtainPointerForAction(this->skillName);
     // 临时修改
-    const auto damageInfo = p->Damage(skillPtr);
+    auto damageInfo = p->Damage(skillPtr);
     // 遍历监听，触发回调
     for (const auto &listener : AttackAction::listeners)
     {
@@ -52,6 +52,9 @@ void AttackAction::execute(const double, Person *p)
             listener->trigger(damageInfo);
         }
     }
+
+    // 加入伤害信息列表
+    p->pushDamgeInfo(damageInfo);
 }
 
 std::string AttackAction::getActionName() { return AttackAction::name; }

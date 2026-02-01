@@ -18,9 +18,9 @@ inline BaseListener::~BaseListener() = default;
 template <typename T>
 class TypedListener : public BaseListener {
 public:
-    std::function<void(const T)> callback;
+    std::function<void(const T&)> callback;
     
-    TypedListener(int id, std::function<void(const T)> func) 
+    TypedListener(int id, std::function<void(const T&)> func) 
                 : callback(std::move(func))
     {
         this->buffID = id;
@@ -30,10 +30,10 @@ public:
 
 class DamageListener : public TypedListener<DamageInfo> {
 public:
-    DamageListener(const int id, const std::function<void(const DamageInfo)> func)
+    DamageListener(const int id, const std::function<void(const DamageInfo&)> func)
         : TypedListener<DamageInfo>(id, func) {}
     
-    void trigger(const DamageInfo info) const {
+    void trigger(const DamageInfo &info) const {
         if (callback) callback(info);
     }
 };

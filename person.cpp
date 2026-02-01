@@ -6,7 +6,10 @@
 #include "Action.h"
 #include "AutoAttack.h"
 #include "Buff.h"
+#include "Info.h"
 #include "Skill.h"
+
+std::uint32_t Person::fixedSeed = 42; // 默认种子值
 
 Person::Person(const double Attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
@@ -101,7 +104,8 @@ DamageInfo Person::Damage(const Skill *skill)
                 luckyDamage = this->luckyDamage();
             }
         }
-
+        
+        // 冰矛因子
         if (this->findBuffInBuffList(FloodBuff::name) != -1)
         {
             luckyDamage *= 1.583;
@@ -109,8 +113,6 @@ DamageInfo Person::Damage(const Skill *skill)
 
         DamageInfo info(skill->getSkillName(), damage,
                         luckyDamage, this->isSuccess(this->Critical), isLucky);
-        // 加入伤害信息列表
-        this->damageListInfo.push_back(info);
         // if(info.skillName == Spear::name)
         // {
         //     std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Damage - skill: " << info.skillName << " damaged" << std::endl;
@@ -243,7 +245,7 @@ bool Person::removeSkill(Skill *skill)
         const size_t index = std::distance(continuousSkillList.begin(), it);
 
         // 从continuousSkillList中移除
-        if (index < skillListInfo.size())
+        if (index < skillInfoList.size())
         {
             // skillListInfo.erase(skillListInfo.begin() + static_cast<int>(index));
             continuousSkillList.erase(it);
@@ -564,7 +566,7 @@ void Person::createSkill(std::unique_ptr<Skill> newSkill)
 
     auto name = this->nowReleasingSkill->getSkillName();
     // 再将其添加到 skillListInfo 中
-    skillListInfo.push_back(name);
+    skillInfoList.push_back(name);
 }
 
 void Person::createNoReleasingSkill(std::unique_ptr<Skill> newSkill)
@@ -574,7 +576,7 @@ void Person::createNoReleasingSkill(std::unique_ptr<Skill> newSkill)
     // 放入 continuousSkillList
     continuousSkillList.push_back(std::move(newSkill));
     // 再将其添加到 skillListInfo 中
-    skillListInfo.push_back(skillName);
+    skillInfoList.push_back(skillName);
 }
 
 void Person::createBuff(std::unique_ptr<Buff> buff)
@@ -830,7 +832,7 @@ int Person::getAlmightyCount(const double almighty)
 
 auto Person::calculateDamageStatistics() -> decltype(this->damageStatsMap)
 {
-    for (auto &info : damageListInfo)
+    for (auto &info : damageInfoList)
     {
         auto it = damageStatsMap.find(info.skillName);
         if (it != damageStatsMap.end())
@@ -875,6 +877,13 @@ void Person::equipInherentBuff(std::string buffName)
     }
 }
 
+void Person::pushDamgeInfo(DamageInfo& info) { this->damageInfoList.push_back(info); }
+
+void Person::setRandomSeed(std::uint32_t seed)
+{
+    randomEngine.seed(seed);
+}
+
 double Person::getAttributeRatio() const { return this->attributeRatio; }
 int Person::getPropertyTransformationCoeffcient_General() const { return this->propertyTransformationCoeffcient_General; }
 int Person::getPropertyTransformationCoeffcient_Almighty() const { return this->propertyTransformationCoeffcient_Almighty; }
@@ -884,8 +893,8 @@ const std::vector<std::unique_ptr<Skill>> &Person::getContinuousSkillListRef() c
 const std::vector<std::unique_ptr<Skill>> &Person::getNoReleasingSkillListRef() const { return this->noReleasingSkillList; }
 const std::vector<std::unique_ptr<Skill>> &Person::getSkillCDListRef() const { return this->skillCDList; }
 const std::queue<ActionInfo> &Person::getActionQueueRef() const { return this->actionQueue; }
-const std::vector<DamageInfo> &Person::getDamageListInfoRef() const { return this->damageListInfo; }
-const std::vector<std::string> &Person::getSkillListInfoRef() const { return this->skillListInfo; }
+const std::vector<DamageInfo> &Person::getDamageListInfoRef() const { return this->damageInfoList; }
+const std::vector<std::string> &Person::getSkillListInfoRef() const { return this->skillInfoList; }
 const std::vector<ErrorInfo> &Person::getErrorInfoListRef() const { return this->errorInfoList; }
 
 int Person::getTotalTime() const { return totalTime; }

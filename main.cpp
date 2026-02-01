@@ -28,7 +28,7 @@ extern void executeSimulation(
         const int maxTime,// 最大运行时间
         const int deltaTime,// 每次update执行多少tick（默认为1）
         bool isRandomSeed,// 是否随机生成随机数种子
-        unsigned int seed// 指定随机数种子
+        std::uint32_t seed// 指定随机数种子
     );
 extern void summaryCirculationPrint(
         const std::vector<std::unordered_map<std::string, DamageStatistics>>&damageStatisticsList,
@@ -65,7 +65,7 @@ int main()
     const int deltaTime = 1;
     // 可以使用循环应对不同情况与属性数值的模拟
     // 使用同一个种子保证模拟数值前后随机数一致，确保提升数据的相对准确
-    executeSimulation(damageStatisticsList, 1, maxTime, deltaTime,false,4 /*,1(随机数种子，默认为time(nullptr)*/);
+    executeSimulation(damageStatisticsList, 1, maxTime, deltaTime,false,42 /*建议种子值*/);
 
     // 如果有进行循环，在这里进行汇总输出
     summaryCirculationPrint(damageStatisticsList, maxTime);
@@ -80,17 +80,13 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
                        const int maxTime,
                        const int deltaTime,
                        bool isRandomSeed,
-                       unsigned int seed)
+                       std::uint32_t seed)
 {
-    if(!isRandomSeed)
-        srand(static_cast<unsigned int>(seed));
     int totalTimes = times;
     if (times <= 0) 
         return;
     while (times > 0)
     {
-        if(isRandomSeed)
-            srand(static_cast<unsigned int>(time(nullptr)));
         int currentTime = 0;
         // 在此处修改角色各个属性
         auto p = std::make_unique<Mage_Icicle>(
@@ -109,6 +105,14 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
             /*增伤额外值(用于调试)*/ 0,
             /*元素增伤额外值(用于调试)*/ 0,
             /*程序运行总tick*/ maxTime);
+        if(isRandomSeed){
+            p->setRandomSeed(std::random_device{}());
+        }
+        else
+        {
+            p->setRandomSeed(seed);
+        }
+
         auto Initializer = std::make_unique<Initializer_Mage_Icicle>(p.get());
         Initializer->Initialize();
         std::cout << "Starting simulation..." << std::endl;

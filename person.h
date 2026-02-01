@@ -55,11 +55,12 @@ private:
     
     // 队列和列表
     std::queue<ActionInfo> actionQueue{};
-    std::vector<std::string> skillListInfo{};
-    std::vector<DamageInfo> damageListInfo{};
+    std::vector<std::string> skillInfoList{};
+    std::vector<DamageInfo> damageInfoList{};
     std::vector<ErrorInfo> errorInfoList{};
 
 	mutable std::mt19937 randomEngine;  // 随机数引擎
+	static std::uint32_t fixedSeed;
 
 protected:
     // 受保护成员：子类可以访问
@@ -246,6 +247,8 @@ public:
 	auto calculateDamageStatistics() -> decltype(this->damageStatsMap); // 伤害统计							
 	void equipSkill(std::string skillName);								// 装备技能，加入技能CD列表
 	void equipInherentBuff(std::string buffName);						// 装备固有buff，加入buff列表
+	void pushDamgeInfo(DamageInfo& info);
+	void setRandomSeed(std::uint32_t seed);								// 设置种子的方法
 
 	 // Getters for private members
     double getAttributeRatio() const;
