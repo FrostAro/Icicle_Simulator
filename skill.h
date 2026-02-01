@@ -19,7 +19,7 @@ protected:
 	static int ID;							// 技能ID计数器
 	int skillID = 0;						// 技能唯一ID
 
-	double add = 0;			 				// 回能
+	double energyAdd = 0;			 				// 回能
 	double energyReduce = 0; 				// 能量消耗
 
 	double CD = 0; 							// 冷却时间
@@ -28,10 +28,8 @@ protected:
 	double MaxchargeCD = 0;					// 最大充能CD
 	int stack = 1;							// 当前层数
 	int maxStack = 1;						// 最大层数
-	double multiplying_base = 0;		 	// 基础倍率
-	int fixedValue_base = 0;			 	// 基础固定值
-	double multiplying = 0;					// 可变倍率
-	double fixedValue = 0;					// 可变固定值
+	double multiplying = 0;		 			// 基础倍率
+	int fixedValue = 0;			 			// 基础固定值
 	double duration = 0;					// 持续时间（若技能为无前摇与持续性技能需重写，对于无前摇技能用作其触发的动画时间）
 	double damageTriggerInterval = 0; 		// 伤害触发间隔	（特例：对于无前摇单次出伤技能应 = duration）
 	int singing = 0;				  		// 吟唱时间
@@ -360,6 +358,7 @@ public:
 class Radial : public FacilitationSkill
 {
 public:
+	bool firstAttacked;
 	static std::string name;
 
 	void setSkillType() override;

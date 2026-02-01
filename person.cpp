@@ -480,9 +480,8 @@ bool Person::consumeEnergy(const double n)
     return false;
 }
 
-bool Person::revertEnergy(double n)
+bool Person::revertEnergy(const double n)
 {
-    n = n * (1 + this->Proficient);
     if (this->present_energy <= max_energy - n)
     {
         this->present_energy += n;
@@ -611,7 +610,8 @@ double Person::setElementIncrease()
 
 double Person::changeElementIncreaseByProficient(const double proficient)
 {
-    this->elementIncrease = proficient * this->ProficientRatio;
+    this->elementIncrease -= this->getProficient() * this->ProficientRatio;
+    this->elementIncrease += proficient * this->ProficientRatio;
     return this->elementIncrease;
 }
 
@@ -684,43 +684,102 @@ double Person::changeDreamIncrease(const double dreamIncrease)
 
 double Person::changeCriticalCount(const int addCount)
 {
-    this->CriticalCount = this->getCriticalCount(this->Critical);
+    this->CriticalCount = this->getCriticalCount(this->Critical - this->CriticalExtraPersent - 0.05);
     const double count = this->CriticalCount + addCount;
-    this->Critical = count / (count + this->propertyTransformationCoeffcient_General) + 0.05;
+    this->Critical = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->CriticalExtraPersent;
     return this->Critical;
 }
 
 double Person::changeQuicknessCount(const int addCount)
 {
+    this->QuicknessCount = this->getQuicknessCount(this->Quickness - this->QuicknessExtraPersent);
     const double count = this->QuicknessCount + addCount;
-    this->Quickness = count / (count + this->propertyTransformationCoeffcient_General);
-    this->castingSpeed = 2 * this->Quickness;
+    this->Quickness = count / (count + this->propertyTransformationCoeffcient_General) + this->QuicknessExtraPersent;
+    this->castingSpeed = this->castingSpeedRatio * this->Quickness + this->castingSpeedExtra;
+    this->attackSpeed = this->attackSpeedRatio * this->Quickness + this->attackSpeedExtra;
     return this->Quickness;
 }
 
 double Person::changeLuckyCount(const int addCount)
 {
+    this->LuckyCount = this->getLuckyCount(this->Lucky - this->LuckyExtraPersent - 0.05);
     const double count = this->LuckyCount + addCount;
-    this->Lucky = count / (count + this->propertyTransformationCoeffcient_General);
+    this->Lucky = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->LuckyExtraPersent;
     this->luckyDamageIncrease = this->Lucky;
     this->setLuckyMultiplying();
-    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    //changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
     return this->Lucky;
 }
 
 double Person::changeProficientCount(const int addCount)
 {
+    this->ProficientCount = this->getProficientCount(this->Proficient - this->ProficientExtraPersent - 0.06);
     const double count = this->ProficientCount + addCount;
-    this->Proficient = count / (count + this->propertyTransformationCoeffcient_General) + 0.06;
+    this->Proficient = count / (count + this->propertyTransformationCoeffcient_General) + 0.06 + this->ProficientExtraPersent;
     this->changeElementIncreaseByProficient(this->Proficient);
     return this->Proficient;
 }
 
 double Person::changeAlmightyCount(const int addCount)
 {
+    this->AlmightyCount = this->getAlmightyCount(this->Almighty - this->AlmightyExtraPersent);
     const double count = this->AlmightyCount + addCount;
     this->Almighty = count / (count + this->propertyTransformationCoeffcient_Almighty);
+    this->changeAlmightyIncrease(this->Almighty);
     return this->Almighty;
+}
+
+double Person::changeCritialPersent(const double persent)
+{
+    this->CriticalExtraPersent = persent;
+    this->Critical += this->CriticalExtraPersent;
+    return this->Critical;
+}
+
+double Person::changeQuicknessPersent(const double persent)
+{
+    this->QuicknessExtraPersent = persent;
+    this->Quickness += this->QuicknessExtraPersent;
+    this->castingSpeed = this->castingSpeedRatio * this->Quickness + this->castingSpeedExtra;
+    this->attackSpeed = this->attackSpeedRatio * this->Quickness + this->attackSpeedExtra;
+    return this->Quickness;
+}
+
+double Person::changeLuckyPersent(const double persent)
+{
+    this->LuckyExtraPersent = persent;
+    this->Lucky += this->LuckyExtraPersent;
+    this->luckyDamageIncrease = this->Lucky;
+    this->setLuckyMultiplying();
+    return this->Lucky;
+}
+
+double Person::changeProficientPersent(const double persent)
+{
+    this->ProficientExtraPersent = persent;
+    this->Proficient += this->ProficientExtraPersent;
+    this->changeElementIncreaseByProficient(this->Proficient);
+    return this->Proficient;
+}
+
+double Person::changeAlmightyPersent(const double persent)
+{
+    this->AlmightyExtraPersent = persent;
+    this->Almighty += this->AlmightyExtraPersent;
+    this->changeAlmightyIncrease(this->Almighty);
+    return this->Almighty;
+}
+
+void Person::addCastingSpeed(double persent)
+{
+    this->castingSpeedExtra = persent;
+    this->castingSpeed = this->castingSpeedExtra;
+}
+
+void Person::addAttackSpeed(double persent)
+{
+    this->attackSpeedExtra = persent;
+    this->attackSpeed = this->attackSpeedExtra;
 }
 
 double Person::changeAttributesByCount(const double attributesCount)
@@ -926,6 +985,20 @@ Mage_Icicle::Mage_Icicle(const double attributes, const double critical, const d
     // 因子效果：暴击，幸运
     this->changeCriticalCount(static_cast<int>(this->CriticalCount * 0.1));
     this->changeLuckyCount(static_cast<int>(this->LuckyCount * 0.0927));
+}
+
+double Mage_Icicle::changeLuckyCount(int addCount)
+{
+    Person::changeLuckyCount(addCount);
+    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    return this->Lucky;
+}
+
+double Mage_Icicle::changeLuckyPersent(double persent)
+{
+    Person::changeLuckyPersent(persent);
+    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    return this->Lucky;
 }
 
 DamageStatistics::DamageStatistics()

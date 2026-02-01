@@ -192,7 +192,7 @@ bool Skill::hasSkillType(skillTypeEnum type) const
 }
 
 int Skill::getSkillID() const { return this->skillID; }
-double Skill::getAdd() const { return this->add; }
+double Skill::getAdd() const { return this->energyAdd; }
 double Skill::getEnergyReduce() const { return this->energyReduce; }
 bool Skill::getCanTriggerLucky() const { return this->canTriggerLucky; }
 bool Skill::getCanCharge() const { return this->canCharge; }
@@ -221,8 +221,8 @@ void Skill::setCD(const double cd) { this->CD = cd; }
 int &Skill::getStackRef() { return this->stack; }
 int Skill::getStackValue() const { return this->stack; }
 int Skill::getMaxStack() const { return this->maxStack; }
-double Skill::getMutiplying() const { return this->multiplying_base; }
-double Skill::getFixedValue() const { return this->fixedValue_base; }
+double Skill::getMutiplying() const { return this->multiplying; }
+double Skill::getFixedValue() const { return this->fixedValue; }
 double Skill::getReleasingTime() const { return this->releasingTime; }
 double Skill::getDuration() const { return this->duration; }
 double Skill::getDamageTriggerInterval() const { return this->damageTriggerInterval; }
@@ -275,7 +275,7 @@ std::string Flood::name = "Flood";
 Flood::Flood(Person *)  : InstantSkill()
 
 {
-    this->add = 6.0L;
+    this->energyAdd = 6.0L;
     this->MaxCD = 4050;
     this->CD = 0;
     this->chargeCD = 0;
@@ -306,12 +306,12 @@ std::string Ultimate::name = "Ultimate";
 Ultimate::Ultimate(Person *) : InstantSkill()
 {
 
-    this->add = 22;
+    this->energyAdd = 22;
 
     this->canTriggerLucky = true;
 
-    this->multiplying_base = 12.60;
-    this->fixedValue_base = 5400;
+    this->multiplying = 12.60;
+    this->fixedValue = 5400;
     this->MaxCD = 5400;
     this->CD = 0;
     this->chargeCD = 0;
@@ -342,8 +342,8 @@ std::string IceArrow::name = "IceArrow";
 
 IceArrow::IceArrow(Person *p) : InstantSkill()
 {
-    this->multiplying_base = 0.28;
-    this->fixedValue_base = 0;
+    this->multiplying = 0.28;
+    this->fixedValue = 0;
     this->duration = 53;
     this->damageTriggerInterval = 53;
     this->damageTriggerTimer = 0;
@@ -388,8 +388,8 @@ Spear::Spear(Person *p) : InstantSkill()
 
     this->canTriggerLucky = true;
 
-    this->multiplying_base = 2.1L;
-    this->fixedValue_base = 870;
+    this->multiplying = 2.1L;
+    this->fixedValue = 870;
 
     this->damageIncreaseAdd = 1.06;
     this->elementIncreaseAdd = 0.1;
@@ -441,8 +441,8 @@ PierceSpear::PierceSpear(Person *) : InstantSkill()
     this->canTriggerLucky = true;
     this->isNoReleasing = true;
 
-    this->multiplying_base = 2.5L;
-    this->fixedValue_base = 0;
+    this->multiplying = 2.5L;
+    this->fixedValue = 0;
 
     this->damageIncreaseAdd = 0.16;
     this->criticalIncreaseAdd = 0.13;
@@ -486,8 +486,8 @@ Meteorite::Meteorite(Person *p) : InstantSkill()
     this->canTriggerLucky = true;
     this->canCharge = true;
     
-    this->multiplying_base = 1.0266;
-    this->fixedValue_base = 405;
+    this->multiplying = 1.0266;
+    this->fixedValue = 405;
 
     this->elementIncreaseAdd = 0.1;
     this->criticalIncreaseAdd = 0.13;
@@ -547,8 +547,8 @@ SynergyMeteorite::SynergyMeteorite(Person *p) : InstantSkill()
     this->canTriggerLucky = true;
     this->isNoReleasing = true;
     
-    this->multiplying_base = 1.0266;
-    this->fixedValue_base = 405;
+    this->multiplying = 1.0266;
+    this->fixedValue = 405;
 
     this->elementIncreaseAdd = 0.1;
     this->criticalIncreaseAdd = 0.13;
@@ -636,8 +636,8 @@ FrostComet::FrostComet(Person *p) : InstantSkill()
     this->damageTriggerInterval = 10;
     this->damageTriggerTimer = 0;
 
-    this->multiplying_base = 2.5L;
-    this->fixedValue_base = 0;
+    this->multiplying = 2.5L;
+    this->fixedValue = 0;
 
     this->damageIncreaseAdd = p->luckyDamageIncrease;
     this->dreamIncreaseAdd = 0.35;
@@ -672,8 +672,8 @@ FantasyImpact::FantasyImpact(Person *p) : InstantSkill()
     this->damageTriggerInterval = 20;
     this->damageTriggerTimer = 0;
 
-    this->multiplying_base = 12.5L;
-    this->fixedValue_base = 0;
+    this->multiplying = 12.5L;
+    this->fixedValue = 0;
 
     this->damageIncreaseAdd = p->luckyDamageIncrease;
     this->dreamIncreaseAdd = 1.0;   
@@ -712,8 +712,8 @@ MukuChief::MukuChief(Person *p) : FightingFantasy(), InstantSkill()
 
     this->canCharge = true;
 
-    this->multiplying_base = 0;
-    this->fixedValue_base = 0;
+    this->multiplying = 0;
+    this->fixedValue = 0;
 
     this->MaxCD = 5400;
     this->MaxchargeCD = 100;
@@ -760,8 +760,8 @@ MukuScout::MukuScout(Person *p) : FightingFantasy(), InstantSkill()
 
     this->canCharge = true;
 
-    this->multiplying_base = 0;
-    this->fixedValue_base = 0;
+    this->multiplying = 0;
+    this->fixedValue = 0;
 
     this->MaxCD = 7200;
     this->MaxchargeCD = 100;
@@ -806,14 +806,18 @@ Radial::Radial(Person* p)
         : FacilitationSkill()
 {
     this->canTriggerLucky = true;
+    this->firstAttacked = false;
 
-    this->multiplying_base = 0.42L;
-    this->fixedValue_base = 150;
+    this->multiplying = 0.42L;
+    this->fixedValue = 150;
     this->damageTriggerInterval = 30;
     this->damageTriggerInterval = this->damageTriggerInterval / p->castingSpeed;
     this->MaxCD = 0;
     this->CD = 0;
     this->releasingTime = 100;
+
+    this->energyReduce = 15;
+    this->energyReduce *= (1 - p->getEnergyReduceDOWN()) * (1 + p->getEnergyReduceUP());
 
     this->setSkillType();
 }
@@ -827,13 +831,28 @@ void Radial::setSkillType()
 
 void Radial::trigger(Person* p)
 {
-    p->triggerAction<EnergyConsumeAction>(20);
+    p->triggerAction<EnergyConsumeAction>(this->energyReduce);
     p->triggerAction<AttackAction>(0, this->getSkillName());
+    static int addMultiplyingTimes = 0;
+    if(addMultiplyingTimes < 10)
+    {
+        this->multiplying *= 1.08;
+        this->fixedValue *= 1.08;
+        addMultiplyingTimes += 1;
+    }
+
+    if(!firstAttacked)
+    {
+        //创建用于触发冰箭的buff
+        
+        this->firstAttacked = true;
+    }
 }
 
 std::string Radial::getSkillName() const{ return Radial::name; }
 
 bool Radial::canEndFacilitation(Person* p){ return p->present_energy < 12; }
+
 
 // 涡流
 std::string Vortex::name = "Vortex";
@@ -842,12 +861,15 @@ Vortex::Vortex(Person* p) : ContinuousSkill()
 {
     this->canTriggerLucky = true;
 
-    this->multiplying_base = 0.1L;
-    this->fixedValue_base = 51;
+    this->multiplying = 0.1L;
+    this->fixedValue = 51;
     this->damageTriggerInterval = 50;
     this->MaxCD = 0;
     this->CD = 0;
-    this->releasingTime = 100;
+    this->releasingTime = 10;
+
+    this->energyAdd = 2;
+    this->energyAdd *= p->getEnergyIncrease();
 
     this->setSkillType();
 }
@@ -861,49 +883,8 @@ void Vortex::setSkillType()
 
 void Vortex::trigger(Person* p)
 {
-    
+    p->triggerAction<AttackAction>(0,this->getSkillName());
+    p->triggerAction<EnergyRevertAction>(this->energyReduce * 3);
 }
 
 std::string Vortex::getSkillName() const{ return Vortex::name; }
-
-
-
-int getRand(const int min, const int max)
-{
-    return (rand() % (max - min + 1)) + min;
-}
-
-double changeCritical(const int count)
-{
-    const auto c = static_cast<double>(count);
-    const double y = c / (c + 4495.5) + 0.05;
-    return y * 100;
-}
-
-double changeQuickness(const int count)
-{
-    const auto c = static_cast<double>(count);
-    const double y = c / (c + 4495.5);
-    return y * 100;
-}
-
-double changeLucky(const int count)
-{
-    const auto c = static_cast<double>(count);
-    const double y = c / (c + 4495.5);
-    return y * 100;
-}
-
-double changeProficient(const int count)
-{
-    const auto c = static_cast<double>(count);
-    const double y = c / (c + 4495.5) + 0.06;
-    return y * 100;
-}
-
-double changeAlmighty(const int count)
-{
-    const auto c = static_cast<double>(count);
-    const auto y = (c / (c + 2500));
-    return y * 100;
-}

@@ -89,6 +89,11 @@ public:
     double AlmightyCount = 0;
     double ProficientCount = 0;
     double QuicknessCount = 0;
+	double CriticalExtraPersent = 0;
+	double LuckyExtraPersent = 0;
+	double QuicknessExtraPersent = 0;
+	double ProficientExtraPersent = 0;
+	double AlmightyExtraPersent = 0;
     
     // 攻击相关
     double ATK = 0;
@@ -146,22 +151,22 @@ public:
 	int getAlmightyCount(double almighty);				
 
 	//改变对应属性数值并且改变被属性影响的数值，返回改变后的属性值
-	double changeCriticalCount(int addCount);	
-	double changeQuicknessCount(int addCount);		
-	double changeLuckyCount(int addCount);				
-	double changeProficientCount(int addCount);		
-	double changeAlmightyCount(int addCount);	
+	virtual double changeCriticalCount(int addCount);	
+	virtual double changeQuicknessCount(int addCount);		
+	virtual double changeLuckyCount(int addCount);				
+	virtual double changeProficientCount(int addCount);		
+	virtual double changeAlmightyCount(int addCount);
+	
+	//改变对应属性百分比并且改变被属性影响的数值，返回改变后的属性值
+	virtual double changeCritialPersent(double persent);
+	virtual double changeQuicknessPersent(double persent);
+	virtual double changeLuckyPersent(double persent);
+	virtual double changeProficientPersent(double persent);
+	virtual double changeAlmightyPersent(double persent);
 
-	//直接增加百分比面板（未实现）
-	void addCritial(double n);
-	void addQuickness(double n);
-	void addLucky(double n);
-	void addProficient(double n);
-	void addAlmighty(double n);
-
-	//（未实现）
-	void addCastingSpeed();
-	void addAttackSpeed();
+	//改变施法速度与攻击速度
+	void addCastingSpeed(double persent);
+	void addAttackSpeed(double persent);
 
 	// 乘区初始化与更改更改
 	double changeAttributesByCount(double attributesCount);					// 更改属性值(通过转化率直接修改攻击力，不调整三维属性本身)
@@ -221,8 +226,8 @@ public:
 
 	bool consumeResource(int n); 		// 消耗玄冰
 	bool revertResource(int n);			// 回复玄冰
-	bool consumeEnergy(double n); 		// 消耗能量
-	bool revertEnergy(double n);  		// 回复能量
+	bool consumeEnergy(const double n); 		// 消耗能量
+	bool revertEnergy(const double n);  		// 回复能量
 	bool reduceSkillCD(std::string skillName,double n); 	// 减少技能cd
 
 	template <class T>
@@ -367,5 +372,8 @@ public:
 	Mage_Icicle(const double attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
         const int atk, const int refindatk, const int elementatk, const  double attackSpeed, const double castingSpeed,
         const  double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const int totalTime);
+
+	double changeLuckyPersent(double persent) override;
+	double changeLuckyCount(int addCount) override;
 };
 
