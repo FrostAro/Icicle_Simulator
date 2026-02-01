@@ -5,10 +5,16 @@
 #include "Info.h"
 #include "Person.h"
 
+/*
+autoAttack是模拟中的自动战斗类，用于模拟游戏内自动施法的ai
+类内通过手动添加技能序列与通过优先权自动判断技能释放实现技能的自动施法
+类内默认各职业分为大爆发、小爆发、空窗期三部分，如需更多分类可自行修改
+*/
+
 class AutoAttack
 {
 protected:
-    struct judgeConditionStruct
+    struct judgeConditionStruct                                             // 额外的技能释放条件判断函数
     {
         std::function<bool(const PriorSkillInfo&)> condition;
         ErrorInfo::errorTypeEnum errorType;

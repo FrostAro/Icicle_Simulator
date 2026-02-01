@@ -201,7 +201,6 @@ bool Skill::getTriggered() const { return this->triggered; }
 bool Skill::getIsInstant() const { return this->isInstant; }
 bool Skill::getIsContinuous() const { return this->isContinuous; }
 bool Skill::getIsNoReleasing() const { return this->isNoReleasing; }
-bool Skill::getIsSingleHit() const { return this->isSingleHit; }
 bool Skill::getIsFacilitation() const { return this->isFacilitation; }
 
 double Skill::getCriticalIncreaseAdd() const { return this->criticalIncreaseAdd; }

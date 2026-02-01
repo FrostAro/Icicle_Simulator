@@ -6,6 +6,12 @@
 
 class Person;
 
+/*
+skill类用于实现各种各样的技能，包括可释放技能与天赋中的连携技能
+skill分为三大类，即Instant（立即触发性技能），Continuous（持续触发性技能），Facilitation（引导性技能）
+其中根据需要还有canTriggerLucky，NoReleasing，canCharge等属性
+*/
+
 class Skill
 {
 protected:
@@ -35,7 +41,6 @@ protected:
 	bool isInstant = false;					// 立即触发性技能（一次性触发技能，与持续性技能区分）
 	bool isContinuous = false;				// 持续性技能（多次触发技能）
 	bool isNoReleasing = false;				// 无前摇
-	bool isSingleHit = false;				// 设定是否是单次出伤（用于无前摇技能，与无前摇但是会是持续性的技能区分）
 	bool isFacilitation = false;			// 是否为引导性技能
 
 public:

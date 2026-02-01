@@ -7,6 +7,11 @@
 class DamageInfo;
 class Person;
 
+/*
+buff类用于实现模拟中需要长期驻存的属性增益
+并且能够通过listenerCallBack函数监听对应事件
+*/
+
 // listenerCallback()用于绑定监听器的触发逻辑
 // update()用于遍历buffList进行每tick的触发
 class Buff
@@ -315,7 +320,7 @@ public:
     ~PierceSpearBuff() override;
 };
 
-class EquipmentSetEffectBuff : public Buff
+class EquipmentSetEffectBuff_Icicle : public Buff
 {
 public:
     // 装备套装效果    
@@ -327,8 +332,8 @@ public:
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
 
-    EquipmentSetEffectBuff(Person *p, double n);
-    ~EquipmentSetEffectBuff() override;
+    EquipmentSetEffectBuff_Icicle(Person *p, double n);
+    ~EquipmentSetEffectBuff_Icicle() override;
 };
 
 class FantasyImpactBuff : public Buff

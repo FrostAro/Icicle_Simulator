@@ -716,10 +716,10 @@ PierceSpearBuff::~PierceSpearBuff()
     AttackAction::deleteListener(this->getBuffID());
 }
 
-// 装备套装效果
-std::string EquipmentSetEffectBuff::name = "EquipmentSetEffectBuff";
+// 装备套装效果:冰矛
+std::string EquipmentSetEffectBuff_Icicle::name = "EquipmentSetEffectBuff_Icicle";
 
-EquipmentSetEffectBuff::EquipmentSetEffectBuff(Person *p, double) : Buff(p)
+EquipmentSetEffectBuff_Icicle::EquipmentSetEffectBuff_Icicle(Person *p, double) : Buff(p)
 {
     this->stack = 0;
     this->duration = 99999;
@@ -732,7 +732,7 @@ EquipmentSetEffectBuff::EquipmentSetEffectBuff(Person *p, double) : Buff(p)
     AttackAction::addListener(std::move(info));
 }
 
-void EquipmentSetEffectBuff::listenerCallback(const DamageInfo &info)
+void EquipmentSetEffectBuff_Icicle::listenerCallback(const DamageInfo &info)
 {
     if (info.skillName == Spear::name)
     {
@@ -747,7 +747,7 @@ void EquipmentSetEffectBuff::listenerCallback(const DamageInfo &info)
     }
 }
 
-void EquipmentSetEffectBuff::update(const double)
+void EquipmentSetEffectBuff_Icicle::update(const double)
 {
     if (this->stack >= 25)
     {
@@ -756,13 +756,13 @@ void EquipmentSetEffectBuff::update(const double)
     }
 }
 
-bool EquipmentSetEffectBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string EquipmentSetEffectBuff::getBuffName() const
+bool EquipmentSetEffectBuff_Icicle::shouldBeRemoved() { return this->duration < 0; }
+std::string EquipmentSetEffectBuff_Icicle::getBuffName() const
 {
-    return EquipmentSetEffectBuff::name;
+    return EquipmentSetEffectBuff_Icicle::name;
 }
 
-EquipmentSetEffectBuff::~EquipmentSetEffectBuff()
+EquipmentSetEffectBuff_Icicle::~EquipmentSetEffectBuff_Icicle()
 {
     AttackAction::deleteListener(this->getBuffID());
 }

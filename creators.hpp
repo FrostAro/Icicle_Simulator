@@ -169,8 +169,8 @@ inline void BuffCreator::init()
     creatorMap[PierceSpearBuff::name] = 
         [](Person* p, double n = 0) { return std::make_unique<PierceSpearBuff>(p,n); };
 
-    creatorMap[EquipmentSetEffectBuff::name] = 
-        [](Person* p, double n = 0) { return std::make_unique<EquipmentSetEffectBuff>(p,n); };
+    creatorMap[EquipmentSetEffectBuff_Icicle::name] = 
+        [](Person* p, double n = 0) { return std::make_unique<EquipmentSetEffectBuff_Icicle>(p,n); };
 
     creatorMap[ExtremeLuckDivisor::name] = 
         [](Person* p, double n = 0) { return std::make_unique<ExtremeLuckDivisor>(p,n); };

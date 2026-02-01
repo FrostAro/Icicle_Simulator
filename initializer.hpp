@@ -183,7 +183,7 @@ class Initializer_Mage_Icicle : public Initializer
         registerCertainBuff<MukuScoutBuff>();
         registerCertainBuff<SimulateNormalAttackToRevertIceBuff>();
         registerCertainBuff<PierceSpearBuff>();
-        registerCertainBuff<EquipmentSetEffectBuff>();
+        registerCertainBuff<EquipmentSetEffectBuff_Icicle>();
         registerCertainBuff<FantasyImpactBuff>();
         registerCertainBuff<ExtremeLuckDivisor>();
 

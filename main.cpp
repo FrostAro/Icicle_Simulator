@@ -16,6 +16,9 @@
 #include "Logger.h"
 #include <memory>
 #include <vector>
+
+//在executeSimulation函数中修改角色属性
+
 extern void printDamageStatistics(
         const std::unordered_map<std::string, DamageStatistics>& damageStatsMap,
         const int totalTime);
@@ -49,7 +52,7 @@ extern void summaryCirculationPrint(
  *  double CritDamageCount;			// 暴击伤害次数
  * 
  *  std::unordered_map<std::string, DamageStatistics>
- *          & damageStatsMa   // 统合所有技能的输出数据，用技能名一一对应
+ *          & damageStatsMap   // 统合所有技能的输出数据，用技能名一一对应
  */
 
 int main()
