@@ -735,6 +735,18 @@ double Person::changeAttributesByPersent(const double attributesPersent)
     return this->attributesIncrease;
 }
 
+double Person::changeCastingSpeeaByPersent(const double castingSpeedPersent)
+{
+    this->castingSpeedExtra = castingSpeedPersent;
+    return this->castingSpeedExtra;
+}
+
+double Person::changeAttackSpeeaByPersent(const double attackSpeedPersent)
+{
+    this->attackSpeedExtra = attackSpeedPersent;
+    return this->attackSpeedExtra;
+}
+
 int Person::getCriticalCount(const double critical)
 {
     const double y = critical - 0.05;
@@ -924,8 +936,7 @@ DamageStatistics::DamageStatistics()
       luckyDamageCount(0),
       luckyDamage(0),
       CritDamageCount(0)
-{
-}
+{}
 
 DamageStatistics::DamageStatistics(double totalTime)
     : skillName("NONE"),
@@ -935,8 +946,7 @@ DamageStatistics::DamageStatistics(double totalTime)
       luckyDamageCount(0),
       luckyDamage(0),
       CritDamageCount(0)
-{
-}
+{}
 
 void DamageStatistics::damageInfoAppend(const DamageInfo &damageInfo)
 {

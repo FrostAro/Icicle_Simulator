@@ -42,6 +42,9 @@ public:
 
     // （可选，未应用）设置技能类型
     void setSkillType() override; 
+
+    // 引导技能的结束条件（若为引导性技能则必须实现）
+    bool canEndFacilitation(Person *p) override;
 };
 ```
 

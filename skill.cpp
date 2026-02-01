@@ -221,8 +221,8 @@ void Skill::setCD(const double cd) { this->CD = cd; }
 int &Skill::getStackRef() { return this->stack; }
 int Skill::getStackValue() const { return this->stack; }
 int Skill::getMaxStack() const { return this->maxStack; }
-double Skill::getMutiplying() const { return this->multiplying; }
-double Skill::getFixedValue() const { return this->fixedValue; }
+double Skill::getMutiplying() const { return this->multiplying_base; }
+double Skill::getFixedValue() const { return this->fixedValue_base; }
 double Skill::getReleasingTime() const { return this->releasingTime; }
 double Skill::getDuration() const { return this->duration; }
 double Skill::getDamageTriggerInterval() const { return this->damageTriggerInterval; }
@@ -310,8 +310,8 @@ Ultimate::Ultimate(Person *) : InstantSkill()
 
     this->canTriggerLucky = true;
 
-    this->multiplying = 12.60;
-    this->fixedValue = 5400;
+    this->multiplying_base = 12.60;
+    this->fixedValue_base = 5400;
     this->MaxCD = 5400;
     this->CD = 0;
     this->chargeCD = 0;
@@ -342,8 +342,8 @@ std::string IceArrow::name = "IceArrow";
 
 IceArrow::IceArrow(Person *p) : InstantSkill()
 {
-    this->multiplying = 0.28;
-    this->fixedValue = 0;
+    this->multiplying_base = 0.28;
+    this->fixedValue_base = 0;
     this->duration = 53;
     this->damageTriggerInterval = 53;
     this->damageTriggerTimer = 0;
@@ -388,8 +388,8 @@ Spear::Spear(Person *p) : InstantSkill()
 
     this->canTriggerLucky = true;
 
-    this->multiplying = 2.1L;
-    this->fixedValue = 870;
+    this->multiplying_base = 2.1L;
+    this->fixedValue_base = 870;
 
     this->damageIncreaseAdd = 1.06;
     this->elementIncreaseAdd = 0.1;
@@ -441,8 +441,8 @@ PierceSpear::PierceSpear(Person *) : InstantSkill()
     this->canTriggerLucky = true;
     this->isNoReleasing = true;
 
-    this->multiplying = 2.5L;
-    this->fixedValue = 0;
+    this->multiplying_base = 2.5L;
+    this->fixedValue_base = 0;
 
     this->damageIncreaseAdd = 0.16;
     this->criticalIncreaseAdd = 0.13;
@@ -486,8 +486,8 @@ Meteorite::Meteorite(Person *p) : InstantSkill()
     this->canTriggerLucky = true;
     this->canCharge = true;
     
-    this->multiplying = 1.0266;
-    this->fixedValue = 405;
+    this->multiplying_base = 1.0266;
+    this->fixedValue_base = 405;
 
     this->elementIncreaseAdd = 0.1;
     this->criticalIncreaseAdd = 0.13;
@@ -547,8 +547,8 @@ SynergyMeteorite::SynergyMeteorite(Person *p) : InstantSkill()
     this->canTriggerLucky = true;
     this->isNoReleasing = true;
     
-    this->multiplying = 1.0266;
-    this->fixedValue = 405;
+    this->multiplying_base = 1.0266;
+    this->fixedValue_base = 405;
 
     this->elementIncreaseAdd = 0.1;
     this->criticalIncreaseAdd = 0.13;
@@ -636,8 +636,8 @@ FrostComet::FrostComet(Person *p) : InstantSkill()
     this->damageTriggerInterval = 10;
     this->damageTriggerTimer = 0;
 
-    this->multiplying = 2.5L;
-    this->fixedValue = 0;
+    this->multiplying_base = 2.5L;
+    this->fixedValue_base = 0;
 
     this->damageIncreaseAdd = p->luckyDamageIncrease;
     this->dreamIncreaseAdd = 0.35;
@@ -672,8 +672,8 @@ FantasyImpact::FantasyImpact(Person *p) : InstantSkill()
     this->damageTriggerInterval = 20;
     this->damageTriggerTimer = 0;
 
-    this->multiplying = 12.5L;
-    this->fixedValue = 0;
+    this->multiplying_base = 12.5L;
+    this->fixedValue_base = 0;
 
     this->damageIncreaseAdd = p->luckyDamageIncrease;
     this->dreamIncreaseAdd = 1.0;   
@@ -712,8 +712,8 @@ MukuChief::MukuChief(Person *p) : FightingFantasy(), InstantSkill()
 
     this->canCharge = true;
 
-    this->multiplying = 0;
-    this->fixedValue = 0;
+    this->multiplying_base = 0;
+    this->fixedValue_base = 0;
 
     this->MaxCD = 5400;
     this->MaxchargeCD = 100;
@@ -760,8 +760,8 @@ MukuScout::MukuScout(Person *p) : FightingFantasy(), InstantSkill()
 
     this->canCharge = true;
 
-    this->multiplying = 0;
-    this->fixedValue = 0;
+    this->multiplying_base = 0;
+    this->fixedValue_base = 0;
 
     this->MaxCD = 7200;
     this->MaxchargeCD = 100;
@@ -798,15 +798,19 @@ void MukuScout::removePassiveEffect(Person *p)
     p->changeAattackIncrease(-0.15);
 }
 
+
+// 射线
 std::string Radial::name = "Radial";
 
-Radial::Radial(Person* p) : FacilitationSkill()
+Radial::Radial(Person* p) 
+        : FacilitationSkill()
 {
     this->canTriggerLucky = true;
 
-    this->multiplying = 0.8L;
-    this->fixedValue = 120;
+    this->multiplying_base = 0.42L;
+    this->fixedValue_base = 150;
     this->damageTriggerInterval = 30;
+    this->damageTriggerInterval = this->damageTriggerInterval / p->castingSpeed;
     this->MaxCD = 0;
     this->CD = 0;
     this->releasingTime = 100;
@@ -830,6 +834,38 @@ void Radial::trigger(Person* p)
 std::string Radial::getSkillName() const{ return Radial::name; }
 
 bool Radial::canEndFacilitation(Person* p){ return p->present_energy < 12; }
+
+// 涡流
+std::string Vortex::name = "Vortex";
+
+Vortex::Vortex(Person* p) : ContinuousSkill()
+{
+    this->canTriggerLucky = true;
+
+    this->multiplying_base = 0.1L;
+    this->fixedValue_base = 51;
+    this->damageTriggerInterval = 50;
+    this->MaxCD = 0;
+    this->CD = 0;
+    this->releasingTime = 100;
+
+    this->setSkillType();
+}
+
+void Vortex::setSkillType()
+{
+    this->skillTypeList.push_back(skillTypeEnum::SPECIALIZED);
+    this->skillTypeList.push_back(skillTypeEnum::WITCHCRAFT);
+    this->skillTypeList.push_back(skillTypeEnum::FAR);
+}
+
+void Vortex::trigger(Person* p)
+{
+    
+}
+
+std::string Vortex::getSkillName() const{ return Vortex::name; }
+
 
 
 int getRand(const int min, const int max)

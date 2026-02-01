@@ -28,8 +28,10 @@ protected:
 	double MaxchargeCD = 0;					// 最大充能CD
 	int stack = 1;							// 当前层数
 	int maxStack = 1;						// 最大层数
-	double multiplying = 0;		 			// 倍率
-	int fixedValue = 0;			 			// 固定值
+	double multiplying_base = 0;		 	// 基础倍率
+	int fixedValue_base = 0;			 	// 基础固定值
+	double multiplying = 0;					// 可变倍率
+	double fixedValue = 0;					// 可变固定值
 	double duration = 0;					// 持续时间（若技能为无前摇与持续性技能需重写，对于无前摇技能用作其触发的动画时间）
 	double damageTriggerInterval = 0; 		// 伤害触发间隔	（特例：对于无前摇单次出伤技能应 = duration）
 	int singing = 0;				  		// 吟唱时间
@@ -137,6 +139,8 @@ public:
 	
 };
 
+
+
 // 抽象类
 class InstantSkill : public virtual Skill {
 protected:
@@ -178,6 +182,9 @@ public:
 	FightingFantasy() = default;
     virtual ~FightingFantasy() = default;
 };
+
+
+
 
 
 
@@ -343,10 +350,16 @@ public:
 	explicit MukuScout(Person *p);
 };
 
+
+
+
+
+// 射线部分
+
+// 射线
 class Radial : public FacilitationSkill
 {
 public:
-	
 	static std::string name;
 
 	void setSkillType() override;
@@ -357,3 +370,14 @@ public:
 	explicit Radial(Person *p);
 };
 
+class Vortex : public ContinuousSkill
+{
+public:
+	static std::string name;
+
+	void setSkillType() override;
+	void trigger(Person *p) override;
+	std::string getSkillName() const override;
+
+	explicit Vortex(Person *p);
+};

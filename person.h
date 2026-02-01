@@ -98,7 +98,9 @@ public:
     int resourceNum = 0;
     int maxResourceNum = 0;
     double castingSpeed = 0;
+	double castingSpeedExtra = 0;
     double attackSpeed = 0;
+	double attackSpeedExtra = 0;
     
     // 乘区
     double attributesIncrease = 0;
@@ -185,7 +187,10 @@ public:
 	double changeLuckyMultiplyingByAddMultiplying(double addMultiplying); 	// 更改幸运倍率区by直接增加倍率
 
 	double setDreamIncrease();						   						// 梦境乘区初始化
-	double changeDreamIncrease(double dreamIncrease); 					// 更改梦境乘区by直接梦境增伤
+	double changeDreamIncrease(double dreamIncrease); 						// 更改梦境乘区by直接梦境增伤
+
+	double changeCastingSpeeaByPersent(const double castingSpeedPersent);			// 更改施法速度By百分比
+	double changeAttackSpeeaByPersent(const double attackSpeedPersent);			// 更改攻击速度By百分比
 
 	// 技能
 	void createSkill(std::unique_ptr<Skill> newSkill);				//创建技能，包含前摇处理
