@@ -39,7 +39,8 @@ Person::Person(const double Attributes, const double critical, const double quic
       criticaldamage_set(criticaldamage_set),
       increase_set(increase_set),
       elementincrease_set(elementincrease_set),
-      luckyDamageIncrease(Lucky)
+      luckyDamageIncrease(Lucky),
+      randomEngine(std::random_device{}())
 {
     // 计算属性数值
     this->CriticalCount = getCriticalCount(this->Critical);
@@ -422,26 +423,17 @@ void Person::updateAction(int  deltaTime)
 
 bool Person::isSuccess(const double probability) const
 {
-    // std::default_random_engine e;
-    // std::uniform_int_distribution<int> u(1, 100); // 左闭右闭区间
-    // e.seed(time(nullptr));
+    if (probability <= 0.0) return false;
+    if (probability >= 1.0) return true;
 
-    // if (u(e) > probability * 100)
-    // {
-    //     return false;
-    // }
-    // return true;
-    // if (probability <= 0.0) return false;
-    // if (probability >= 1.0) return true;
-
-    // std::uniform_real_distribution<double> distribution(0.0, 1.0);
-    // return distribution(randomEngine) < probability;
+    std::uniform_real_distribution<double> distribution(0.0, 1.0);
+    return distribution(randomEngine) < probability;
 
     // 生成 1-10000 的随机数，实现 0.01% 的精度
-    int randomValue = rand() % 10000 + 1;                  // 1-10000
-    int threshold = static_cast<int>(probability * 10000); // 将概率转换为 1-10000 的阈值
+    // int randomValue = rand() % 10000 + 1;                  // 1-10000
+    // int threshold = static_cast<int>(probability * 10000); // 将概率转换为 1-10000 的阈值
 
-    return randomValue <= threshold;
+    // return randomValue <= threshold;
 }
 
 bool Person::consumeResource(const int n)
@@ -684,7 +676,7 @@ double Person::changeDreamIncrease(const double dreamIncrease)
 
 double Person::changeCriticalCount(const int addCount)
 {
-    this->CriticalCount = this->getCriticalCount(this->Critical - this->CriticalExtraPersent - 0.05);
+    this->CriticalCount = this->getCriticalCount(this->Critical - this->CriticalExtraPersent);
     const double count = this->CriticalCount + addCount;
     this->Critical = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->CriticalExtraPersent;
     return this->Critical;
@@ -702,7 +694,7 @@ double Person::changeQuicknessCount(const int addCount)
 
 double Person::changeLuckyCount(const int addCount)
 {
-    this->LuckyCount = this->getLuckyCount(this->Lucky - this->LuckyExtraPersent - 0.05);
+    this->LuckyCount = this->getLuckyCount(this->Lucky - this->LuckyExtraPersent);
     const double count = this->LuckyCount + addCount;
     this->Lucky = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->LuckyExtraPersent;
     this->luckyDamageIncrease = this->Lucky;
@@ -713,7 +705,7 @@ double Person::changeLuckyCount(const int addCount)
 
 double Person::changeProficientCount(const int addCount)
 {
-    this->ProficientCount = this->getProficientCount(this->Proficient - this->ProficientExtraPersent - 0.06);
+    this->ProficientCount = this->getProficientCount(this->Proficient - this->ProficientExtraPersent);
     const double count = this->ProficientCount + addCount;
     this->Proficient = count / (count + this->propertyTransformationCoeffcient_General) + 0.06 + this->ProficientExtraPersent;
     this->changeElementIncreaseByProficient(this->Proficient);

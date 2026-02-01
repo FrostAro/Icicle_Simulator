@@ -59,6 +59,8 @@ private:
     std::vector<DamageInfo> damageListInfo{};
     std::vector<ErrorInfo> errorInfoList{};
 
+	mutable std::mt19937 randomEngine;  // 随机数引擎
+
 protected:
     // 受保护成员：子类可以访问
     std::vector<std::unique_ptr<Buff>> buffList{};

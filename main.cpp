@@ -27,7 +27,8 @@ extern void executeSimulation(
         int times,// 循环次数
         const int maxTime,// 最大运行时间
         const int deltaTime,// 每次update执行多少tick（默认为1）
-        unsigned int seed = 154624252// 随机数种子
+        bool isRandomSeed,// 是否随机生成随机数种子
+        unsigned int seed// 指定随机数种子
     );
 extern void summaryCirculationPrint(
         const std::vector<std::unordered_map<std::string, DamageStatistics>>&damageStatisticsList,
@@ -64,7 +65,7 @@ int main()
     const int deltaTime = 1;
     // 可以使用循环应对不同情况与属性数值的模拟
     // 使用同一个种子保证模拟数值前后随机数一致，确保提升数据的相对准确
-    executeSimulation(damageStatisticsList, 1, maxTime, deltaTime /*,1(随机数种子，默认为time(nullptr)*/);
+    executeSimulation(damageStatisticsList, 1, maxTime, deltaTime,false,4 /*,1(随机数种子，默认为time(nullptr)*/);
 
     // 如果有进行循环，在这里进行汇总输出
     summaryCirculationPrint(damageStatisticsList, maxTime);
@@ -78,20 +79,18 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
                        int times,
                        const int maxTime,
                        const int deltaTime,
+                       bool isRandomSeed,
                        unsigned int seed)
 {
+    if(!isRandomSeed)
+        srand(static_cast<unsigned int>(seed));
     int totalTimes = times;
     if (times <= 0) 
         return;
     while (times > 0)
     {
-        if (totalTimes > 1)
-        {
-            if(seed != 154624252)
-                srand(static_cast<unsigned int>(seed));
-            else
-                srand(static_cast<unsigned int>(time(nullptr)));
-        }
+        if(isRandomSeed)
+            srand(static_cast<unsigned int>(time(nullptr)));
         int currentTime = 0;
         // 在此处修改角色各个属性
         auto p = std::make_unique<Mage_Icicle>(
@@ -104,7 +103,7 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
             /*攻击(物理攻击/魔法攻击)*/ 3111,
             /*精炼攻击*/ 820,
             /*元素攻击*/ 35,
-            /*攻击速度*/ 0.1,
+            /*攻击速度*/ 0,
             /*施法速度*/ 0,
             /*爆伤额外值(用于调试)*/ 0,
             /*增伤额外值(用于调试)*/ 0,

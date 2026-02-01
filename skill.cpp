@@ -571,14 +571,6 @@ void SynergyMeteorite::setSkillType()
 
 void SynergyMeteorite::trigger(Person *p)
 {
-    // p->triggerAction<EnergyConsumeAction>(this->energyReduced);
-    // int temp = p->findBuffInBuffList<EndlessColdBuff>();
-    // if (temp != -1)
-    // {
-    //     this->damageIncreaseAdd = p->buffList[temp]->number;
-    //     this->finalIncrease = p->buffList[temp]->stack / (p->buffList[temp]->stack - 20) - 1;
-    // }
-
     for (int i = 0; i < 4; i++)
     {
         p->triggerAction<AttackAction>(0, this->getSkillName());
