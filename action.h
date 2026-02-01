@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "Buff.h"
-#include "Skill.h"
 #include <memory>
 
 class DamageInfo;

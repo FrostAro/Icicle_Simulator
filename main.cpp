@@ -10,9 +10,9 @@
 // #include "skill.cpp"
 // #include "initializer.hpp"
 
-#include "Person.h"
+#include "Mage/Person.h"
 #include "AutoAttack.h"
-#include "Initializer.hpp"
+#include "Mage/Initializer.hpp"
 #include "Logger.h"
 #include <memory>
 #include <vector>

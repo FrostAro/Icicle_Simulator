@@ -24,6 +24,12 @@ add_executable(dps_simulator
     Person.cpp
     Skill.cpp
     Logger.cpp
+    ./FightingFantasy/Skill.cpp
+    ./FightingFantasy/Buff.cpp
+    ./Mage/Skill.cpp
+    ./Mage/Person.cpp
+    ./Mage/Buff.cpp
+    ./Mage/AutoAttack.cpp
 )
 
 # 针对不同构建类型设置编译选项

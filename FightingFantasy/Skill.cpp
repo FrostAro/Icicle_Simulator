@@ -1,0 +1,98 @@
+#include "Skill.h"
+#include "../FightingFantasy/Buff.h"
+#include "../Action.h"
+#include "../Person.h"
+
+// 姆克头目
+std::string MukuChief::name = "MukuChief";
+
+MukuChief::MukuChief(Person *p) : FightingFantasy(), InstantSkill()
+{
+
+    this->canCharge = true;
+
+    this->multiplying = 0;
+    this->fixedValue = 0;
+
+    this->MaxCD = 5400;
+    this->MaxchargeCD = 100;
+    this->CD = 0;
+    this->chargeCD = 0;
+    this->maxStack = 2;
+    this->stack = this->maxStack;
+    this->releasingTime = 10;
+    this->releasingTime /= (1 + p->attackSpeed);
+
+    this->MukuChief::setSkillType();
+}
+
+void MukuChief::setSkillType()
+{
+    this->skillTypeList.push_back(skillTypeEnum::NORMAL);
+}
+
+void MukuChief::trigger(Person *p)
+{
+    p->triggerAction<CreateBuffAction>(0, MukuChiefBuff::name);
+}
+
+std::string MukuChief::getSkillName() const
+{
+    return MukuChief::name;
+}
+
+void MukuChief::setPassiveEffect(Person *p)
+{
+    p->changeCriticalDamage(0.25);
+}
+
+void MukuChief::removePassiveEffect(Person *p)
+{
+    p->changeCriticalDamage(-0.25);
+}
+
+// 姆克尖兵
+std::string MukuScout::name = "MukuScout";
+
+MukuScout::MukuScout(Person *p) : FightingFantasy(), InstantSkill()
+{
+
+    this->canCharge = true;
+
+    this->multiplying = 0;
+    this->fixedValue = 0;
+
+    this->MaxCD = 7200;
+    this->MaxchargeCD = 100;
+    this->CD = 0;
+    this->chargeCD = 0;
+    this->releasingTime = 10;
+    this->releasingTime /= (1 + p->attackSpeed);
+
+    this->MukuScout::setSkillType();
+}
+
+void MukuScout::setSkillType()
+{
+    this->skillTypeList.push_back(skillTypeEnum::NORMAL);
+}
+
+void MukuScout::trigger(Person *p)
+{
+    p->triggerAction<CreateBuffAction>(0, MukuScoutBuff::name);
+}
+
+std::string MukuScout::getSkillName() const
+{
+    return MukuScout::name;
+}
+
+void MukuScout::setPassiveEffect(Person *p)
+{
+    p->changeAattackIncrease(0.15);
+}
+
+void MukuScout::removePassiveEffect(Person *p)
+{
+    p->changeAattackIncrease(-0.15);
+}

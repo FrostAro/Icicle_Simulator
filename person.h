@@ -2,11 +2,10 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "Action.h"
-#include "Skill.h"
-#include "Buff.h"
 #include "Info.h"
 #include "Logger.h"
+#include "Buff.h"
+#include "Skill.h"
 #include <algorithm>
 #include <random>
 #include <unordered_map>
@@ -15,6 +14,7 @@
 class AutoAttack;
 class DamageStatistics;
 class Skill;
+class Buff;
 class FightingFantasy;
 
 class DamageStatistics
@@ -368,17 +368,4 @@ int Person::findSkillInSkillCDList()
 	}
 	return -1;
 }
-
-class Mage_Icicle : public Person
-{
-public:
-    friend class Initializer;
-
-	Mage_Icicle(const double attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
-        const int atk, const int refindatk, const int elementatk, const  double attackSpeed, const double castingSpeed,
-        const  double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const int totalTime);
-
-	double changeLuckyPersent(double persent) override;
-	double changeLuckyCount(int addCount) override;
-};
 

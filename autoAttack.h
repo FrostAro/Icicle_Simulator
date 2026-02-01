@@ -3,7 +3,6 @@
 #include <memory>
 #include "Creators.hpp"
 #include "Info.h"
-#include "Person.h"
 
 /*
 autoAttack是模拟中的自动战斗类，用于模拟游戏内自动施法的ai
@@ -71,18 +70,3 @@ public:
     AutoAttack(Person *p);
     virtual ~AutoAttack() = default;
 };  
-
-class AutoAttack_Mage_Icicle : public AutoAttack
-{
-    void largeOutBurst() override;                   
-    void smallOutBurst() override;
-    void checkAndTriggerLargeOutBurst() override;                
-    void checkAndTriggerSmallOutBurst() override;
-    void checkAndFinishOutBurst() override;                      
-    void checkAndSetOutBurstState() override;
-    void windowPeriodLogic() override;
-    void update(int deltaTime) override;                             
-
-public:
-    AutoAttack_Mage_Icicle(Person* p);
-};

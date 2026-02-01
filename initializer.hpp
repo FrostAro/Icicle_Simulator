@@ -1,12 +1,8 @@
 #pragma once
 #include "Logger.h"
-#include "Skill.h"
-#include "Buff.h"
-#include "Info.h"
 #include "Person.h"
 #include "AutoAttack.h"
 #include "Creators.hpp"
-#include "Skill.h"
 #include <vector>
 
 class Initializer
@@ -132,63 +128,4 @@ public:
                 : p(p){}
 
     virtual ~Initializer() = default;
-};
-
-
-class Initializer_Mage_Icicle : public Initializer
-{
-    void equipSkills() override
-    {   
-        //例：配置技能:冰矛
-        equipCertainSkill(Spear::name);
-        equipCertainSkill(Meteorite::name);
-        equipCertainSkill(WaterDrop::name);
-        equipCertainSkill(Flood::name);
-        equipCertainSkill(Ultimate::name);
-        equipCertainSkill(MukuChief::name);
-        equipCertainSkill(MukuScout::name);
-    }
-
-    void registerSkills() override
-    {
-        registerCertainSkill<IceArrow>();
-        registerCertainSkill<Flood>();
-        registerCertainSkill<Ultimate>();
-        registerCertainSkill<Spear>();
-        registerCertainSkill<PierceSpear>();
-        registerCertainSkill<Meteorite>();
-        registerCertainSkill<SynergyMeteorite>();
-        registerCertainSkill<WaterDrop>();
-        registerCertainSkill<FrostComet>();
-        registerCertainSkill<FantasyImpact>();
-        registerCertainSkill<MukuChief>();
-        registerCertainSkill<MukuScout>();
-    }
-
-    void registerBuffs() override
-    {
-        registerCertainBuff<SpearCritialBuff>();
-        registerCertainBuff<SpearCritialToRevertIceBuff>();
-        registerCertainBuff<IceCountBuff>();
-        registerCertainBuff<DoubleSpearBuff>();
-        registerCertainBuff<FloodBuff>();
-        registerCertainBuff<IceRevertBuff>();
-        registerCertainBuff<ConsumedEnergyCountBuff>();
-        registerCertainBuff<EndlessColdBuff>();
-        registerCertainBuff<UltiIncreaseBuff>();
-        registerCertainBuff<MeteoriteRefreshBuff>();
-        registerCertainBuff<FrostCometBuff>();
-        registerCertainBuff<MeteoriteSynergyBuff>();
-        registerCertainBuff<MukuChiefBuff>();
-        registerCertainBuff<MukuScoutBuff>();
-        registerCertainBuff<SimulateNormalAttackToRevertIceBuff>();
-        registerCertainBuff<PierceSpearBuff>();
-        registerCertainBuff<EquipmentSetEffectBuff_Icicle>();
-        registerCertainBuff<FantasyImpactBuff>();
-        registerCertainBuff<ExtremeLuckDivisor>();
-
-    }
-
-public:
-    Initializer_Mage_Icicle(Person* p) : Initializer(p){}
 };
