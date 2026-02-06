@@ -1,5 +1,5 @@
 #pragma once
-#include "../AutoAttack.h"
+#include "../core/AutoAttack.h"
 
 class AutoAttack_Mage_Icicle : public AutoAttack
 {

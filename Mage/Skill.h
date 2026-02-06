@@ -1,5 +1,5 @@
 #pragma once
-#include "../Skill.h"
+#include "../core/Skill.h"
 
 // 技能
 class IceArrow : public InstantSkill

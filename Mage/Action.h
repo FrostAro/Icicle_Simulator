@@ -1,4 +1,4 @@
-#include "../Action.h"
+#include "../core/Action.h"
 
 // 幸运数值
 class LuckyCountModifyAction_Icicle : public LuckyCountModifyAction

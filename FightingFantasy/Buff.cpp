@@ -1,8 +1,8 @@
 #include "Buff.h"
-#include "../Action.h"
-#include "../Person.h"
-#include "../AutoAttack.h"
-#include "../Logger.h"
+#include "../core/Action.h"
+#include "../core/Person.h"
+#include "../core/AutoAttack.h"
+#include "../core/Logger.h"
 
 // 姆克头目
 std::string MukuChiefBuff::name = "MukuChiefBuff";

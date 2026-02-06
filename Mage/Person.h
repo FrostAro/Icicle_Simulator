@@ -1,5 +1,5 @@
 #pragma once
-#include "../Person.h"
+#include "../core/Person.h"
 
 class Mage_Icicle : public Person
 {

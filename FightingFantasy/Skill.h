@@ -1,5 +1,5 @@
 #pragma once
-#include "../Skill.h"
+#include "../core/Skill.h"
 
 // 幻想
 class FightingFantasy

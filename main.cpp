@@ -11,9 +11,9 @@
 // #include "initializer.hpp"
 
 #include "Mage/Person.h"
-#include "AutoAttack.h"
+#include "core/AutoAttack.h"
 #include "Mage/Initializer.hpp"
-#include "Logger.h"
+#include "core/Logger.h"
 #include <memory>
 #include <vector>
 

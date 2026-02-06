@@ -1,7 +1,7 @@
 #include "Skill.h"
 #include "../FightingFantasy/Buff.h"
-#include "../Action.h"
-#include "../Person.h"
+#include "../core/Action.h"
+#include "../core/Person.h"
 
 // 姆克头目
 std::string MukuChief::name = "MukuChief";

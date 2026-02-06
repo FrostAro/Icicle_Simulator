@@ -17,13 +17,13 @@ endif()
 
 add_executable(dps_simulator
     main.cpp
-    Action.cpp
-    AutoAttack.cpp
-    Buff.cpp
-    Info.cpp
-    Person.cpp
-    Skill.cpp
-    Logger.cpp
+    ./core/Action.cpp
+    ./core/AutoAttack.cpp
+    ./core/Buff.cpp
+    ./core/Info.cpp
+    ./core/Person.cpp
+    ./core/Skill.cpp
+    ./core/Logger.cpp
     ./FightingFantasy/Skill.cpp
     ./FightingFantasy/Buff.cpp
     ./Mage/Skill.cpp

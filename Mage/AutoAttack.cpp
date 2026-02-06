@@ -1,9 +1,9 @@
 #include "AutoAttack.h"
 #include "Skill.h"
 #include "Buff.h"
-#include "../Person.h"
+#include "../core/Person.h"
 #include "../FightingFantasy/Skill.h"
-#include "../Logger.h"
+#include "../core/Logger.h"
 
 // 法师：冰矛 autoAttack
 AutoAttack_Mage_Icicle::AutoAttack_Mage_Icicle(Person *p) : AutoAttack(p)

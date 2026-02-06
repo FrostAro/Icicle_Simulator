@@ -1,10 +1,10 @@
 #include "Buff.h"
 #include "Skill.h"
-#include "../Person.h"
-#include "../AutoAttack.h"
-#include "../Listener.hpp"
-#include "../Action.h"
-#include "../Logger.h"
+#include "../core/Person.h"
+#include "../core/AutoAttack.h"
+#include "../core/Listener.hpp"
+#include "../core/Action.h"
+#include "../core/Logger.h"
 
 // 冰矛暴伤
 std::string SpearCritialBuff::name = "SpearCritialBuff";

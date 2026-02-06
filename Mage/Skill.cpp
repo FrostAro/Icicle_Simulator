@@ -1,6 +1,6 @@
 #include "Skill.h"
-#include "../Action.h"
-#include "../Person.h"
+#include "../core/Action.h"
+#include "../core/Person.h"
 #include "Buff.h"
 
 // 共用

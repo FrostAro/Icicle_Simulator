@@ -1,5 +1,5 @@
 #include "Action.h"
-#include "../Person.h"
+#include "../core/Person.h"
 
 // 幸运数值
 std::string LuckyCountModifyAction_Icicle::name = "LuckyCountModifyAction_Icicle";

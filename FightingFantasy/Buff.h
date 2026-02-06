@@ -1,5 +1,5 @@
 #pragma once
-#include "../Buff.h"
+#include "../core/Buff.h"
 
 class MukuChiefBuff : public Buff
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Initializer.hpp"
+#include "../core/Initializer.hpp"
 #include "../FightingFantasy/Buff.h"
 #include "../FightingFantasy/Skill.h"
 #include "Buff.h"
