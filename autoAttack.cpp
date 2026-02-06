@@ -1,5 +1,7 @@
 #include "AutoAttack.h"
 #include "Person.h"
+#include "Action.h"
+#include "Logger.h"
 
 double AutoAttack::timer = 0;
 

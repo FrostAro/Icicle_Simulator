@@ -58,7 +58,7 @@ extern void summaryCirculationPrint(
 
 int main()
 {
-    Logger::initialize(Logger::Level::DEBUG); // 初始化日志系统
+    Logger::initialize(Logger::Level::INFO); // 初始化日志系统
     // 伤害统计结果列表（用于处理进行了循环的数据）
     std::vector<std::unordered_map<std::string, DamageStatistics>> damageStatisticsList;
     const int maxTime = 18000;
@@ -93,13 +93,13 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
             /*三维属性*/ 4593,
             /*暴击*/ 36,
             /*急速*/ 1.05,
-            /*幸运*/ 51.7,
+            /*幸运*/ 61.7,
             /*精通*/ 6,
             /*全能*/ 17.58,
             /*攻击(物理攻击/魔法攻击)*/ 3111,
             /*精炼攻击*/ 820,
             /*元素攻击*/ 35,
-            /*攻击速度*/ 0,
+            /*攻击速度*/ 0.1,
             /*施法速度*/ 0,
             /*爆伤额外值(用于调试)*/ 0,
             /*增伤额外值(用于调试)*/ 0,

@@ -2,20 +2,23 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "Info.h"
-#include "Logger.h"
-#include "Buff.h"
-#include "Skill.h"
 #include <algorithm>
 #include <random>
 #include <unordered_map>
 #include <queue>
+#include "Buff.h"
+#include "Skill.h"
+#include "Info.h"
 
 class AutoAttack;
 class DamageStatistics;
 class Skill;
 class Buff;
 class FightingFantasy;
+class DamageStatistics;
+class DamageInfo;
+class ActionInfo;
+class ErrorInfo;
 
 class DamageStatistics
 {
@@ -70,11 +73,11 @@ protected:
     std::vector<std::unique_ptr<Skill>> skillCDList{};
     
     // 职业特定系数
-    double ProficientRatio = 0;			// 精通转化率
-    double AlmightyRatio = 0;			// 全能转化率
+    double proficientRatio = 0;			// 精通转化率
+    double almightyRatio = 0;			// 全能转化率
     double castingSpeedRatio = 0;		// 施法速度转化率
     double attackSpeedRatio = 0;		// 攻击速度转化率
-	double attributeRatio = 0;			// 属性转化率
+	double primaryAttributeRatio = 0;			// 属性转化率
 	
 public:
 	friend class Initializer;
@@ -92,17 +95,18 @@ public:
     double AlmightyCount = 0;
     double ProficientCount = 0;
     double QuicknessCount = 0;
-	double CriticalExtraPersent = 0;
+	double CriticalExtraPercent = 0;
 	double LuckyExtraPersent = 0;
 	double QuicknessExtraPersent = 0;
 	double ProficientExtraPersent = 0;
 	double AlmightyExtraPersent = 0;
     
     // 攻击相关
+	double baseATK = 0;
     double ATK = 0;
     double refindATK = 0;
     double elementATK = 0;
-    double attributes = 0;
+    double primaryAttributes = 0;
     int resourceNum = 0;
     int maxResourceNum = 0;
     double castingSpeed = 0;
@@ -111,7 +115,7 @@ public:
 	double attackSpeedExtra = 0;
     
     // 乘区
-    double attributesIncrease = 0;
+    double primaryAttributesIncrease = 0;
     double attackIncrease = 0;
     double damageIncrease = 0;
     double elementIncrease = 0;
@@ -134,25 +138,17 @@ public:
     double energyReduceUP = 0;
     double energyReduceDOWN = 0;
 
+	// 解释
 	std::unordered_map<std::string, DamageStatistics> damageStatsMap;
 	std::unique_ptr<AutoAttack> autoAttackPtr = nullptr; 
 
 	virtual ~Person() = 0;
-	Person(const double attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
+	Person(const double PrimaryPrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
         const int atk, const  int refindatk, const  int elementatk, const double attackSpeed, const double castingSpeed,
         const double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const  int totalTime);
 
-	DamageInfo Damage(const Skill *skill);
-	double luckyDamage() const;
-
-	// 属性值设置
-	//获取对应属性百分比转化而成的数值，输入应为xx.xx形式，无需百分比符号或/100
-	int getCriticalCount(double critical);				
-	int getQuicknessCount(double quickness);				
-	int getLuckyCount(double lucky);				
-	int getProficientCount(double proficient);		
-	int getAlmightyCount(double almighty);				
-
+	// 可以重写对特定职业实施额外的效果
+	// 后续通过action代替
 	//改变对应属性数值并且改变被属性影响的数值，返回改变后的属性值
 	virtual double changeCriticalCount(int addCount);	
 	virtual double changeQuicknessCount(int addCount);		
@@ -167,13 +163,28 @@ public:
 	virtual double changeProficientPersent(double persent);
 	virtual double changeAlmightyPersent(double persent);
 
+
+
+	DamageInfo Damage(const Skill *skill);
+	double luckyDamage() const;
+
+	// 属性值设置
+	//获取对应属性百分比转化而成的数值，输入应为xx.xx形式，无需百分比符号或/100
+	int getCriticalCount(double critical);				
+	int getQuicknessCount(double quickness);				
+	int getLuckyCount(double lucky);				
+	int getProficientCount(double proficient);		
+	int getAlmightyCount(double almighty);				
+
 	//改变施法速度与攻击速度
 	void addCastingSpeed(double persent);
 	void addAttackSpeed(double persent);
 
 	// 乘区初始化与更改更改
-	double changeAttributesByCount(double attributesCount);					// 更改属性值(通过转化率直接修改攻击力，不调整三维属性本身)
-	double changeAttributesByPersent(double attributesPersent);				// 更改属性值by百分比
+	double changePrimaryAttributesByCount(double PrimaryAttributesCount);					// 更改属性值(通过转化率直接修改攻击力，不调整三维属性本身)
+	double changePrimaryAttributesByPersent(double PrimaryAttributesPersent);				// 更改属性值by百分比
+	double setATK(double atk);
+	double resetATK();																		// 重新设置攻击力
 
 	double setAattackIncrease();											// 攻击增加百分比初始化
 	double changeAattackIncrease(double attackIncrease); 					// 更改攻击增加百分比
@@ -265,7 +276,7 @@ public:
     const std::vector<DamageInfo>& getDamageListInfoRef() const;
     const std::vector<ErrorInfo>& getErrorInfoListRef() const;
     
-    // Getters for basic attributes
+    // Getters for basic PrimaryAttributes
     int getTotalTime() const;
     double getMaxEnergy() const;
     double getPresentEnergy() const;
@@ -284,14 +295,14 @@ public:
     double getATK() const;
     double getRefindATK() const;
     double getElementATK() const;
-    double getAttributes() const;
+    double getPrimaryAttributes() const;
     int getResourceNum() const;
     int getMaxResourceNum() const;
     double getCastingSpeed() const;
     double getAttackSpeed() const;
     
     // Getters for multipliers
-    double getAttributesIncrease() const;
+    double getPrimaryAttributesIncrease() const;
     double getAttackIncrease() const;
     double getDamageIncrease() const;
     double getElementIncrease() const;

@@ -43,12 +43,14 @@ std::string MukuChief::getSkillName() const
 
 void MukuChief::setPassiveEffect(Person *p)
 {
-    p->changeCriticalDamage(0.25);
+    //p->changeCriticalDamage(0.25);
+    p->triggerAction<CriticalDamageModifyAction>(0.25);
 }
 
 void MukuChief::removePassiveEffect(Person *p)
 {
-    p->changeCriticalDamage(-0.25);
+    //p->changeCriticalDamage(-0.25);
+    p->triggerAction<CriticalDamageModifyAction>(-0.25);
 }
 
 // 姆克尖兵
@@ -89,10 +91,12 @@ std::string MukuScout::getSkillName() const
 
 void MukuScout::setPassiveEffect(Person *p)
 {
-    p->changeAattackIncrease(0.15);
+    // p->changeAattackIncrease(0.15);
+    p->triggerAction<AttackIncreaseModifyAction>(0.15);
 }
 
 void MukuScout::removePassiveEffect(Person *p)
 {
-    p->changeAattackIncrease(-0.15);
+    //p->changeAattackIncrease(-0.15);
+    p->triggerAction<AttackIncreaseModifyAction>(-0.15);
 }

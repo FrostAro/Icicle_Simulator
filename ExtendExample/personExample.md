@@ -92,25 +92,22 @@ NewPerson::NewPerson(const double attributes, const double critical, const doubl
     this->maxResourceNum = 4;             // 最大资源数（玄冰）
     this->castingSpeedRatio = 2;          // 施法速度转化率：迅捷→施法速度
     this->attackSpeedRatio = 0.2;         // 攻击速度转化率：迅捷→攻击速度
+
+    // 2. 设置基础攻击力
+    setATK();
     
-    // 2. 创建职业特有的AutoAttack控制器（必须）
+    // 3. 创建职业特有的AutoAttack控制器（必须）
     this->autoAttackPtr = std::make_unique<AutoAttack_NewPerson>(this);
     
-    // 3. 天赋/被动效果（可选）
+    // 4. 天赋/被动效果（可选）
     // 例如：冰矛天赋的幸运倍率加成
     changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
     
-    // 4. 因子效果/装备加成（可选）
+    // 5. 因子效果/装备加成（可选）
     this->changeAttributesByCount(70);          // 基础属性加成
     this->changeAttributesByPersent(0.0184);    // 属性百分比加成
     
-    // 5. 初始Buff（可选）
-    // this->createBuff(std::make_unique<NewClassBuff>(this));
-    
-    // 6. 事件监听器注册（可选）
-    // AttackAction::addListener(std::make_unique<NewClassListener>(...));
-    
-    // 7. 其他职业特有初始化
+    // 6. 其他职业特有初始化
     // ...
 }
 
@@ -135,3 +132,50 @@ void NewClass::xxx() {
 | maxResourceNum    | 最大资源数(如玄冰数)          | 4.00       |
 | castingSpeedRatio | 施法速度转化率(急速转施法速度)| 2.00       |
 | attackSpeedRatio  | 攻击速度转化率(急速转攻击速度)| 0.20       |
+
+## 4.对于属性修改部分职业需要特殊实现时
+
+属性修改的特殊实现可以通过继承重写对于事件类实现，也可以在继承的角色类中直接重写对应的修改逻辑
+
+以冰矛为例：
+
+### 4.1.在Person.h中实现
+
+```cpp
+class Mage_Icicle : public Person
+{
+public:
+    friend class Initializer;
+
+    Mage_Icicle(const double primaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
+        const int atk, const int refindatk, const int elementatk, const  double attackSpeed, const double castingSpeed,
+        const  double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const int totalTime);
+
+    // 这里是重写的修改逻辑
+    double changeLuckyPersent(double persent) override;
+    double changeLuckyCount(int addCount) override;
+};
+```
+
+### 在Person.cpp中实现
+
+```cpp
+double Mage_Icicle::changeLuckyCount(int addCount)
+{
+    // 原有逻辑
+    Person::changeLuckyCount(addCount);
+    // 职业的特殊逻辑，此处为冰矛的额外幸运倍率天赋
+    // 此次重写是因为幸运倍率要随着幸运面板的变化而变化，与职业构造函数的初始化不同
+    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    return this->Lucky;
+}
+
+double Mage_Icicle::changeLuckyPersent(double persent)
+{
+    // 原有逻辑
+    Person::changeLuckyPersent(persent);
+    // 职业的特殊逻辑，此处为冰矛的额外幸运倍率天赋
+    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    return this->Lucky;
+}
+```

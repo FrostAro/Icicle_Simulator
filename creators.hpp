@@ -1,11 +1,14 @@
 #pragma once
+#include "Skill.h"
+#include "buff.h"
 #include <string>
 #include <unordered_map>
 #include <functional>
 #include <memory>
 #include <vector>
-#include "Skill.h"
-#include "Buff.h"
+
+class Skill;
+class Buff;
 
 class Initializer_Mage_Icicle;
 

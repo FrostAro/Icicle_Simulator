@@ -140,7 +140,7 @@ public:
 
 
 // 抽象类
-class InstantSkill : public virtual Skill {
+class InstantSkill : public Skill {
 protected:
 	void use(Person* p) override;
 	virtual void trigger(Person* p) = 0;
@@ -149,7 +149,7 @@ protected:
 	virtual ~InstantSkill() = default;
 };
 
-class ContinuousSkill : public virtual Skill {
+class ContinuousSkill : public Skill {
 protected:
 	void use(Person* p) override;
 	virtual void trigger(Person* p) = 0;
@@ -158,7 +158,7 @@ protected:
 	virtual ~ContinuousSkill() = default;
 };
 
-class FacilitationSkill : public virtual Skill {
+class FacilitationSkill : public Skill {
 protected:
 	void use(Person* p) override;
 	virtual void trigger(Person* p) = 0;

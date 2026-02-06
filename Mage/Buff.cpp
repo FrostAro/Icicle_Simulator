@@ -3,6 +3,8 @@
 #include "../Person.h"
 #include "../AutoAttack.h"
 #include "../Listener.hpp"
+#include "../Action.h"
+#include "../Logger.h"
 
 // 冰矛暴伤
 std::string SpearCritialBuff::name = "SpearCritialBuff";
@@ -48,8 +50,10 @@ void SpearCritialBuff::listenerCallback(const DamageInfo &info)
         this->addStack(1);
 
         // 根据层数重置爆伤增加值，并重新赋值
-        this->p->changeCriticalDamage(-(this->lastStack * this->number));
-        this->p->changeCriticalDamage(this->stack * this->number);
+        //this->p->changeCriticalDamage(-(this->lastStack * this->number));
+        this->p->triggerAction<CriticalDamageModifyAction>(-(this->lastStack * this->number));
+        //this->p->changeCriticalDamage(this->stack * this->number);
+        this->p->triggerAction<CriticalDamageModifyAction>(this->stack * this->number);
 
         this->resetDuration();
         Logger::debugBuff(AutoAttack::getTimer(),
@@ -181,7 +185,8 @@ FloodBuff_Icicle::FloodBuff_Icicle(Person *p, double)
     this->duration = 1500;
     this->maxDuration = this->duration;
 
-    p->changeCriticalDamage(0.15);
+    //p->changeCriticalDamage(0.15);
+    this->p->triggerAction<CriticalDamageModifyAction>(0.15);
     p->Critical += 0.03;
     p->elementATK += 100;
     p->triggerAction<CreateBuffAction>(0, DoubleSpearBuff::name);
@@ -199,7 +204,8 @@ void FloodBuff_Icicle::update(double)
 
 FloodBuff_Icicle::~FloodBuff_Icicle()
 {
-    this->p->changeCriticalDamage(-0.15);
+    //this->p->changeCriticalDamage(-0.15);
+    this->p->triggerAction<CriticalDamageModifyAction>(-0.15);
     this->p->Critical -= 0.03;
     this->p->elementATK -= 100;
     this->p->resourceNum = this->iceNumber;
@@ -361,7 +367,8 @@ UltiIncreaseBuff_Icicle::UltiIncreaseBuff_Icicle(Person *p, double) : Buff(p)
     this->duration = 1000;
     this->maxDuration = this->duration;
 
-    this->p->changeElementIncreaseByElementIncrease(0.25);
+    //this->p->changeElementIncreaseByElementIncrease(0.25);
+    this->p->triggerAction<ElementIncreaseModifyAction>(this->number);
 }
 
 void UltiIncreaseBuff_Icicle::listenerCallback(double) {}
@@ -371,7 +378,8 @@ std::string UltiIncreaseBuff_Icicle::getBuffName() const { return UltiIncreaseBu
 
 UltiIncreaseBuff_Icicle::~UltiIncreaseBuff_Icicle()
 {
-    this->p->changeElementIncreaseByElementIncrease(-0.25);
+    //this->p->changeElementIncreaseByElementIncrease(-0.25);
+    this->p->triggerAction<ElementIncreaseModifyAction>(-this->number);
 }
 
 // 刷新陨星
@@ -733,7 +741,8 @@ ExtremeLuckDivisor::ExtremeLuckDivisor(Person *p, double) : Divisor(p)
     this->duration = 500;
     this->maxDuration = this->duration;
 
-    this->p->changeAttributesByPersent(this->number);
+    //this->p->changePrimaryAttributesByPersent(this->number);
+    this->p->triggerAction<PrimaryAttributesPercentModifyAction>(this->number);
 }
 
 void ExtremeLuckDivisor::listenerCallback(const DamageInfo &) {}
@@ -743,5 +752,6 @@ std::string ExtremeLuckDivisor::getBuffName() const { return ExtremeLuckDivisor:
 
 ExtremeLuckDivisor::~ExtremeLuckDivisor()
 {
-    this->p->changeAttributesByCount(-this->number);
+    //this->p->changePrimaryAttributesByPersent(-this->number);
+    this->p->triggerAction<PrimaryAttributesPercentModifyAction>(-this->number);
 }

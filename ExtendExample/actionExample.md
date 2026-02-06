@@ -97,3 +97,72 @@ void NewAction::deleteListener(int buffID)
 
 std::string NewAction::getActionName(){ return NewAction::name; }
 ```
+
+## 3.对于属性修改部分职业需要特殊实现时
+
+### 3.1.在Action.h中实现
+
+以冰矛的幸运为例：
+
+```cpp
+// 幸运数值
+class LuckyCountModifyAction_Icicle : public LuckyCountModifyAction
+{
+// 直接使用父类的监听器与对应方法，无需再次定义
+private:
+    static std::string name;
+
+public:
+    LuckyCountModifyAction_Icicle();
+    void execute(double n, Person *p) override; // n为增加的幸运数值
+    std::string getActionName() override;
+};
+
+
+// 幸运百分比
+class LuckyPercentModifyAction_Icicle : public LuckyPercentModifyAction
+{
+private:
+    static std::string name;
+
+public:
+    LuckyPercentModifyAction_Icicle();
+    void execute(double n, Person *p) override; // n为增加的幸运百分比
+    std::string getActionName() override;
+};
+```
+
+### 3.2.在Action.cpp中实现
+
+```cpp
+// 幸运数值
+std::string LuckyCountModifyAction_Icicle::name = "LuckyCountModifyAction_Icicle";
+
+LuckyCountModifyAction_Icicle::LuckyCountModifyAction_Icicle()
+    : LuckyCountModifyAction() {}
+
+void LuckyCountModifyAction_Icicle::execute(double n, Person *p)
+{
+    // 调用父类的excute()
+    LuckyCountModifyAction::execute(n,p);
+    // 子类的特殊实现，此处为冰矛的额外幸运倍率天赋
+    p->changeLuckyMultiplyingByAddMultiplying(0.15 + (p->Lucky - 0.05) / 2);
+}
+
+std::string LuckyCountModifyAction_Icicle::getActionName() { return LuckyCountModifyAction_Icicle::name; }
+
+
+// 幸运百分比
+std::string LuckyPercentModifyAction_Icicle::name = "LuckyPercentModifyAction_Icicle";
+
+LuckyPercentModifyAction_Icicle::LuckyPercentModifyAction_Icicle()
+    : LuckyPercentModifyAction() {}
+
+void LuckyPercentModifyAction_Icicle::execute(double n, Person *p)
+{
+    LuckyPercentModifyAction::execute(n,p);
+    p->changeLuckyMultiplyingByAddMultiplying(0.15 + (p->Lucky - 0.05) / 2);
+}
+
+std::string LuckyPercentModifyAction_Icicle::getActionName() { return LuckyPercentModifyAction_Icicle::name; }
+```

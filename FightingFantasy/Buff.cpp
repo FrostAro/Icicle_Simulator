@@ -1,6 +1,8 @@
 #include "Buff.h"
+#include "../Action.h"
 #include "../Person.h"
 #include "../AutoAttack.h"
+#include "../Logger.h"
 
 // 姆克头目
 std::string MukuChiefBuff::name = "MukuChiefBuff";
@@ -16,14 +18,16 @@ MukuChiefBuff::MukuChiefBuff(Person *p, double) : Buff(p)
                         " - before person Crit Count + 4480, persent: " +
                         std::to_string(p->Critical));
 
-    p->changeCriticalCount(4480);
+    //p->changeCriticalCount(4480);
+    this->p->triggerAction<CriticalCountModifyAction>(4480);
 
     Logger::debugBuff(AutoAttack::getTimer(),
                         this->getBuffName(),
                         " - after person Crit Count + 4480, persent: " +
                         std::to_string(p->Critical));
 
-    p->changeCriticalDamage(0.4);
+    //p->changeCriticalDamage(0.4);
+    this->p->triggerAction<CriticalDamageModifyAction>(0.4);
 }
 
 void MukuChiefBuff::listenerCallback(double) {}
@@ -33,8 +37,10 @@ std::string MukuChiefBuff::getBuffName() const { return MukuChiefBuff::name; }
 
 MukuChiefBuff::~MukuChiefBuff()
 {
-    this->p->changeCriticalCount(-4480);
-    this->p->changeCriticalDamage(-0.4);
+    //this->p->changeCriticalCount(-4480);
+    this->p->triggerAction<CriticalCountModifyAction>(-4480);
+    //this->p->changeCriticalDamage(-0.4);
+    this->p->triggerAction<CriticalDamageModifyAction>(-0.4);
 }
 
 // 姆克尖兵
@@ -46,7 +52,8 @@ MukuScoutBuff::MukuScoutBuff(Person *p, double) : Buff(p)
     this->duration = 2000;
     this->maxDuration = this->duration;
 
-    p->changeAattackIncrease(this->number);
+    //p->changeAattackIncrease(this->number);
+    this->p->triggerAction<AttackIncreaseModifyAction>(this->number);
 }
 
 void MukuScoutBuff::listenerCallback(const DamageInfo &) {}
@@ -56,5 +63,6 @@ std::string MukuScoutBuff::getBuffName() const { return MukuScoutBuff::name; }
 
 MukuScoutBuff::~MukuScoutBuff()
 {
-    this->p->changeAattackIncrease(-this->number);
+    //this->p->changeAattackIncrease(-this->number);
+    this->p->triggerAction<AttackIncreaseModifyAction>(-this->number);
 }

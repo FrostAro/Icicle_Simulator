@@ -1,10 +1,12 @@
 #pragma once
-#include "Action.h"
 #include <memory>
 #include <string>
 #include <map>
 #include <algorithm>
 #include <stdexcept>
+#include <vector>
+
+class Action;
 
 class Info
 {

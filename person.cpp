@@ -6,24 +6,25 @@
 #include "Action.h"
 #include "AutoAttack.h"
 #include "Buff.h"
-#include "Info.h"
 #include "Skill.h"
+#include "Logger.h"
+#include "creators.hpp"
 #include "FightingFantasy/Skill.h"
 #include "Mage/Buff.h"
 
 std::uint32_t Person::fixedSeed = 42; // 默认种子值
 
-Person::Person(const double Attributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
+Person::Person(const double PrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
                const double criticaldamage_set, const double increase_set, const double elementincrease_set, const int totalTime)
     : propertyTransformationCoeffcient_General(19975),
       propertyTransformationCoeffcient_Almighty(11200),
       totalTime(totalTime),
-      ProficientRatio(0),
-      AlmightyRatio(0),
+      proficientRatio(0),
+      almightyRatio(0),
       castingSpeedRatio(1),
       attackSpeedRatio(1),
-      attributeRatio(0),
+      primaryAttributeRatio(0),
       max_energy(125),
       present_energy(max_energy),
       Critical(critical / 100),
@@ -31,16 +32,15 @@ Person::Person(const double Attributes, const double critical, const double quic
       Almighty(almighty / 100),
       Proficient(Proficient / 100),
       Quickness(quickness / 100),
-      ATK(atk),
       refindATK(refindatk),
       elementATK(elementatk),
-      attributes(Attributes),
+      primaryAttributes(PrimaryAttributes),
       resourceNum(4),
       maxResourceNum(4),
       castingSpeed(castingSpeed),
       attackSpeed(attackSpeed),
       criticicalDamage(0.5),
-      damageReduce(0.9L),
+      damageReduce(0.1),
       criticaldamage_set(criticaldamage_set),
       increase_set(increase_set),
       elementincrease_set(elementincrease_set),
@@ -72,7 +72,7 @@ DamageInfo Person::Damage(const Skill *skill)
     if (skill)
     {
         double damage =
-            /*基础攻击区*/ (((this->ATK + this->attributesIncrease * this->attributes * this->attributeRatio) * (1 + this->attackIncrease) * skill->getMutiplying() * (1 + skill->multiplyingIncrease) * this->damageReduce)
+            /*基础攻击区*/ ((this->ATK * (1 + this->attackIncrease) * skill->getMutiplying() * (1 + skill->multiplyingIncrease) * (1 - this->damageReduce))
                             /*精炼攻击与元素攻击区*/
                             + ((this->refindATK + this->elementATK) * skill->getMutiplying() * (1 + skill->multiplyingIncrease))
                             /*技能固定值*/
@@ -121,15 +121,12 @@ DamageInfo Person::Damage(const Skill *skill)
         // }
         return info;
     }
-    else
-    {
-        return DamageInfo();
-    }
+    return DamageInfo();
 }
 
 double Person::luckyDamage() const
 {
-    double damage = (((this->ATK + this->attributesIncrease * this->attributes * this->attributeRatio) * this->luckyMultiplying * (1 + this->attackIncrease) * this->damageReduce + (this->refindATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
+    double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refindATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
 
     if (this->isSuccess(this->Critical))
     {
@@ -600,14 +597,14 @@ double Person::changeAattackIncrease(const double attackIncrease)
 
 double Person::setElementIncrease()
 {
-    this->elementIncrease = this->Proficient * this->ProficientRatio;
+    this->elementIncrease = this->Proficient * this->proficientRatio;
     return this->elementIncrease;
 }
 
 double Person::changeElementIncreaseByProficient(const double proficient)
 {
-    this->elementIncrease -= this->getProficient() * this->ProficientRatio;
-    this->elementIncrease += proficient * this->ProficientRatio;
+    this->elementIncrease -= this->getProficient() * this->proficientRatio;
+    this->elementIncrease += proficient * this->proficientRatio;
     return this->elementIncrease;
 }
 
@@ -619,13 +616,13 @@ double Person::changeElementIncreaseByElementIncrease(const double elementIncrea
 
 double Person::setAlmightyIncrease()
 {
-    this->almightyIncrease = this->Almighty * this->AlmightyRatio;
+    this->almightyIncrease = this->Almighty * this->almightyRatio;
     return this->almightyIncrease;
 }
 
 double Person::changeAlmightyIncrease(const double almighty)
 {
-    this->almightyIncrease = almighty * this->AlmightyRatio;
+    this->almightyIncrease = almighty * this->almightyRatio;
     return this->almightyIncrease;
 }
 
@@ -680,9 +677,9 @@ double Person::changeDreamIncrease(const double dreamIncrease)
 
 double Person::changeCriticalCount(const int addCount)
 {
-    this->CriticalCount = this->getCriticalCount(this->Critical - this->CriticalExtraPersent);
+    this->CriticalCount = this->getCriticalCount(this->Critical - this->CriticalExtraPercent - 0.05);
     const double count = this->CriticalCount + addCount;
-    this->Critical = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->CriticalExtraPersent;
+    this->Critical = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->CriticalExtraPercent;
     return this->Critical;
 }
 
@@ -698,18 +695,17 @@ double Person::changeQuicknessCount(const int addCount)
 
 double Person::changeLuckyCount(const int addCount)
 {
-    this->LuckyCount = this->getLuckyCount(this->Lucky - this->LuckyExtraPersent);
+    this->LuckyCount = this->getLuckyCount(this->Lucky - this->LuckyExtraPersent - 0.05);
     const double count = this->LuckyCount + addCount;
     this->Lucky = count / (count + this->propertyTransformationCoeffcient_General) + 0.05 + this->LuckyExtraPersent;
     this->luckyDamageIncrease = this->Lucky;
     this->setLuckyMultiplying();
-    //changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
     return this->Lucky;
 }
 
 double Person::changeProficientCount(const int addCount)
 {
-    this->ProficientCount = this->getProficientCount(this->Proficient - this->ProficientExtraPersent);
+    this->ProficientCount = this->getProficientCount(this->Proficient - this->ProficientExtraPersent - 0.06);
     const double count = this->ProficientCount + addCount;
     this->Proficient = count / (count + this->propertyTransformationCoeffcient_General) + 0.06 + this->ProficientExtraPersent;
     this->changeElementIncreaseByProficient(this->Proficient);
@@ -727,8 +723,8 @@ double Person::changeAlmightyCount(const int addCount)
 
 double Person::changeCritialPersent(const double persent)
 {
-    this->CriticalExtraPersent = persent;
-    this->Critical += this->CriticalExtraPersent;
+    this->CriticalExtraPercent = persent;
+    this->Critical += this->CriticalExtraPercent;
     return this->Critical;
 }
 
@@ -778,22 +774,43 @@ void Person::addAttackSpeed(double persent)
     this->attackSpeed = this->attackSpeedExtra;
 }
 
-double Person::changeAttributesByCount(const double attributesCount)
+double Person::changePrimaryAttributesByCount(const double primaryAttributesCount)
 {
-    this->ATK += attributesCount * this->attributeRatio;
-    return this->ATK;
+    // 直接增加主属性数值
+    this->ATK -= this->primaryAttributesIncrease * this->primaryAttributes * this->primaryAttributeRatio;
+    this->primaryAttributes += primaryAttributesCount;
+    this->resetATK();
+    return this->primaryAttributes;
 }
 
-double Person::changeAttributesByPersent(const double attributesPersent)
+double Person::changePrimaryAttributesByPersent(const double primaryAttributesPersent)
 {
-    this->attributesIncrease += attributesPersent;
-    return this->attributesIncrease;
+    this->ATK -= this->primaryAttributesIncrease * this->primaryAttributes * this->primaryAttributeRatio;
+    this->primaryAttributesIncrease += primaryAttributesPersent;
+    this->resetATK();
+    return this->primaryAttributesIncrease;
 }
 
 double Person::changeCastingSpeeaByPersent(const double castingSpeedPersent)
 {
     this->castingSpeedExtra = castingSpeedPersent;
     return this->castingSpeedExtra;
+}
+
+double Person::setATK(double atk)
+{
+    // 计算攻击力
+    this->baseATK = atk - this->primaryAttributes * this->primaryAttributeRatio * (1 + this->primaryAttributesIncrease);
+    return this->baseATK;
+}
+
+double Person::resetATK()
+{
+    // ATK = 基础攻击力 + 主属性转化的攻击力 × (1 + 主属性增加百分比)
+    this->ATK = this->baseATK 
+                + this->primaryAttributes * this->primaryAttributeRatio 
+                * (1 + this->primaryAttributesIncrease);
+    return this->ATK;
 }
 
 double Person::changeAttackSpeeaByPersent(const double attackSpeedPersent)
@@ -804,7 +821,7 @@ double Person::changeAttackSpeeaByPersent(const double attackSpeedPersent)
 
 int Person::getCriticalCount(const double critical)
 {
-    const double y = critical - 0.05;
+    const double y = critical;
     return static_cast<int>((this->propertyTransformationCoeffcient_General * y) / (1 - y));
 }
 
@@ -816,13 +833,13 @@ int Person::getQuicknessCount(const double quickness)
 
 int Person::getLuckyCount(const double lucky)
 {
-    const double y = lucky - 0.05;
+    const double y = lucky;
     return static_cast<int>((this->propertyTransformationCoeffcient_General * y) / (1 - y));
 }
 
 int Person::getProficientCount(const double proficient)
 {
-    const double y = proficient - 0.06;
+    const double y = proficient;
     return static_cast<int>((this->propertyTransformationCoeffcient_General * y) / (1 - y));
 }
 
@@ -886,7 +903,7 @@ void Person::setRandomSeed(std::uint32_t seed)
     randomEngine.seed(seed);
 }
 
-double Person::getAttributeRatio() const { return this->attributeRatio; }
+double Person::getAttributeRatio() const { return this->primaryAttributeRatio; }
 int Person::getPropertyTransformationCoeffcient_General() const { return this->propertyTransformationCoeffcient_General; }
 int Person::getPropertyTransformationCoeffcient_Almighty() const { return this->propertyTransformationCoeffcient_Almighty; }
 
@@ -916,13 +933,13 @@ double Person::getQuicknessCount() const { return QuicknessCount; }
 double Person::getATK() const { return ATK; }
 double Person::getRefindATK() const { return refindATK; }
 double Person::getElementATK() const { return elementATK; }
-double Person::getAttributes() const { return attributes; }
+double Person::getPrimaryAttributes() const { return primaryAttributes; }
 int Person::getResourceNum() const { return resourceNum; }
 int Person::getMaxResourceNum() const { return maxResourceNum; }
 double Person::getCastingSpeed() const { return castingSpeed; }
 double Person::getAttackSpeed() const { return attackSpeed; }
 
-double Person::getAttributesIncrease() const { return attributesIncrease; }
+double Person::getPrimaryAttributesIncrease() const { return primaryAttributesIncrease; }
 double Person::getAttackIncrease() const { return attackIncrease; }
 double Person::getDamageIncrease() const { return damageIncrease; }
 double Person::getElementIncrease() const { return elementIncrease; }
@@ -936,8 +953,8 @@ double Person::getDreamIncrease() const { return dreamIncrease; }
 double Person::getLuckyDamageIncrease() const { return luckyDamageIncrease; }
 double Person::getLuckyMultiplying() const { return luckyMultiplying; }
 
-double Person::getProficientRatio() const { return ProficientRatio; }
-double Person::getAlmightyRatio() const { return AlmightyRatio; }
+double Person::getProficientRatio() const { return proficientRatio; }
+double Person::getAlmightyRatio() const { return almightyRatio; }
 double Person::getCastingSpeedRatio() const { return castingSpeedRatio; }
 double Person::getAttackSpeedRatio() const { return attackSpeedRatio; }
 

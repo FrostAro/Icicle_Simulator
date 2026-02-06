@@ -1,8 +1,11 @@
 #pragma once
+#include "info.h"
 #include <vector>
 #include <memory>
-#include "Creators.hpp"
-#include "Info.h"
+#include <functional>
+
+class Person;
+class PriorSkillInfo;
 
 /*
 autoAttack是模拟中的自动战斗类，用于模拟游戏内自动施法的ai
