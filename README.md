@@ -108,3 +108,4 @@ Total Damage Count: XXXX, Total Lucky Damage Count: XXX, Lucky rate: XX.XX%, Cri
 ## 如何拓展
 
 详见ExtendExample文件夹
+若使用cmake在写完后记得在cmake中链接
