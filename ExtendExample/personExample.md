@@ -86,12 +86,14 @@ NewPerson::NewPerson(const double attributes, const double critical, const doubl
              critialdamage_set, increasedamage_set, elementdamage_set, totalTime)
 {
     // 1. 设置职业特有系数（必须设置）
-    this->attributeRatio = 0.6;           // 属性转化率：智力→攻击力
-    this->ProficientRatio = 0.65;         // 精通转化率：精通→元素增伤
-    this->AlmightyRatio = 0.35;           // 全能转化率：全能→全能增伤
-    this->maxResourceNum = 4;             // 最大资源数（玄冰）
-    this->castingSpeedRatio = 2;          // 施法速度转化率：迅捷→施法速度
-    this->attackSpeedRatio = 0.2;         // 攻击速度转化率：迅捷→攻击速度
+    this->attributeRatio            // 属性转化率：智力→攻击力
+    this->ProficientRatio           // 精通转化率：精通→元素增伤
+    this->AlmightyRatio             // 全能转化率：全能→全能增伤
+    this->maxResourceNum            // 最大资源数（玄冰）
+    this->castingSpeedRatio         // 施法速度转化率：迅捷→施法速度
+    this->attackSpeedRatio          // 攻击速度转化率：迅捷→攻击速度
+
+    this->damageReduce              // 伤害减免（魔法为10%，物理为30%）
 
     // 2. 设置基础攻击力
     setATK();
@@ -99,15 +101,21 @@ NewPerson::NewPerson(const double attributes, const double critical, const doubl
     // 3. 创建职业特有的AutoAttack控制器（必须）
     this->autoAttackPtr = std::make_unique<AutoAttack_NewPerson>(this);
     
-    // 4. 天赋/被动效果（可选）
+    // 4. 初始化乘区
+    this->initializeIncrease();
+
+    // 5. 天赋/被动效果（可选）
     // 例如：冰矛天赋的幸运倍率加成
     changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    // 例2：冰矛天赋的乘区增加
+    changeDamageIncrease(0.08);
+    changeElementIncreaseByElementIncrease(0.1);
     
-    // 5. 因子效果/装备加成（可选）
+    // 6. 因子效果/装备加成（可选）
     this->changeAttributesByCount(70);          // 基础属性加成
     this->changeAttributesByPersent(0.0184);    // 属性百分比加成
     
-    // 6. 其他职业特有初始化
+    // 7. 其他职业特有初始化
     // ...
 }
 
@@ -132,6 +140,7 @@ void NewClass::xxx() {
 | maxResourceNum    | 最大资源数(如玄冰数)          | 4.00       |
 | castingSpeedRatio | 施法速度转化率(急速转施法速度)| 2.00       |
 | attackSpeedRatio  | 攻击速度转化率(急速转攻击速度)| 0.20       |
+| damageReduce      | 伤害减免(魔法为10%，物理为30%)| 0.1        |
 
 ## 4.对于属性修改部分职业需要特殊实现时
 

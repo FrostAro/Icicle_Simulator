@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 
+// 前向声明
 class DamageInfo;
 class Person;
 class DamageListener;
@@ -15,50 +16,97 @@ class CreateSkillListener;
 class CreateBuffListener;
 class SecondaryAttributeListener;
 
-/*
-Action作为模拟中的事件类，主要用于触发各种事件，并触发Buff类中写好的listenerCallBack函数
-*/
+/* ============================================================================
+ * @class Action
+ * @brief 动作系统基类，实现游戏事件触发机制
+ * 
+ * 核心设计模式：观察者模式
+ * 主要职责：
+ * 1. 定义游戏事件的标准接口
+ * 2. 管理事件监听器的注册和删除
+ * 3. 触发事件时通知所有注册的监听器
+ * 
+ * 工作流程：
+ * 1. Person调用triggerAction()触发事件
+ * 2. triggerAction()创建Action对象并推入队列
+ * 3. Person::updateAction()调用execute()
+ * 4. execute()遍历监听器并触发回调
+ * 
+ * 特殊事件处理流程（创建技能/Buff）：
+ * 1. 调用SkillCreator::createSkill()或BuffCreator::createBuff()
+ * 2. 调用Person::createSkill()或Person::createBuff()
+ * 3. 调用triggerAction<CreateSkillAction>()或triggerAction<CreateBuffAction>()
+ * ============================================================================
+ */
 
-/*
-person调用triggerAction触发事件，并调用execute(),execute遍历自己的监听器表并调用callback
-triggerAction参数为double n和调用的action类的构造函数参数，excute参数固定为为double n和Person* p
-excute中调用listener->trigger(参数)，此参数参照action子类所用的监听器类的trigger()的参数
-action子类中的listeners作为一个vector存储多个listener实例，主要是以listener类存储buff的callback()函数，以便在触发事件时调用
-triggerAction()会调用excute()，excute()遍历自己的listeners并调用listener->trigger()，listener->trigger()会调用callback()函数，
-                                                         callback()函数由buff类给出，表示存在此buff时，触发指定事件时执行的动作
-
-创建skill和buff的过程：
-1. 调用SkillCreator::createSkill()或BuffCreator::createBuff()得到一个unique_ptr<Skill>或unique_ptr<Buff>
-2. 调用Person::createSkill(),noReleasingSkill()或Person::createBuff()将unique_ptr<Skill>或unique_ptr<Buff>进行技能释放处理
-3. 调用triggerAction<CreateSkillAction>()或triggerAction<CreateBuffAction>()创建Skill或Buff
-*/
+/**
+ * @brief 动作系统基类，所有具体动作的抽象接口
+ * 
+ * 采用多态设计，通过execute()方法执行具体动作逻辑。
+ * 支持移动语义，禁止拷贝（因为通常通过智能指针管理）。
+ */
 class Action
 {
 public:
-    static std::string name;
+    static std::string name;  ///< 动作名称（静态成员，所有实例共享）
 
     Action() = default;
+    
     // 移动构造函数
     Action(Action &&) = default;
     Action &operator=(Action &&) = default;
+    
     // 禁止拷贝（因为Action是多态基类，通常通过指针使用）
     Action(const Action &) = delete;
     Action &operator=(const Action &) = delete;
 
     virtual ~Action() = default;
+    
+    /**
+     * @brief 执行动作的纯虚函数
+     * @param n 动作参数（如伤害值、冷却减少量等）
+     * @param p 执行动作的角色指针
+     */
     virtual void execute(double n, Person *p) = 0;
+    
+    /**
+     * @brief 获取动作名称
+     * @return 动作名称字符串
+     */
     virtual std::string getActionName();
 };
 
-// 攻击
+/* ============================================================================
+ * 具体动作类定义
+ * 每个动作类包含：
+ * 1. 静态名称和监听器列表
+ * 2. 监听器管理方法（addListener/deleteListener）
+ * 3. execute()方法实现具体逻辑
+ * ============================================================================
+ */
+
+/**
+ * @class AttackAction
+ * @brief 攻击动作，触发技能攻击并计算伤害
+ * 
+ * 执行流程：
+ * 1. 获取技能指针
+ * 2. 计算伤害信息
+ * 3. 通知所有伤害监听器
+ * 4. 记录伤害信息
+ */
 class AttackAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<DamageListener>> listeners;
-    std::string skillName;
+    static std::string name;  ///< 动作名称："AttackAction"
+    static std::vector<std::unique_ptr<DamageListener>> listeners;  ///< 伤害监听器列表
+    std::string skillName;    ///< 技能名称
 
 public:
+    /**
+     * @brief 构造函数
+     * @param skillName 要攻击的技能名称
+     */
     explicit AttackAction(std::string skillName);
 
     void execute(double n, Person *p) override; // double n未使用
@@ -67,155 +115,268 @@ public:
     std::string getActionName() override;
 };
 
-// 资源消耗
+/**
+ * @class ResourceConsumeAction
+ * @brief 资源消耗动作，消耗玄冰资源
+ */
 class ResourceConsumeAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<ResourceListener>> listeners;
+    static std::string name;  ///< 动作名称："ResourceConsumeAction"
+    static std::vector<std::unique_ptr<ResourceListener>> listeners;  ///< 资源监听器列表
 
 public:
     ResourceConsumeAction() : Action() {};
-    void execute(double n, Person *p) override; // double n作为消耗资源数
+    
+    /**
+     * @brief 执行资源消耗
+     * @param n 消耗的资源数量
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<ResourceListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// 资源回复
+/**
+ * @class ResourceRevertAction
+ * @brief 资源回复动作，回复玄冰资源
+ */
 class ResourceRevertAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<ResourceListener>> listeners;
+    static std::string name;  ///< 动作名称："ResourceRevertAction"
+    static std::vector<std::unique_ptr<ResourceListener>> listeners;  ///< 资源监听器列表
 
 public:
     ResourceRevertAction() : Action() {};
-    void execute(double n, Person *p) override; // double n作为回复资源数
+    
+    /**
+     * @brief 执行资源回复
+     * @param n 回复的资源数量
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<ResourceListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// 能量消耗
+/**
+ * @class EnergyConsumeAction
+ * @brief 能量消耗动作，消耗角色能量
+ */
 class EnergyConsumeAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<EnergyListener>> listeners;
+    static std::string name;  ///< 动作名称："EnergyConsumeAction"
+    static std::vector<std::unique_ptr<EnergyListener>> listeners;  ///< 能量监听器列表
 
 public:
     EnergyConsumeAction() : Action() {};
-    void execute(double n, Person *p) override; // double n作为消耗能量数
+    
+    /**
+     * @brief 执行能量消耗
+     * @param n 消耗的能量值
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<EnergyListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// 能量回复
+/**
+ * @class EnergyRevertAction
+ * @brief 能量回复动作，回复角色能量
+ */
 class EnergyRevertAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<EnergyListener>> listeners;
+    static std::string name;  ///< 动作名称："EnergyRevertAction"
+    static std::vector<std::unique_ptr<EnergyListener>> listeners;  ///< 能量监听器列表
 
 public:
     EnergyRevertAction() : Action() {};
-    void execute(double n, Person *p) override; // double n作为回复能量数
+    
+    /**
+     * @brief 执行能量回复
+     * @param n 回复的能量值
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<EnergyListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// CD减少
+/**
+ * @class CDReduceAction
+ * @brief 冷却减少动作，减少技能冷却时间
+ */
 class CDReduceAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<CDListener>> listeners;
-    std::string skillName;
+    static std::string name;  ///< 动作名称："CDReduceAction"
+    static std::vector<std::unique_ptr<CDListener>> listeners;  ///< 冷却监听器列表
+    std::string skillName;    ///< 技能名称
 
 public:
+    /**
+     * @brief 构造函数
+     * @param skillName 要减少冷却的技能名称
+     */
     explicit CDReduceAction(std::string skillName);
-    void execute(double n, Person *p) override; // double n作为减少CD数
+    
+    /**
+     * @brief 执行冷却减少
+     * @param n 减少的冷却时间（毫秒）
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CDListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// CD刷新
+/**
+ * @class CDRefreshAction
+ * @brief 冷却刷新动作，完全重置技能冷却
+ */
 class CDRefreshAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<CDListener>> listeners;
-    std::string skillName;
+    static std::string name;  ///< 动作名称："CDRefreshAction"
+    static std::vector<std::unique_ptr<CDListener>> listeners;  ///< 冷却监听器列表
+    std::string skillName;    ///< 技能名称
 
 public:
+    /**
+     * @brief 构造函数
+     * @param skillName 要刷新冷却的技能名称
+     */
     explicit CDRefreshAction(std::string skillName);
-    void execute(double n, Person *p) override; // double n未使用
+    
+    /**
+     * @brief 执行冷却刷新
+     * @param n 未使用参数
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CDListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// 释放技能
+/**
+ * @class CreateSkillAction
+ * @brief 创建技能动作，实例化并释放新技能
+ */
 class CreateSkillAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<CreateSkillListener>> listeners;
-    std::string skillName;
+    static std::string name;  ///< 动作名称："CreateSkillAction"
+    static std::vector<std::unique_ptr<CreateSkillListener>> listeners;  ///< 技能创建监听器列表
+    std::string skillName;    ///< 技能名称
 
 public:
+    /**
+     * @brief 构造函数
+     * @param skillname 要创建的技能名称
+     */
     CreateSkillAction(std::string skillname);
-    void execute(double n, Person *p) override; // double n未使用
+    
+    /**
+     * @brief 执行技能创建
+     * @param p 执行动作的角色
+     */
+    void execute(double, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<CreateSkillListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
+/**
+ * @class CreateBuffAction
+ * @brief 创建Buff动作，实例化并应用新Buff
+ */
 class CreateBuffAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<CreateBuffListener>> listeners;
-    std::string buffName;
+    static std::string name;  ///< 动作名称："CreateBuffAction"
+    static std::vector<std::unique_ptr<CreateBuffListener>> listeners;  ///< Buff创建监听器列表
+    std::string buffName;     ///< Buff名称
 
 public:
+    /**
+     * @brief 构造函数
+     * @param buffName 要创建的Buff名称
+     */
     explicit CreateBuffAction(std::string buffName);
-    void execute(double n, Person *p) override; // double n对于可叠层技能作为叠层数，其他未使用
+    
+    /**
+     * @brief 执行Buff创建
+     * @param n 对于可叠层Buff作为叠层数，其他情况未使用
+     * @param p 执行动作的角色
+     */
+    void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CreateBuffListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
 };
 
-// 属性修改事件
-// 暴击数值
+/* ============================================================================
+ * 属性修改动作类
+ * 每个属性都有数值修改和百分比修改两种方式
+ * ============================================================================
+ */
+
+/**
+ * @class CriticalCountModifyAction
+ * @brief 暴击数值修改动作，通过属性点数修改暴击率
+ */
 class CriticalCountModifyAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<SecondaryAttributeListener>> listeners;
+    static std::string name;  ///< 动作名称："CriticalCountModifyAction"
+    static std::vector<std::unique_ptr<SecondaryAttributeListener>> listeners;  ///< 副属性监听器列表
 
 public:
     CriticalCountModifyAction();
-    virtual void execute(double n, Person *p) override; // n为增加的暴击数值
+    
+    /**
+     * @brief 执行暴击数值修改
+     * @param n 增加的暴击属性点数
+     * @param p 执行动作的角色
+     * 下同
+     */
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
     virtual std::string getActionName() override;
 };
 
-// 暴击百分比
+/**
+ * @class CriticalPercentModifyAction
+ * @brief 暴击百分比修改动作，直接修改暴击率百分比
+ */
 class CriticalPercentModifyAction : public Action
 {
 private:
-    static std::string name;
-    static std::vector<std::unique_ptr<SecondaryAttributeListener>> listeners;
+    static std::string name;  ///< 动作名称："CriticalPercentModifyAction"
+    static std::vector<std::unique_ptr<SecondaryAttributeListener>> listeners;  ///< 副属性监听器列表
 
 public:
     CriticalPercentModifyAction();
-    virtual void execute(double n, Person *p) override; // n为增加的暴击百分比
+    
+    /**
+     * @brief 执行暴击百分比修改
+     * @param n 增加的暴击百分比（如0.05表示+5%）
+     * @param p 执行动作的角色
+     * 下同
+     */
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
     virtual std::string getActionName() override;

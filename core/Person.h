@@ -20,19 +20,28 @@ class DamageInfo;
 class ActionInfo;
 class ErrorInfo;
 
+/**
+ * @class DamageStatistics
+ * @brief 伤害统计类，用于记录单个技能的伤害数据
+ * 
+ * 存储以下统计信息：
+ * - 技能名称、总伤害、攻击次数
+ * - 幸运伤害和幸运攻击次数
+ * - 暴击次数
+ */
 class DamageStatistics
 {
 public:
-	// 统计
-	std::string skillName; 		 	// 伤害类型
-	double totalTime;				// 总时间
-	double damageCount;				// 伤害次数
-	double damage;					// 伤害值
-
-	double luckyDamageCount;		// 幸运伤害次数
-	double luckyDamage;				// 幸运伤害值
-
-	double CritDamageCount;			// 暴击伤害次数
+	// 统计字段
+	std::string skillName; 		 	///< 技能名称
+	double totalTime;				///< 总模拟时间（毫秒）
+	double damageCount;				///< 总攻击次数
+	double damage;					///< 总伤害值
+	
+	double luckyDamageCount;		///< 幸运攻击次数
+	double luckyDamage;				///< 幸运伤害值
+	
+	double CritDamageCount;			///< 暴击攻击次数
 
 public:
 	DamageStatistics();
@@ -42,231 +51,295 @@ public:
 
 
 
-
+/**
+ * @class Person
+ * @brief 游戏角色基类，管理角色属性、技能、buff 和战斗逻辑
+ * 
+ * 核心职责：
+ * - 管理角色属性（暴击、幸运、攻击力等）
+ * - 处理技能释放和冷却
+ * - 管理 buff/debuff 效果
+ * - 计算伤害和触发概率
+ * 
+ * 设计模式：
+ * - 组件模式：Skill、Buff 作为组件
+ * - 状态模式：通过状态管理技能释放
+ * - 观察者模式：事件触发机制
+ */
 class Person
 {
 private:
-    // 私有成员：只在内部使用，不对外暴露
-	std::vector<std::unique_ptr<Skill>> pointerListForAction{};
-    std::unique_ptr<Skill> nowReleasingSkill = nullptr;		// 当前正在释放的技能
-    int propertyTransformationCoeffcient_General = 0;		// 一般属性转化系数
-    int propertyTransformationCoeffcient_Almighty = 0;		// 全能属性转化系数
-	int totalTime = 0;
+    // ==== 私有成员：只在内部使用 ====
+    std::vector<std::unique_ptr<Skill>> pointerListForAction{};     ///< 用于Action的原始指针列表
+    std::unique_ptr<Skill> nowReleasingSkill = nullptr;             ///< 当前正在释放的技能
+    int propertyTransformationCoeffcient_General = 0;               ///< 一般属性转化系数（游戏数值平衡）
+    int propertyTransformationCoeffcient_Almighty = 0;              ///< 全能属性转化系数（游戏数值平衡）
+	int totalTime = 0;                                              ///< 模拟总时间（毫秒）
 
-	// 状态
-    bool isReleasingSkill = false;							// 是否正在释放技能
+	// ==== 状态 ====
+    bool isReleasingSkill = false;                                  ///< 是否正在释放技能
     
-    // 队列和列表
-    std::queue<ActionInfo> actionQueue{};
-    std::vector<std::string> skillInfoList{};
-    std::vector<DamageInfo> damageInfoList{};
-    std::vector<ErrorInfo> errorInfoList{};
+    // ==== 数据容器 ====
+    std::queue<ActionInfo> actionQueue{};                           ///< 动作事件队列
+    std::vector<std::string> skillInfoList{};                       ///< 技能信息列表（用于调试）
+    std::vector<DamageInfo> damageInfoList{};                       ///< 伤害记录列表
+    std::vector<ErrorInfo> errorInfoList{};                         ///< 错误信息列表
 
-	mutable std::mt19937 randomEngine;  // 随机数引擎
-	static std::uint32_t fixedSeed;
+	// ==== 随机系统 ====
+	mutable std::mt19937 randomEngine;                              ///< 随机数引擎（线程安全）
+	mutable std::uniform_int_distribution<int> intDist{0, 9999};    
 
 protected:
-    // 受保护成员：子类可以访问
-    std::vector<std::unique_ptr<Buff>> buffList{};
-    std::vector<std::unique_ptr<Skill>> continuousSkillList{};
-    std::vector<std::unique_ptr<Skill>> noReleasingSkillList{};
-    std::vector<std::unique_ptr<Skill>> skillCDList{};
+    // ==== 受保护成员：子类可以访问 ====
+    std::vector<std::unique_ptr<Buff>> buffList{};                  ///< 生效中的buff列表
+    std::vector<std::unique_ptr<Skill>> continuousSkillList{};      ///< 持续性技能列表（如涡流）
+    std::vector<std::unique_ptr<Skill>> noReleasingSkillList{};     ///< 无前摇技能列表
+    std::vector<std::unique_ptr<Skill>> skillCDList{};              ///< 技能冷却列表
     
-    // 职业特定系数
-    double proficientRatio = 0;			// 精通转化率
-    double almightyRatio = 0;			// 全能转化率
-    double castingSpeedRatio = 0;		// 施法速度转化率
-    double attackSpeedRatio = 0;		// 攻击速度转化率
-	double primaryAttributeRatio = 0;			// 属性转化率
+    // ==== 职业特定系数（由子类设置） ====
+    double proficientRatio = 0;			///< 精通转化率：精通 → 元素增伤
+    double almightyRatio = 0;			///< 全能转化率：全能 → 全能增伤
+    double castingSpeedRatio = 0;		///< 施法速度转化率：急速 → 施法速度
+    double attackSpeedRatio = 0;		///< 攻击速度转化率：急速 → 攻击速度
+	double primaryAttributeRatio = 0;	///< 主属性转化率：主属性 → 攻击力
 	
 public:
 	friend class Initializer;
 	friend class AutoAttack;
-	// 基本属性
-    double max_energy = 125;
-    double present_energy = 0;
-    double Critical = 0;
-    double Lucky = 0;
-    double Almighty = 0;
-    double Proficient = 0;
-    double Quickness = 0;
-    double CriticalCount = 0;
-    double LuckyCount = 0;
-    double AlmightyCount = 0;
-    double ProficientCount = 0;
-    double QuicknessCount = 0;
-	double CriticalExtraPercent = 0;
-	double LuckyExtraPersent = 0;
-	double QuicknessExtraPersent = 0;
-	double ProficientExtraPersent = 0;
-	double AlmightyExtraPersent = 0;
+	
+	// ==== 基本属性（游戏数值） ====
+    double max_energy = 125;                 ///< 最大能量值
+    double present_energy = 0;               ///< 当前能量值
+    double Critical = 0;                     ///< 暴击率 (0-1)
+    double Lucky = 0;                        ///< 幸运率 (0-1)
+    double Almighty = 0;                     ///< 全能值 (0-1)
+    double Proficient = 0;                   ///< 精通值 (0-1)
+    double Quickness = 0;                    ///< 急速值 (0-1)
+    double CriticalCount = 0;                ///< 暴击属性点数
+    double LuckyCount = 0;                   ///< 幸运属性点数
+    double AlmightyCount = 0;                ///< 全能属性点数
+    double ProficientCount = 0;              ///< 精通属性点数
+    double QuicknessCount = 0;               ///< 急速属性点数
+	double CriticalExtraPercent = 0;         ///< 额外暴击百分比（来自buff等）
+	double LuckyExtraPersent = 0;            ///< 额外幸运百分比
+	double QuicknessExtraPersent = 0;        ///< 额外急速百分比
+	double ProficientExtraPersent = 0;       ///< 额外精通百分比
+	double AlmightyExtraPersent = 0;         ///< 额外全能百分比
     
-    // 攻击相关
-	double baseATK = 0;
-    double ATK = 0;
-    double refindATK = 0;
-    double elementATK = 0;
-    double primaryAttributes = 0;
-    int resourceNum = 0;
-    int maxResourceNum = 0;
-    double castingSpeed = 0;
-	double castingSpeedExtra = 0;
-    double attackSpeed = 0;
-	double attackSpeedExtra = 0;
+    // ==== 攻击属性 ====
+	double baseATK = 0;                      ///< 基础攻击力（不包含属性转化）
+    double ATK = 0;                          ///< 总攻击力
+    double refindATK = 0;                    ///< 精炼攻击力
+    double elementATK = 0;                   ///< 元素攻击力
+    double primaryAttributes = 0;            ///< 主属性数值
+    int resourceNum = 0;                     ///< 当前玄冰资源数量
+    int maxResourceNum = 0;                  ///< 最大玄冰资源数量
+    double castingSpeed = 0;                 ///< 施法速度加成 (0-1)
+	double castingSpeedExtra = 0;            ///< 额外施法速度（来自buff）
+    double attackSpeed = 0;                  ///< 攻击速度加成 (0-1)
+	double attackSpeedExtra = 0;             ///< 额外攻击速度（来自buff）
     
-    // 乘区
-    double primaryAttributesIncrease = 0;
-    double attackIncrease = 0;
-    double damageIncrease = 0;
-    double elementIncrease = 0;
-    double almightyIncrease = 0;
-    double criticicalDamage = 0.5;
-    double vulnerable = 0;
-    double damageReduce = 0;
-    double finalIncrease = 0;
-    double dreamIncrease = 0;
-	double criticaldamage_set = 0;
-	double increase_set = 0;
-	double elementincrease_set = 0;
+    // ==== 伤害乘区（独立乘法计算） ====
+    double primaryAttributesIncrease = 0;    ///< 主属性增加百分比 (1 + 百分比)
+    double attackIncrease = 0;               ///< 攻击力增加百分比 (1 + 百分比)
+    double damageIncrease = 0;               ///< 通用增伤百分比 (1 + 百分比)
+    double elementIncrease = 0;              ///< 元素增伤百分比 (1 + 百分比)
+    double almightyIncrease = 0;             ///< 全能增伤百分比 (1 + 百分比)
+    double criticicalDamage = 0.5;           ///< 暴击伤害加成（基础+50%）
+    double vulnerable = 0;                   ///< 易伤效果（目标受到的伤害增加）
+    double damageReduce = 0;                 ///< 减伤百分比（1 - 百分比）
+    double finalIncrease = 0;                ///< 最终伤害增加百分比 (1 + 百分比)
+    double dreamIncrease = 0;                ///< 梦境增伤百分比 (1 + 百分比)
+	double criticaldamage_set = 0;           ///< 额外暴击伤害（调试用）
+	double increase_set = 0;                 ///< 额外增伤（调试用）
+	double elementincrease_set = 0;          ///< 额外元素增伤（调试用）
 
-	// 幸运相关
-    double luckyDamageIncrease = 0;
-    double luckyMultiplying = 0;
+	// ==== 幸运相关 ====
+    double luckyDamageIncrease = 0;          ///< 幸运伤害增加百分比 (1 + 百分比)
+    double luckyMultiplying = 0;             ///< 幸运伤害倍率（基础41.25%，每1%幸运+0.75%）
 
-	// 其他
-    double energyIncrease = 0;
-    double energyReduceUP = 0;
-    double energyReduceDOWN = 0;
+	// ==== 能量系统 ====
+    double energyIncrease = 0;               ///< 能量回复增加
+    double energyReduceUP = 0;               ///< 能量消耗减少（上行）
+    double energyReduceDOWN = 0;             ///< 能量消耗减少（下行）
 
-	// 解释
-	std::unordered_map<std::string, DamageStatistics> damageStatsMap;
-	std::unique_ptr<AutoAttack> autoAttackPtr = nullptr; 
+	// ==== 统计系统 ====
+	std::unordered_map<std::string, DamageStatistics> damageStatsMap;  ///< 伤害统计映射表（按技能名）
+	std::unique_ptr<AutoAttack> autoAttackPtr = nullptr;               ///< 自动攻击系统
 
+	// ==== 构造函数与析构函数 ====
 	virtual ~Person() = 0;
+	
+	/**
+	 * @brief 构造函数，初始化角色基础属性
+	 * 
+	 * @param PrimaryPrimaryAttributes 主属性数值
+	 * @param critical 暴击率（百分比，如36表示36%）
+	 * @param quickness 急速值（百分比）
+	 * @param lucky 幸运值（百分比）
+	 * @param Proficient 精通值（百分比）
+	 * @param almighty 全能值（百分比）
+	 * @param atk 攻击力
+	 * @param refindatk 精炼攻击力
+	 * @param elementatk 元素攻击力
+	 * @param attackSpeed 攻击速度加成（0-1）
+	 * @param castingSpeed 施法速度加成（0-1）
+	 * @param critialdamage_set 额外爆伤（调试用）
+	 * @param increasedamage_set 额外增伤（调试用）
+	 * @param elementdamage_set 额外元素增伤（调试用）
+	 * @param totalTime 模拟总时间（毫秒）
+	 */
 	Person(const double PrimaryPrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
         const int atk, const  int refindatk, const  int elementatk, const double attackSpeed, const double castingSpeed,
         const double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const  int totalTime);
 
-	// 可以重写对特定职业实施额外的效果
-	// 后续通过action代替
-	//改变对应属性数值并且改变被属性影响的数值，返回改变后的属性值
+	// ==== 属性操作方法（可被子类重写） ====
+	
+	/**
+	 * @brief 增加属性点数并重新计算属性值
+	 * @param addCount 增加的属性点数
+	 * @return 更新后的属性百分比
+	 */
 	virtual double changeCriticalCount(int addCount);	
 	virtual double changeQuicknessCount(int addCount);		
 	virtual double changeLuckyCount(int addCount);				
 	virtual double changeProficientCount(int addCount);		
 	virtual double changeAlmightyCount(int addCount);
 	
-	//改变对应属性百分比并且改变被属性影响的数值，返回改变后的属性值
+	/**
+	 * @brief 增加属性百分比（直接修改百分比）
+	 * @param persent 增加的百分比（如0.05表示+5%）
+	 * @return 更新后的属性百分比
+	 */
 	virtual double changeCritialPersent(double persent);
 	virtual double changeQuicknessPersent(double persent);
 	virtual double changeLuckyPersent(double persent);
 	virtual double changeProficientPersent(double persent);
 	virtual double changeAlmightyPersent(double persent);
 
+	// ==== 核心战斗接口 ====
 
-
+	/**
+	 * @brief 计算技能伤害
+	 * @param skill 要计算的技能指针
+	 * @return DamageInfo 包含伤害结果的结构体
+	 * 
+	 * 伤害公式：
+	 * [(ATK × 倍率 × 攻击增幅 × 减伤区) + (精炼攻击+元素攻击) × 倍率 + 固定值]
+	 * × 增伤 × 元素伤害 × 全能增幅 × 梦境增幅 × 技能最终伤害
+	 * × 暴击判定(1+暴伤)
+	 */
 	DamageInfo Damage(const Skill *skill);
+	
+	/**
+	 * @brief 计算幸运伤害（独立伤害机制）
+	 * @return 幸运伤害值
+	 */
 	double luckyDamage() const;
 
-	// 属性值设置
-	//获取对应属性百分比转化而成的数值，输入应为xx.xx形式，无需百分比符号或/100
+	// ==== 属性值设置 ====
+	
+	/**
+	 * @brief 获取属性百分比对应的属性点数
+	 * @param critical 暴击率（0-1）
+	 * @return 对应的属性点数
+	 */
 	int getCriticalCount(double critical);				
 	int getQuicknessCount(double quickness);				
 	int getLuckyCount(double lucky);				
 	int getProficientCount(double proficient);		
 	int getAlmightyCount(double almighty);				
 
-	//改变施法速度与攻击速度
-	void addCastingSpeed(double persent);
-	void addAttackSpeed(double persent);
+	// ==== 速度加成 ====
+	void addCastingSpeed(double persent);  ///< 增加施法速度百分比
+	void addAttackSpeed(double persent);   ///< 增加攻击速度百分比
 
-	// 乘区初始化与更改更改
-	double changePrimaryAttributesByCount(double PrimaryAttributesCount);					// 更改属性值(通过转化率直接修改攻击力，不调整三维属性本身)
-	double changePrimaryAttributesByPersent(double PrimaryAttributesPersent);				// 更改属性值by百分比
-	double setATK(double atk);
-	double resetATK();																		// 重新设置攻击力
+	// ==== 乘区初始化与修改 ====
+	void initializeIncrease();					  	  ///< 初始化乘区
+	double changePrimaryAttributesByCount(double PrimaryAttributesCount);					///< 通过属性点数修改主属性
+	double changePrimaryAttributesByPersent(double PrimaryAttributesPersent);				///< 通过百分比修改主属性
+	double setATK(double atk);                        ///< 设置基础攻击力
+	double resetATK();								  ///< 重新计算攻击力（基于主属性）
 
-	double setAattackIncrease();											// 攻击增加百分比初始化
-	double changeAattackIncrease(double attackIncrease); 					// 更改攻击增加百分比
+	double setAattackIncrease();											///< 初始化攻击增加乘区
+	double changeAattackIncrease(double attackIncrease); 					///< 修改攻击增加乘区
 
-	double setElementIncrease();											// 元素增伤乘区初始化
-	double changeElementIncreaseByProficient(double proficient);			// 更改元素增伤乘区by精通
-	double changeElementIncreaseByElementIncrease(double elementIncrease); 	// 更改元素增伤乘区by直接元素增伤
+	double setElementIncrease();											///< 初始化元素增伤乘区
+	double changeElementIncreaseByProficient(double proficient);			///< 通过精通修改元素增伤
+	double changeElementIncreaseByElementIncrease(double elementIncrease); 	///< 直接修改元素增伤
 
-	double setAlmightyIncrease();											// 全能增伤乘区初始化
-	double changeAlmightyIncrease(double almighty); 						// 更改全能增伤乘区by全能
+	double setAlmightyIncrease();											///< 初始化全能增伤乘区
+	double changeAlmightyIncrease(double almighty); 						///< 修改全能增伤乘区
 
-	double setDamageIncrease();					   							// 增伤乘区初始化
-	double changeDamageIncrease(double increase); 							// 更改增伤乘区by直接增伤
+	double setDamageIncrease();					   							///< 初始化通用增伤乘区
+	double changeDamageIncrease(double increase); 							///< 修改通用增伤乘区
 
-	double setCriticalDamage();						   						// 爆伤乘区初始化
-	double changeCriticalDamage(double criticalDamage); 					// 更改爆伤乘区by直接爆伤
+	double setCriticalDamage();						   						///< 初始化暴击伤害乘区
+	double changeCriticalDamage(double criticalDamage); 					///< 修改暴击伤害乘区
 
-	double setLuckyMultiplying();								   			// 幸运倍率区初始化
-	double changeLuckyMultiplyingByAddMultiplying(double addMultiplying); 	// 更改幸运倍率区by直接增加倍率
+	double setLuckyMultiplying();								   			///< 初始化幸运倍率
+	double changeLuckyMultiplyingByAddMultiplying(double addMultiplying); 	///< 修改幸运倍率
 
-	double setDreamIncrease();						   						// 梦境乘区初始化
-	double changeDreamIncrease(double dreamIncrease); 						// 更改梦境乘区by直接梦境增伤
+	double setDreamIncrease();						   						///< 初始化梦境增伤乘区
+	double changeDreamIncrease(double dreamIncrease); 						///< 修改梦境增伤乘区
 
-	double changeCastingSpeeaByPersent(const double castingSpeedPersent);			// 更改施法速度By百分比
-	double changeAttackSpeeaByPersent(const double attackSpeedPersent);			// 更改攻击速度By百分比
+	double changeCastingSpeeaByPersent(const double castingSpeedPersent);	///< 修改施法速度
+	double changeAttackSpeeaByPersent(const double attackSpeedPersent);		///< 修改攻击速度
 
-	// 技能
-	void createSkill(std::unique_ptr<Skill> newSkill);				//创建技能，包含前摇处理
-	void createNoReleasingSkill(std::unique_ptr<Skill> newSkill);	//创建无前摇技能，直接加入持续性技能列表
+	// ==== 技能管理 ====
+	void createSkill(std::unique_ptr<Skill> newSkill);				///< 创建并开始释放一个技能
+	void createNoReleasingSkill(std::unique_ptr<Skill> newSkill);	///< 创建无前摇技能
 
-	void updateSkills(int deltaTime);								// 每tick更新技能状态
-	void updateNowReleasingSkill(int deltaTime);					// 每tick更新当前正在释放的技能状态
-	void updateContinuousList(int deltaTime);						// 每tick更新持续性技能状态
-	void updateSkillsCD(int deltaTime);								// 每tick更新技能CD状态
-	void processCooling(Skill *skill, int deltaTime);				// 辅助CD状态更新
-	void processChargedCooling(Skill *skill, int deltaTime);		// 辅助充能CD状态更新
-	bool removeSkill(Skill *skill);									// 移除技能
-	void clearSkills();												// 清空持续性技能列表
-	void cleanupFinishedSkills();									// 清理持续性技能列表中已结束的技能
-	void updateAction(int deltaTime);								// 每tick处理事件列表(未使用)
+	void updateSkills(int deltaTime);								///< 更新所有技能状态
+	void updateNowReleasingSkill(int deltaTime);					///< 更新当前释放技能
+	void updateContinuousList(int deltaTime);						///< 更新持续性技能列表
+	void updateSkillsCD(int deltaTime);								///< 更新技能冷却
+	void processCooling(Skill *skill, int deltaTime);				///< 处理技能冷却逻辑
+	void processChargedCooling(Skill *skill, int deltaTime);		///< 处理充能冷却逻辑
+	bool removeSkill(Skill *skill);									///< 移除指定技能
+	void clearSkills();												///< 清空所有技能
+	void cleanupFinishedSkills();									///< 清理已结束的技能
+	void updateAction(int deltaTime);								///< 处理动作队列
 
-	// 给予buff
-	void createBuff(std::unique_ptr<Buff> newBuff);					// 创建buff，多buff创建由BuffCreatAction处理
-	void updateBuffs(int deltaTime);								// 每tick更新buff状态
-	void cleanupFinishedBuffs();									// 清理buff列表中已结束的buff
-	void clearBuffs();												// 清空buff列表
+	// ==== Buff管理 ====
+	void createBuff(std::unique_ptr<Buff> newBuff);					///< 创建一个buff
+	void updateBuffs(int deltaTime);								///< 更新所有buff状态
+	void cleanupFinishedBuffs();									///< 清理已结束的buff
+	void clearBuffs();												///< 清空所有buff
 
-	// 触发事件
+	// ==== 事件系统 ====
 	template <typename T, typename... Args>
-	void triggerAction(double count, Args &&...args);				// 触发事件
-	// template<typename T, typename... Args>
-	// void triggerAction(Args&&... args);
+	void triggerAction(double count, Args &&...args);				///< 触发一个动作事件
 
-	bool consumeResource(int n); 		// 消耗玄冰
-	bool revertResource(int n);			// 回复玄冰
-	bool consumeEnergy(const double n); 		// 消耗能量
-	bool revertEnergy(const double n);  		// 回复能量
-	bool reduceSkillCD(std::string skillName,double n); 	// 减少技能cd
+	// ==== 资源管理 ====
+	bool consumeResource(int n); 		///< 消耗玄冰资源
+	bool revertResource(int n);			///< 回复玄冰资源
+	bool consumeEnergy(const double n); 		///< 消耗能量
+	bool revertEnergy(const double n);  		///< 回复能量
+	bool reduceSkillCD(std::string skillName,double n); 	///< 减少技能冷却时间
 
+	// ==== 查找功能 ====
 	template <class T>
-	int findBuffInBuffList(); 										// 通过模板类名寻找buff
-	int findBuffInBuffList(std::string buffName) const;				// 通过buffName寻找buff
+	int findBuffInBuffList(); 										///< 通过模板类名查找buff索引
+	int findBuffInBuffList(std::string buffName) const;				///< 通过buff名查找buff索引
 	template <class T>
-	int findSkillInSkillCDList(); 									// 通过模板类名寻找skill
-	int findSkillInSkillCDList(std::string skillName) const;		// 通过skillName寻找skill
-	void addErrorInfoInList(const ErrorInfo& errorinfo);			// 添加错误信息
-	//void pushBuffIntoBuffList(std::string buffName);				// 将buff加入buff列表
+	int findSkillInSkillCDList(); 									///< 通过模板类名查找技能索引
+	int findSkillInSkillCDList(std::string skillName) const;		///< 通过技能名查找技能索引
+	void addErrorInfoInList(const ErrorInfo& errorinfo);			///< 添加错误信息到列表
 
-	// 辅助函数
-	bool isSuccess(double probability) const; 							// 计算概率
-	auto calculateDamageStatistics() -> decltype(this->damageStatsMap); // 伤害统计							
-	void equipSkill(std::string skillName);								// 装备技能，加入技能CD列表
-	void equipInherentBuff(std::string buffName);						// 装备固有buff，加入buff列表
-	void pushDamgeInfo(DamageInfo& info);
-	void setRandomSeed(std::uint32_t seed);								// 设置种子的方法
+	// ==== 辅助功能 ====
+	bool isSuccess(double probability) const; 							///< 概率判定
+	auto calculateDamageStatistics() -> decltype(this->damageStatsMap); ///< 计算伤害统计数据							
+	void equipSkill(std::string skillName);								///< 装备技能到CD列表
+	void equipInherentBuff(std::string buffName);						///< 装备固有buff
+	void pushDamgeInfo(DamageInfo& info);                               ///< 记录伤害信息
+	void setRandomSeed(std::uint32_t seed);								///< 设置随机数种子
 
-	 // Getters for private members
+	// ==== Getter接口（提供只读访问） ====
     double getAttributeRatio() const;
     int getPropertyTransformationCoeffcient_General() const;
     int getPropertyTransformationCoeffcient_Almighty() const;
     
-    // Getters for protected members (const references to prevent modification)
     const std::vector<std::unique_ptr<Buff>>& getBuffListRef() const;
     const std::vector<std::unique_ptr<Skill>>& getContinuousSkillListRef() const;
     const std::vector<std::unique_ptr<Skill>>& getNoReleasingSkillListRef() const;
@@ -276,7 +349,6 @@ public:
     const std::vector<DamageInfo>& getDamageListInfoRef() const;
     const std::vector<ErrorInfo>& getErrorInfoListRef() const;
     
-    // Getters for basic PrimaryAttributes
     int getTotalTime() const;
     double getMaxEnergy() const;
     double getPresentEnergy() const;
@@ -291,7 +363,6 @@ public:
     double getProficientCount() const;
     double getQuicknessCount() const;
     
-    // Getters for attack related
     double getATK() const;
     double getRefindATK() const;
     double getElementATK() const;
@@ -301,7 +372,6 @@ public:
     double getCastingSpeed() const;
     double getAttackSpeed() const;
     
-    // Getters for multipliers
     double getPrimaryAttributesIncrease() const;
     double getAttackIncrease() const;
     double getDamageIncrease() const;
@@ -313,47 +383,54 @@ public:
     double getFinalIncrease() const;
     double getDreamIncrease() const;
     
-    // Getters for luck related
     double getLuckyDamageIncrease() const;
     double getLuckyMultiplying() const;
     
-    // Getters for class specific coefficients
     double getProficientRatio() const;
     double getAlmightyRatio() const;
     double getCastingSpeedRatio() const;
     double getAttackSpeedRatio() const;
     
-    // Getters for state
     bool getIsReleasingSkill() const;
     
-    // Getters for other
     double getEnergyIncrease() const;
     double getEnergyReduceUP() const;
     double getEnergyReduceDOWN() const;
     
-    // Getter for AutoAttack
     const AutoAttack* getAutoAttack() const;
-    
-    // Getter for nowReleasingSkill
     const Skill* getNowReleasingSkill() const;
 
 	const Skill* getCurtainPointerForAction(std::string skillName) const;
 };
 
+// ============================================================================
 // 模板函数实现
-// args：创建<action>的构造函数参数
+// ============================================================================
+
+/**
+ * @brief 触发一个动作事件
+ * @tparam T 动作类型
+ * @tparam Args 动作构造函数参数类型
+ * @param count 动作执行次数或参数
+ * @param args 动作构造函数参数
+ * 
+ * 将动作添加到动作队列，由updateAction处理
+ */
 template <typename T, typename... Args>
 void Person::triggerAction(double count, Args &&...args)
 {
 	auto it = std::make_unique<T>(std::forward<Args>(args)...);
 	if(it)
 	{
-		//it->execute(count,this);
 		this->actionQueue.push(ActionInfo(count,std::move(it)));
 	}
-	//this->actionQueue.push(ActionInfo(count,std::make_unique<T>(std::forward<Args>(args)...)));
 }
 
+/**
+ * @brief 通过模板类名查找buff索引
+ * @tparam T buff类类型
+ * @return buff索引，-1表示未找到
+ */
 template <class T>
 int Person::findBuffInBuffList()
 {
@@ -367,6 +444,11 @@ int Person::findBuffInBuffList()
 	return -1;
 }
 
+/**
+ * @brief 通过模板类名查找技能索引
+ * @tparam T 技能类类型
+ * @return 技能索引，-1表示未找到
+ */
 template <class T>
 int Person::findSkillInSkillCDList()
 {
@@ -379,4 +461,3 @@ int Person::findSkillInSkillCDList()
 	}
 	return -1;
 }
-

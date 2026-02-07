@@ -30,6 +30,7 @@ add_executable(dps_simulator
     ./Mage/Person.cpp
     ./Mage/Buff.cpp
     ./Mage/AutoAttack.cpp
+    ./Mage/Action.cpp
 )
 
 # 针对不同构建类型设置编译选项

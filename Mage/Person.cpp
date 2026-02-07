@@ -1,5 +1,7 @@
 #include "Person.h"
 #include "AutoAttack.h"
+#include "../core/Action.h"
+#include "Action.h"
 
 Mage_Icicle::Mage_Icicle(const double PrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                          const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
@@ -24,23 +26,32 @@ Mage_Icicle::Mage_Icicle(const double PrimaryAttributes, const double critical, 
     changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
 
     // 因子效果:智力
-    this->changePrimaryAttributesByCount(70);
-    this->changePrimaryAttributesByPersent(0.0184);
+    //this->changePrimaryAttributesByCount(70);
+    triggerAction<PrimaryAttributesCountModifyAction>(70);
+    changePrimaryAttributesByPersent(0.0184);
     // 因子效果：暴击，幸运
-    this->changeCriticalCount(static_cast<int>(this->CriticalCount * 0.1));
-    this->changeLuckyCount(static_cast<int>(this->LuckyCount * 0.0927));
+    //this->changeCriticalCount(static_cast<int>(this->CriticalCount * 0.1));
+    triggerAction<CriticalCountModifyAction>(static_cast<int>(this->CriticalCount * 0.1));
+    //this->changeLuckyCount(static_cast<int>(this->LuckyCount * 0.0927));
+    triggerAction<LuckyCountModifyAction_Icicle>(static_cast<int>(this->LuckyCount * 0.0927));
+    
+    initializeIncrease();
+    changeDamageIncrease(0.08);
+    changeElementIncreaseByElementIncrease(0.1);
 }
 
 double Mage_Icicle::changeLuckyCount(int addCount)
 {
+
     Person::changeLuckyCount(addCount);
-    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    // changeLuckyCout中重置了幸运倍率，所以这里需要将冰矛特有倍率加回来
+    changeLuckyMultiplyingByAddMultiplying(0.15 + this->Lucky / 2);
     return this->Lucky;
 }
 
 double Mage_Icicle::changeLuckyPersent(double persent)
 {
     Person::changeLuckyPersent(persent);
-    changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
+    changeLuckyMultiplyingByAddMultiplying(0.15 + this->Lucky / 2);
     return this->Lucky;
 }

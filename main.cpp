@@ -139,8 +139,8 @@ int main()
     std::vector<std::unordered_map<std::string, DamageStatistics>> damageStatisticsList;
     
     // 3. 模拟参数配置
-    const int maxTime = 18000;       // 最大运行时间：180秒（18000毫秒）
-    const int deltaTime = 1;         // 时间增量：1毫秒
+    const int maxTime = 18000;       // 最大运行时间：180秒
+    const int deltaTime = 1;         // 时间增量：0.01s
     
     // 4. 执行模拟
     // 参数说明：

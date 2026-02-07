@@ -9,45 +9,44 @@
 #include "Skill.h"
 #include "Logger.h"
 #include "creators.hpp"
-#include "FightingFantasy/Skill.h"
-#include "Mage/Buff.h"
-
-std::uint32_t Person::fixedSeed = 42; // 默认种子值
+#include "../FightingFantasy/Skill.h"
+#include "../Mage/Buff.h"
 
 Person::Person(const double PrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
                const double criticaldamage_set, const double increase_set, const double elementincrease_set, const int totalTime)
-    : propertyTransformationCoeffcient_General(19975),
-      propertyTransformationCoeffcient_Almighty(11200),
-      totalTime(totalTime),
-      proficientRatio(0),
-      almightyRatio(0),
-      castingSpeedRatio(1),
-      attackSpeedRatio(1),
-      primaryAttributeRatio(0),
-      max_energy(125),
-      present_energy(max_energy),
-      Critical(critical / 100),
-      Lucky(lucky / 100),
-      Almighty(almighty / 100),
-      Proficient(Proficient / 100),
-      Quickness(quickness / 100),
-      refindATK(refindatk),
-      elementATK(elementatk),
-      primaryAttributes(PrimaryAttributes),
-      resourceNum(4),
-      maxResourceNum(4),
-      castingSpeed(castingSpeed),
-      attackSpeed(attackSpeed),
-      criticicalDamage(0.5),
-      damageReduce(0.1),
-      criticaldamage_set(criticaldamage_set),
-      increase_set(increase_set),
-      elementincrease_set(elementincrease_set),
-      luckyDamageIncrease(Lucky),
-      randomEngine(std::random_device{}())
+    : propertyTransformationCoeffcient_General(19975),      // 一般属性转化系数
+      propertyTransformationCoeffcient_Almighty(11200),    // 全能属性转化系数
+      totalTime(totalTime),                                // 总模拟时间
+      proficientRatio(0),                                  // 精通转化率（子类设置）
+      almightyRatio(0),                                    // 全能转化率（子类设置）
+      castingSpeedRatio(1),                                // 施法速度转化率
+      attackSpeedRatio(1),                                 // 攻击速度转化率
+      primaryAttributeRatio(0),                            // 主属性转化率（子类设置）
+      max_energy(125),                                     // 最大能量值
+      present_energy(max_energy),                          // 当前能量值（初始满）
+      Critical(critical / 100),                            // 暴击率（百分比转小数）
+      Lucky(lucky / 100),                                  // 幸运率（百分比转小数）
+      Almighty(almighty / 100),                            // 全能值（百分比转小数）
+      Proficient(Proficient / 100),                        // 精通值（百分比转小数）
+      Quickness(quickness / 100),                          // 急速值（百分比转小数）
+      refindATK(refindatk),                                // 精炼攻击力
+      elementATK(elementatk),                              // 元素攻击力
+      primaryAttributes(PrimaryAttributes),                // 主属性数值
+      resourceNum(4),                                      // 初始玄冰资源数量
+      maxResourceNum(4),                                   // 最大玄冰资源数量
+      castingSpeed(castingSpeed),                          // 施法速度加成
+      attackSpeed(attackSpeed),                            // 攻击速度加成
+      criticicalDamage(0.5),                               // 基础暴击伤害加成（+50%）
+      damageReduce(0.1),                                   // 基础减伤率（10%）
+      criticaldamage_set(criticaldamage_set),              // 额外暴击伤害（调试用）
+      increase_set(increase_set),                          // 额外增伤（调试用）
+      elementincrease_set(elementincrease_set),            // 额外元素增伤（调试用）
+      luckyDamageIncrease(Lucky),                          // 幸运伤害增幅（初始等于幸运值）
+      randomEngine(std::random_device{}())            // 初始化随机数引擎
+      //uniformDist(0.1,1.0)
 {
-    // 计算属性数值
+    // 计算属性数值（将百分比转换为属性点数）
     this->CriticalCount = getCriticalCount(this->Critical);
     this->QuicknessCount = getQuicknessCount(this->Quickness);
     this->LuckyCount = getLuckyCount(this->Lucky);
@@ -57,13 +56,13 @@ Person::Person(const double PrimaryAttributes, const double critical, const doub
     // 设置幸运倍率
     setLuckyMultiplying();
 
-    // buffList.reserve(15);
+    // buffList.reserve(15);  // 预留buff列表空间（可选优化）
 }
 
 Person::~Person()
 {
-    clearSkills();
-    clearBuffs();
+    clearSkills();  // 清理所有技能
+    clearBuffs();   // 清理所有buff
 }
 
 DamageInfo Person::Damage(const Skill *skill)
@@ -107,10 +106,10 @@ DamageInfo Person::Damage(const Skill *skill)
             }
         }
         
-        // 冰矛因子
+        // 冰矛因子：对幸运伤害有额外增幅
         if (this->findBuffInBuffList(FloodBuff_Icicle::name) != -1)
         {
-            luckyDamage *= 1.583;
+            luckyDamage *= 1.583;  // 增加58.3%
         }
 
         DamageInfo info(skill->getSkillName(), damage,
@@ -121,13 +120,15 @@ DamageInfo Person::Damage(const Skill *skill)
         // }
         return info;
     }
-    return DamageInfo();
+    return DamageInfo();  // 技能为空，返回空伤害信息
 }
 
 double Person::luckyDamage() const
 {
+    // 幸运伤害计算公式
     double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refindATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
 
+    // 幸运伤害也可暴击
     if (this->isSuccess(this->Critical))
     {
         damage *= 1 + this->criticicalDamage;
@@ -137,8 +138,8 @@ double Person::luckyDamage() const
 
 void Person::updateSkills(int deltaTime)
 {
-    this->updateNowReleasingSkill(deltaTime);
-    this->updateContinuousList(deltaTime);
+    this->updateNowReleasingSkill(deltaTime);   // 更新当前正在释放的技能
+    this->updateContinuousList(deltaTime);      // 更新持续性技能列表
 }
 
 void Person::updateNowReleasingSkill(int deltaTime)
@@ -514,7 +515,7 @@ int Person::findSkillInSkillCDList(const std::string skillName) const
         }
         i++;
     }
-    return -1;
+    return -1;  // 未找到
 }
 
 int Person::findBuffInBuffList(const std::string buffName) const
@@ -528,7 +529,7 @@ int Person::findBuffInBuffList(const std::string buffName) const
         }
         i++;
     }
-    return -1;
+    return -1;  // 未找到
 }
 
 void Person::createSkill(std::unique_ptr<Skill> newSkill)
@@ -581,6 +582,18 @@ void Person::createNoReleasingSkill(std::unique_ptr<Skill> newSkill)
 void Person::createBuff(std::unique_ptr<Buff> buff)
 {
     buffList.push_back(std::move(buff));
+}
+
+void Person::initializeIncrease()
+{
+    setAattackIncrease();
+    setElementIncrease();
+    setAlmightyIncrease();
+    setDamageIncrease();
+    setCriticalDamage();
+    changeCriticalDamage(criticaldamage_set);
+    changeDamageIncrease(increase_set);
+    changeElementIncreaseByElementIncrease(elementincrease_set);
 }
 
 double Person::setAattackIncrease()
@@ -978,7 +991,6 @@ const Skill* Person::getCurtainPointerForAction(std::string skillName) const
     }
     return nullptr;
 }
-
 
 
 

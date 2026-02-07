@@ -11,7 +11,7 @@ void LuckyCountModifyAction_Icicle::execute(double n, Person *p)
 {
     // 幸运基础百分比为5%
     LuckyCountModifyAction::execute(n,p);
-    p->changeLuckyMultiplyingByAddMultiplying(0.15 + (p->Lucky - 0.05) / 2);
+    p->changeLuckyMultiplyingByAddMultiplying(0.15 + p->Lucky / 2);
 }
 
 std::string LuckyCountModifyAction_Icicle::getActionName() { return LuckyCountModifyAction_Icicle::name; }

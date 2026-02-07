@@ -5,64 +5,126 @@
 #include "Creators.hpp"
 #include <vector>
 
+/* ============================================================================
+ * @class Initializer
+ * @brief 游戏初始化器基类，负责角色和战斗系统的初始化
+ * 
+ * 主要职责：
+ * 1. 注册所有技能和Buff类型到创建器
+ * 2. 装备角色的初始技能和Buff
+ * 3. 配置自动攻击系统的技能优先级
+ * 4. 设置角色的初始属性状态
+ * 
+ * 设计模式：模板方法模式
+ * 子类通过重写虚函数来配置具体的技能和Buff。
+ * 
+ * 初始化流程：
+ * 1. registerSkills() - 注册技能类型
+ * 2. registerBuffs() - 注册Buff类型
+ * 3. equipSkills() - 装备初始技能
+ * 4. initializePerson() - 初始化角色属性
+ * 5. initializeAutoAttack() - 初始化自动攻击系统
+ * ============================================================================
+ */
 class Initializer
 {
 protected:
-    Person* p;                        
-    std::vector<std::string> equippedSkills{};      // 已装备技能信息
-    std::vector<std::string> inherentBuffs{};       // 固定buff信息列表
+    Person* p;                        ///< 要初始化的角色指针
+    std::vector<std::string> equippedSkills{};      ///< 已装备技能名称列表
+    std::vector<std::string> inherentBuffs{};       ///< 固有Buff名称列表
 
-    virtual void equipSkills() = 0;                 // 重写此方法来装备可释放技能
-    virtual void registerSkills() = 0;              // 重写此方法来注册所有有需要的技能
-    virtual void registerBuffs() = 0;               // 重写此方法来注册所有有需要的buff
+    /**
+     * @brief 装备技能虚函数，子类必须重写
+     * 
+     * 在此方法中调用equipCertainSkill()来装备角色的初始技能。
+     */
+    virtual void equipSkills() = 0;
+    
+    /**
+     * @brief 注册技能虚函数，子类必须重写
+     * 
+     * 在此方法中调用registerCertainSkill()来注册所有需要的技能类型。
+     */
+    virtual void registerSkills() = 0;
+    
+    /**
+     * @brief 注册Buff虚函数，子类必须重写
+     * 
+     * 在此方法中调用registerCertainBuff()来注册所有需要的Buff类型。
+     */
+    virtual void registerBuffs() = 0;
 
-    // 1.装备特定技能，在重写equipSkills()函数中调用以装备技能
-    // 2.后续通过equipSkills中信息创建的技能需要将成员变量isEquip置为true
-    //   在person对应的equipSkill()函数中将isEquip置为true，并且使用dynamic_cast检查是否为幻想类
-    //   若是幻想类，则将其指针转为幻想基类并调用幻想类的setPassiveEffect函数          
+    /**
+     * @brief 装备特定技能
+     * @param skillName 要装备的技能名称
+     * 
+     * 将技能名称添加到equippedSkills列表，用于后续创建和装备。
+     */
     void equipCertainSkill(std::string skillName)
     {
         this->equippedSkills.emplace_back(skillName);
         Logger::debug("Initializer",
                       "Equipped skill: " + skillName);
-        
     }
 
-    // 为SkillCreator添加一个新的skill元素
-    template<typename Skill_>       // 加下划线防止与Skill类混淆，下同
+    /**
+     * @brief 注册特定技能类型
+     * @tparam Skill_ 技能类类型（带下划线避免与Skill类冲突）
+     * 
+     * 将技能类型注册到SkillCreator，同时创建临时实例添加到角色指针列表。
+     */
+    template<typename Skill_>
     void registerCertainSkill()
     {
+        // 注册到SkillCreator的创建器映射表
         SkillCreator::creatorMap.insert({Skill_::name,
                                 [](Person* p) { return std::make_unique<Skill_>(p); }});
         Logger::debug("Initializer",
                       "Registered skill: " + Skill_::name);
+        
+        // 添加到角色的指针列表，用于Action系统获取技能指针
         p->pointerListForAction.push_back(
                 std::make_unique<Skill_>(p));
     }
 
-    // 1.为BuffCreator添加一个新的buff元素
-    // 2.创建一个此类型，获取其isInherent成员变量，将信息存储到fixedBuffs列表中
+    /**
+     * @brief 注册特定Buff类型
+     * @tparam Buff_ Buff类类型
+     * 
+     * 将Buff类型注册到BuffCreator，同时检查是否为固有Buff。
+     */
     template<typename Buff_>
     void registerCertainBuff()
     {
+        // 注册到BuffCreator的创建器映射表
         BuffCreator::creatorMap.insert({Buff_::name,
                         [](Person* p,double n = 0) { return std::make_unique<Buff_>(p,n); }});
+        
+        // 检查是否为固有Buff
         bool isInherent = false;
         auto temp = std::make_unique<Buff_>(p,0);
         isInherent = temp->getIsInherent();
+        
         if(isInherent)
         {
             Logger::debug("Initializer",
                           "Inherent Buff Registered: " + Buff_::name);
             this->inherentBuffs.emplace_back(temp->getBuffName());
         }
+        
+        // 重置Buff ID计数器，避免测试实例影响正式ID分配
         Buff::resetID();
         temp.reset();
     }
 
+    /**
+     * @brief 初始化自动攻击系统
+     * 
+     * 配置技能优先级列表和初始资源状态。
+     */
     void initializeAutoAttack()
     {
-        // 初始化自动攻击系统优先级列表
+        // 初始化自动攻击系统技能优先级列表
         for(auto & skillName : equippedSkills)
         {
             this->p->autoAttackPtr->skillPriority.push_back(
@@ -72,41 +134,35 @@ protected:
         // 重置角色资源数
         this->p->resourceNum = this->p->maxResourceNum;
 
-        // 对优先级进行排序
+        // 对优先级进行排序（降序）
         std::stable_sort(this->p->autoAttackPtr->skillPriority.begin(), 
               this->p->autoAttackPtr->skillPriority.end(),
               [](const PriorSkillInfo &a, const PriorSkillInfo &b) -> bool
               {
-                  return a.priority > b.priority; // 降序，正确
+                  return a.priority > b.priority; // 降序排序
               });
     }
 
+    /**
+     * @brief 初始化角色
+     * 
+     * 设置角色属性、装备技能、重置技能层数、创建固有Buff。
+     */
     void initializePerson()
     {
-        // 初始化乘区
-        this->p->setAattackIncrease();
-        this->p->setElementIncrease();
-        this->p->setAlmightyIncrease();
-        this->p->setDamageIncrease();
-        this->p->setCriticalDamage();
-        this->p->changeCriticalDamage(this->p->criticaldamage_set);
-        this->p->changeDamageIncrease(this->p->increase_set);
-        this->p->changeElementIncreaseByElementIncrease(this->p->elementincrease_set);
-        this->p->changeDamageIncrease(0.08);
-        this->p->changeElementIncreaseByElementIncrease(0.1);
         // 装备技能
         for(auto & skillName : equippedSkills)
         {
             this->p->equipSkill(skillName);
         }
 
-        // 重置层数
+        // 重置技能层数
         for (const auto &skill : p->skillCDList)
         {
             skill->getStackRef() = skill->getMaxStack();
         }
 
-        // 创建固有buff
+        // 创建固有Buff
         for(auto & buffName : inherentBuffs)
         {
                 p->equipInherentBuff(buffName);
@@ -114,6 +170,16 @@ protected:
     }
 
 public:
+    /**
+     * @brief 执行完整初始化流程
+     * 
+     * 调用顺序：
+     * 1. registerSkills()
+     * 2. registerBuffs()
+     * 3. equipSkills()
+     * 4. initializePerson()
+     * 5. initializeAutoAttack()
+     */
     void Initialize()
     {
         this->registerSkills();
@@ -123,7 +189,10 @@ public:
         this->initializeAutoAttack();
     }
 
-
+    /**
+     * @brief 构造函数
+     * @param p 要初始化的角色指针
+     */
     Initializer(Person* p)
                 : p(p){}
 
