@@ -184,6 +184,14 @@ void AutoAttack::createSkillByAuto()
     }
 }
 
+void AutoAttack::updatePerson(int deltaTime)
+{
+    this->p->updateBuffs(deltaTime);
+    this->p->updateSkills(deltaTime);
+    this->p->updateSkillsCD(deltaTime);
+    //this->p->updateAction(deltaTime);
+}
+
 // 添加技能释放的禁止条件
 void AutoAttack::addJudgingConditionsForCantCreateSkill(std::function<bool(const PriorSkillInfo &)> condition,
                                                         ErrorInfo::errorTypeEnum errorType)

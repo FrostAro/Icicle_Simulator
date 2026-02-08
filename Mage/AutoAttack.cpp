@@ -144,10 +144,7 @@ void AutoAttack_Mage_Icicle::update(int deltaTime)
 
     // 更新时间，创建技能
     this->createSkillByAuto();
-    this->p->updateBuffs(deltaTime);
-    this->p->updateSkills(deltaTime);
-    this->p->updateSkillsCD(deltaTime);
-    //this->p->updateAction(deltaTime);
+    this->updatePerson(deltaTime);
 }
 
 void AutoAttack_Mage_Icicle::largeOutBurst()

@@ -32,14 +32,18 @@ protected:
     Person *p;
     
     // 必须实现的纯虚函数
-    virtual void largeOutBurst() = 0;                         // 大爆发触发逻辑
-    virtual void smallOutBurst() = 0;                         // 小爆发触发逻辑
-    virtual void checkAndTriggerLargeOutBurst() = 0;          // 检查并触发大爆发
-    virtual void checkAndTriggerSmallOutBurst() = 0;          // 检查并触发小爆发
-    virtual void checkAndFinishOutBurst() = 0;                // 检查并结束爆发状态
-    virtual void checkAndSetOutBurstState() = 0;              // 检查并设置爆发状态
-    virtual void windowPeriodLogic() = 0;                     // 空窗期逻辑
-    virtual void update(int deltaTime) = 0;                   // 每tick更新逻辑
+    //update()中需要子类实现的具体战斗逻辑，技能自动释放通过调整技能优先级处理
+    virtual void update(int deltaTime) = 0;               // 每tick更新逻辑
+    
+    // 以下函数为大爆发，小爆发，空窗期的三段式轴
+    // 仅用作参考，可以不进行重写，实际实现可自行发挥
+    virtual void largeOutBurst();                         // 大爆发触发逻辑
+    virtual void smallOutBurst();                         // 小爆发触发逻辑
+    virtual void checkAndTriggerLargeOutBurst();          // 检查并触发大爆发
+    virtual void checkAndTriggerSmallOutBurst();          // 检查并触发小爆发
+    virtual void checkAndFinishOutBurst();                // 检查并结束爆发状态
+    virtual void checkAndSetOutBurstState();              // 检查并设置爆发状态
+    virtual void windowPeriodLogic();                     // 空窗期逻辑
     
 public:
     // 公共接口
@@ -74,15 +78,19 @@ public:
 ```cpp
 class AutoAttack_NewClass : public AutoAttack {
 private:
-    // 必须实现的纯虚函数
+    // 必须实现的函数
+    // update()中用于对自动战斗逻辑进行处理
+    // 例如何时开爆发何时结束爆发需要放哪些技能，
+    void update(int deltaTime) override; 
+
+    // 如果战斗逻辑为三段式轴可仿照冰矛内autoAttack逻辑实现下列函数
     void largeOutBurst() override;                   
     void smallOutBurst() override;
     void checkAndTriggerLargeOutBurst() override;                
     void checkAndTriggerSmallOutBurst() override;
     void checkAndFinishOutBurst() override;                      
     void checkAndSetOutBurstState() override;
-    void windowPeriodLogic() override;
-    void update(int deltaTime) override;           
+    void windowPeriodLogic() override;          
     
 public:
     // 构造函数
@@ -118,20 +126,35 @@ AutoAttack_NewClass::AutoAttack_NewClass(Person* p) : AutoAttack(p) {
     );
 }
 
+// 每tick更新逻辑
+void AutoAttack_NewClass::update(int deltaTime) {
+    
+    /*
+    1.实际每tick战斗逻辑...
+    */
+    
+    // 2. 自动创建技能
+    this->createSkillByAuto();
+    
+    // 3. 更新角色的各个系统
+    this->updatePerson();
+}
+
+// (三段式轴可选)
 // 大爆发触发逻辑
 void AutoAttack_NewClass::largeOutBurst() {
     if (!this->signalForRepeatedlyOutBurst) {
         // 1. 手动添加爆发期技能序列
-        this->maniAddPriorSkillList("UltimateSkill");
-        this->maniAddPriorSkillList("PrimarySkill");
-        this->maniAddPriorSkillList("PrimarySkill");
-        this->maniAddPriorSkillList("SecondarySkill");
-        this->maniAddPriorSkillList("UtilitySkill");
+        this->maniAddPriorSkillList(UltimateSkill::name);
+        this->maniAddPriorSkillList(PrimarySkill::name);
+        this->maniAddPriorSkillList(PrimarySkill::name);
+        this->maniAddPriorSkillList(SecondarySkill::name);
+        this->maniAddPriorSkillList(UtilitySkill::name);
         
         // 2. 调整技能优先级
-        this->changePriority("PrimarySkill", 200);
-        this->changePriority("SecondarySkill", 150);
-        this->changePriority("UtilitySkill", 100);
+        this->changePriority(PrimarySkill::name, 200);
+        this->changePriority(SecondarySkill::name, 150);
+        this->changePriority(UtilitySkill::name, 100);
         
         // 3. 设置下一次爆发类型为小爆发
         this->nextOutBurstType = 0;
@@ -150,13 +173,13 @@ void AutoAttack_NewClass::largeOutBurst() {
 void AutoAttack_NewClass::smallOutBurst() {
     if (!this->signalForRepeatedlyOutBurst) {
         // 1. 手动添加小爆发技能序列
-        this->maniAddPriorSkillList("PrimarySkill");
-        this->maniAddPriorSkillList("PrimarySkill");
-        this->maniAddPriorSkillList("SecondarySkill");
+        this->maniAddPriorSkillList(PrimarySkill::name);
+        this->maniAddPriorSkillList(PrimarySkill::name);
+        this->maniAddPriorSkillList(SecondarySkill::name);
         
         // 2. 调整技能优先级
-        this->changePriority("PrimarySkill", 150);
-        this->changePriority("SecondarySkill", 100);
+        this->changePriority(PrimarySkill::name, 150);
+        this->changePriority(SecondarySkill::name, 100);
         
         // 3. 设置下一次爆发类型为大爆发
         this->nextOutBurstType = 1;
@@ -292,7 +315,7 @@ void AutoAttack_NewClass::windowPeriodLogic() {
     }
 }
 
-// 每tick更新逻辑
+// 三段式战斗逻辑中每tick更新逻辑
 void AutoAttack_NewClass::update(int deltaTime) {
     // 1. 更新计时器（如果需要）
     this->customCooldownTimer += deltaTime;
@@ -316,9 +339,7 @@ void AutoAttack_NewClass::update(int deltaTime) {
     this->createSkillByAuto();
     
     // 8. 更新角色的各个系统
-    this->p->updateBuffs(deltaTime);
-    this->p->updateSkills(deltaTime);
-    this->p->updateSkillsCD(deltaTime);
-    this->p->updateAction(deltaTime);
+    this->updatePerson();
 }
+
 ```

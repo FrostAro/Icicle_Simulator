@@ -115,46 +115,57 @@ protected:
      * 4. 检查技能冷却、层数、释放条件等
      */
     void createSkillByAuto();
+
+    /**
+     * @brief 统一更新person类相关update函数
+     * 
+     * @details 更新相关update函数如下:
+     * 1.updateBuffs
+     * 2.updateSkills
+     * 3.updateSkillsCD
+     */
+    void updatePerson(int deltaTime);
     
     // ============================================================================
-    // 纯虚函数声明（需要子类实现的具体战斗逻辑）
+    // 需要子类实现的具体战斗逻辑，以下函数为大爆发，小爆发，空窗期的三段式轴
+    // 仅用作参考，实际实现可自行发挥
     // ============================================================================
     
     /**
      * @brief 大爆发触发时的具体逻辑
      */
-    virtual void largeOutBurst() = 0;
+    virtual void largeOutBurst(){};
     
     /**
      * @brief 小爆发触发时的具体逻辑
      */
-    virtual void smallOutBurst() = 0;
+    virtual void smallOutBurst(){};
     
     /**
      * @brief 检查并触发大爆发
      */
-    virtual void checkAndTriggerLargeOutBurst() = 0;
+    virtual void checkAndTriggerLargeOutBurst(){};
     
     /**
      * @brief 检查并触发小爆发
      */
-    virtual void checkAndTriggerSmallOutBurst() = 0;
+    virtual void checkAndTriggerSmallOutBurst(){};
     
     /**
      * @brief 检查并结束爆发状态
      */
-    virtual void checkAndFinishOutBurst() = 0;
+    virtual void checkAndFinishOutBurst(){};
     
     /**
      * @brief 检查并进入爆发状态
      */
-    virtual void checkAndSetOutBurstState() = 0;
+    virtual void checkAndSetOutBurstState(){};
     
     /**
      * @brief 空窗期逻辑
      * @details 不在爆发状态时执行的常规逻辑
      */
-    virtual void windowPeriodLogic() = 0;
+    virtual void windowPeriodLogic(){};
     
     /**
      * @brief 添加技能释放的禁止条件
