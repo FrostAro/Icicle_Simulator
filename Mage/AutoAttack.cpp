@@ -147,7 +147,7 @@ void AutoAttack_Mage_Icicle::update(int deltaTime)
     this->p->updateBuffs(deltaTime);
     this->p->updateSkills(deltaTime);
     this->p->updateSkillsCD(deltaTime);
-    this->p->updateAction(deltaTime);
+    //this->p->updateAction(deltaTime);
 }
 
 void AutoAttack_Mage_Icicle::largeOutBurst()

@@ -10,7 +10,38 @@ double AutoAttack::timer = 0;
 AutoAttack::AutoAttack(Person *p)
     : p(p)
 {
-    timer = 0;  // 初始化时重置全局计时器
+    timer = 0; // 初始化时重置全局计时器
+}
+
+// 快速查找技能索引
+int AutoAttack::getSkillIndex(const std::string &skillName)
+{
+    // 1. 先尝试从缓存中获取
+    auto it = skillIndexCache.find(skillName);
+    if (it != skillIndexCache.end())
+    {
+        // 验证索引是否有效（防止越界）
+        if (it->second >= 0 && static_cast<size_t>(it->second) < p->getSkillCDListRef().size())
+        {
+            // 验证技能名称是否匹配（防止技能列表变化）
+            if (p->getSkillCDListRef().at(it->second)->getSkillName() == skillName)
+            {
+                return it->second;
+            }
+        }
+        // 如果无效，从缓存中移除
+        skillIndexCache.erase(it);
+    }
+    
+    // 2. 缓存未命中，执行原始查找
+    int index = p->findSkillInSkillCDList(skillName);
+    if (index != -1)
+    {
+        // 添加到缓存
+        skillIndexCache[skillName] = index;
+    }
+    
+    return index;
 }
 
 // 手动添加优先级技能（允许重复）
@@ -27,7 +58,7 @@ void AutoAttack::autoAddPriorSkillList(std::string skillName)
     {
         if (i.skillName == skillName)
         {
-            return;  // 已存在，直接返回
+            return; // 已存在，直接返回
         }
     }
     auto priorSkill = PriorSkillInfo(skillName, true, false);
@@ -66,63 +97,68 @@ void AutoAttack::createSkillByAuto()
 {
     // 1. 检查是否正在释放技能（防止打断）
     if (this->isReleasingSkill)
-    { 
+    {
         this->p->addErrorInfoInList(ErrorInfo(
             "NONE", ErrorInfo::errorTypeEnum::Now_Releasing_Skill));
         return;
     }
-    
+
     // 2. 优先处理待释放的优先级技能列表
     if (!this->priorSkillList.empty())
-    { 
+    {
         auto willSkillName = this->priorSkillList.at(0).skillName;
         this->p->triggerAction<CreateSkillAction>(0, willSkillName);
         this->priorSkillList.erase(this->priorSkillList.begin()); // 删除已处理的技能
         return;
     }
-    
+
     // 3. 按优先级列表寻找可释放的技能
     for (auto &i : this->skillPriority)
-    { 
+    {
         // 只处理优先级大于0的技能
         if (i.priority <= 0)
+            // 优先级列表默认有序，<=0直接返回
             return;
-        
+
         // 查找技能在CD列表中的索引
-        int a = this->p->findSkillInSkillCDList(i.skillName);
+        int a = getSkillIndex(i.skillName);  // 使用缓存替代原始查找
         if (a == -1)
+        {
+            this->p->addErrorInfoInList(
+                ErrorInfo(i.skillName, ErrorInfo::errorTypeEnum::Skill_Not_Found));
             return;
-        
+        }
+
         // 检查技能层数是否足够
         if (this->p->getSkillCDListRef().at(a)->getStackRef() < 1)
-        { 
+        {
             this->p->addErrorInfoInList(
                 ErrorInfo(i.skillName, ErrorInfo::errorTypeEnum::Stack_Not_Enough));
             continue;
         }
-        
+
         // 区分非充能技能和充能技能的CD检查
         if (!this->p->getSkillCDListRef().at(a)->getCanCharge())
-        { 
+        {
             // 非充能技能：检查普通CD
             if (this->p->getSkillCDListRef().at(a)->getCurrentCD_Value() > 0)
-            { 
+            {
                 this->p->addErrorInfoInList(
                     ErrorInfo(i.skillName, ErrorInfo::errorTypeEnum::CD_Not_Enough));
                 continue;
             }
         }
         else
-        { 
+        {
             // 充能技能：检查充能CD
             if (this->p->skillCDList[a]->getCurrentChargedCD_Value() > 0)
-            { 
+            {
                 this->p->addErrorInfoInList(
                     ErrorInfo(i.skillName, ErrorInfo::errorTypeEnum::ChargeCD_Not_Enough));
                 continue;
             }
         }
-        
+
         // 4. 检查额外的释放条件
         bool canCreateSkill = true;
         for (auto &judgeConditionStruct : this->judgingConditionsForCreateSkill)
@@ -136,12 +172,12 @@ void AutoAttack::createSkillByAuto()
                 break; // 跳出条件检查循环
             }
         }
-        
+
         if (!canCreateSkill)
         {
             continue; // 条件不满足，检查下一个技能
         }
-        
+
         // 5. 所有条件满足，添加到待释放列表（自动去重）
         this->autoAddPriorSkillList(i.skillName);
         break; // 只处理一个技能，找到后即退出循环

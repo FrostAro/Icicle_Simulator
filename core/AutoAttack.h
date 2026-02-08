@@ -1,5 +1,6 @@
 #pragma once
 #include "info.h"
+#include <unordered_map>
 #include <vector>
 #include <memory>
 #include <functional>
@@ -72,10 +73,23 @@ protected:
     
     Person* p;  // 所属的人物对象指针
 
+    std::unordered_map<std::string, int> skillIndexCache{};  // 技能名->索引缓存
+
     // ============================================================================
     // 受保护的成员函数声明（内部使用）
     // ============================================================================
     
+    /**
+     * @brief 获取技能在skillCDList的索引
+     * @param skillName 技能名称
+     * @details 
+     * 1.通过skillIndexCache快速寻找技能返回索引
+     * 2.未在skillIndexCache找到则执行findSkillInSkillCDList()
+     * 3.如果findSkillInSkillCDList()找到（即 != -1）则将其添加进skillIndexCache
+     * 4.返回index
+     */
+     int getSkillIndex(const std::string& skillName);
+
     /**
      * @brief 手动添加优先级技能（允许重复）
      * @param skillName 技能名称

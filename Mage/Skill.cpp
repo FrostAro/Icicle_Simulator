@@ -2,6 +2,7 @@
 #include "../core/Action.h"
 #include "../core/Person.h"
 #include "Buff.h"
+#include <iostream>
 
 // 共用
 // 灌注
@@ -64,7 +65,7 @@ void Ultimate::setSkillType()
 void Ultimate::trigger(Person *p)
 {
     p->triggerAction<CreateBuffAction>(0, UltiIncreaseBuff_Icicle::name);
-    p->triggerAction<AttackAction>(0, this->getSkillName());
+    p->triggerAction<AttackAction>(0, this);
 }
 
 std::string Ultimate::getSkillName() const
@@ -103,8 +104,8 @@ void IceArrow::setSkillType()
 void IceArrow::trigger(Person *p)
 {
 
-    p->triggerAction<AttackAction>(0, this->getSkillName()); // 冰箭本体伤害
-    p->triggerAction<AttackAction>(0, this->getSkillName()); // 冰箭爆炸伤害
+    p->triggerAction<AttackAction>(0, this); // 冰箭本体伤害
+    p->triggerAction<AttackAction>(0, this); // 冰箭爆炸伤害
 }
 
 std::string IceArrow::getSkillName() const
@@ -156,9 +157,9 @@ void Spear::trigger(Person *p)
     //p->triggerAction<AttackAction>(0, this->getSkillName());
     if (p->findBuffInBuffList(DoubleSpearBuff::name) != -1)
     {
-        p->triggerAction<AttackAction>(0, this->getSkillName());
+        p->triggerAction<AttackAction>(0, this);
     }
-    p->triggerAction<AttackAction>(0, this->getSkillName());
+    p->triggerAction<AttackAction>(0, this);
     p->triggerAction<EnergyRevertAction>(this->energyReduce / 2);
 }
 
@@ -184,7 +185,6 @@ PierceSpear::PierceSpear(Person *) : InstantSkill()
 
     this->damageIncreaseAdd = 0.16;
     this->criticalIncreaseAdd = 0.13;
-    this->dreamIncreaseAdd = 0.35;
 
     this->MaxCD = 0;
     this->CD = 0;
@@ -204,7 +204,7 @@ void PierceSpear::trigger(Person *p)
 {
     for (int i = 0; i < 3; i++)
     {
-        p->triggerAction<AttackAction>(0, this->getSkillName());
+        p->triggerAction<AttackAction>(0, this);
     }
 }
 
@@ -264,7 +264,7 @@ void Meteorite::trigger(Person *p)
 
     for (int i = 0; i < 4; i++)
     {
-        p->triggerAction<AttackAction>(0, this->getSkillName());
+        p->triggerAction<AttackAction>(0, this);
     }
     this->damageIncreaseAdd = 0;
     this->finalIncreaseAdd = 0;
@@ -311,7 +311,7 @@ void SynergyMeteorite::trigger(Person *p)
 {
     for (int i = 0; i < 4; i++)
     {
-        p->triggerAction<AttackAction>(0, this->getSkillName());
+        p->triggerAction<AttackAction>(0, this);
     }
 }
 
@@ -370,7 +370,6 @@ FrostComet::FrostComet(Person *p) : InstantSkill()
     this->fixedValue = 0;
 
     this->damageIncreaseAdd = p->luckyDamageIncrease;
-    this->dreamIncreaseAdd = 0.35;
 
     this->isNoReleasing = true;
 
@@ -385,7 +384,7 @@ void FrostComet::setSkillType()
 
 void FrostComet::trigger(Person *p)
 {
-    p->triggerAction<AttackAction>(0, this->getSkillName());
+    p->triggerAction<AttackAction>(0, this);
 }
 
 std::string FrostComet::getSkillName() const
@@ -421,10 +420,10 @@ void FantasyImpact::setSkillType()
 
 void FantasyImpact::trigger(Person *p)
 {
-    p->triggerAction<AttackAction>(0, this->getSkillName());
+    p->triggerAction<AttackAction>(0, this);
     // 二重：幻想冲击有50%几率再触发一次
     if (p->isSuccess(0.5) ) {
-        p->triggerAction<AttackAction>(0, this->getSkillName());
+        p->triggerAction<AttackAction>(0, this);
     }
 }
 
@@ -468,7 +467,7 @@ void Radial::setSkillType()
 void Radial::trigger(Person* p)
 {
     p->triggerAction<EnergyConsumeAction>(this->energyReduce);
-    p->triggerAction<AttackAction>(0, this->getSkillName());
+    p->triggerAction<AttackAction>(0, this);
     static int addMultiplyingTimes = 0;
     if(addMultiplyingTimes < 10)
     {
@@ -519,7 +518,7 @@ void Vortex::setSkillType()
 
 void Vortex::trigger(Person* p)
 {
-    p->triggerAction<AttackAction>(0,this->getSkillName());
+    p->triggerAction<AttackAction>(0,this);
     p->triggerAction<EnergyRevertAction>(this->energyReduce * 3);
 }
 

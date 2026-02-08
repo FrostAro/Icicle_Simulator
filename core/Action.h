@@ -100,14 +100,14 @@ class AttackAction : public Action
 private:
     static std::string name;  ///< 动作名称："AttackAction"
     static std::vector<std::unique_ptr<DamageListener>> listeners;  ///< 伤害监听器列表
-    std::string skillName;    ///< 技能名称
+    Skill* skill;    ///< 技能名称
 
 public:
     /**
      * @brief 构造函数
-     * @param skillName 要攻击的技能名称
+     * @param skill 要攻击的技能
      */
-    explicit AttackAction(std::string skillName);
+    explicit AttackAction(Skill* skill);
 
     void execute(double n, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<DamageListener> listener);

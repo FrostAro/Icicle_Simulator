@@ -2,6 +2,8 @@
 #include "Info.h"
 #include <functional>
 #include <string>
+#include "Skill.h"
+#include "Buff.h"
 
 // 前向声明
 class DamageInfo;
@@ -18,9 +20,9 @@ inline BaseListener::~BaseListener() = default;
 template <typename T>
 class TypedListener : public BaseListener {
 public:
-    std::function<void(const T&)> callback;
+    std::function<void(T&)> callback;
     
-    TypedListener(int id, std::function<void(const T&)> func) 
+    TypedListener(int id, std::function<void(T&)> func) 
                 : callback(std::move(func))
     {
         this->buffID = id;
@@ -30,10 +32,10 @@ public:
 
 class DamageListener : public TypedListener<DamageInfo> {
 public:
-    DamageListener(const int id, const std::function<void(const DamageInfo&)> func)
+    DamageListener(const int id, std::function<void(DamageInfo&)> func)
         : TypedListener<DamageInfo>(id, func) {}
     
-    void trigger(const DamageInfo &info) const {
+    void trigger(DamageInfo &info) {
         if (callback) callback(info);
     }
 };
@@ -43,7 +45,7 @@ public:
     EnergyListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double amount) const {
+    void trigger(double amount) const {
         if (callback) callback(amount);
     }
 };
@@ -53,7 +55,7 @@ public:
     ResourceListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double amount) const {
+    void trigger(double amount) const {
         if (callback) callback(amount);
     }
 };
@@ -63,28 +65,28 @@ public:
     CDListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double amount) const {
+    void trigger(double amount) const {
         if (callback) callback(amount);
     }
 };
 
-class CreateSkillListener : public TypedListener<std::string> {
+class CreateSkillListener : public TypedListener<Skill*> {
 public:
-    CreateSkillListener(const int id, const std::function<void(const std::string)> func)
-        : TypedListener<std::string>(id, func) {}
+    CreateSkillListener(const int id, std::function<void(Skill* const)> func)
+        : TypedListener<Skill*>(id, func) {}
     
-    void trigger(const std::string skillname) const {
-        if (callback) callback(skillname);
+    void trigger(Skill* skill) const {
+        if (callback) callback(skill);
     }
 };
 
-class CreateBuffListener : public TypedListener<std::string> {
+class CreateBuffListener : public TypedListener<Buff*> {
 public:
-    CreateBuffListener(const int id, const std::function<void(const std::string)> func)
-        : TypedListener<std::string>(id, func) {}
+    CreateBuffListener(const int id, std::function<void(Buff* const)> func)
+        : TypedListener<Buff*>(id, func) {}
     
-    void trigger(std::string buffName) const {
-        if (callback) callback(buffName);
+    void trigger(Buff* buff) const {
+        if (callback) callback(buff);
     }
 };
 
@@ -96,7 +98,7 @@ public:
     PrimaryAttributeListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double value) const {
+    void trigger(double value) const {
         if (callback) callback(value);
     }
 };
@@ -107,7 +109,7 @@ public:
     SecondaryAttributeListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double amount) const {
+    void trigger(double amount) const {
         if (callback) callback(amount);
     }
 };
@@ -118,7 +120,7 @@ public:
     SpeedAttributeListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double value) const {
+    void trigger(double value) const {
         if (callback) callback(value);
     }
 };
@@ -129,7 +131,7 @@ public:
     MultiplierAttributeListener(const int id, const std::function<void(const double)> func)
         : TypedListener<double>(id, func) {}
     
-    void trigger(const double value) const {
+    void trigger(double value) const {
         if (callback) callback(value);
     }
 };

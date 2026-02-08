@@ -1,13 +1,15 @@
 #pragma once
 #include "../core/Buff.h"
 
+class Skill;
+
 class SpearCritialBuff : public Buff
 {
 public:
     // 冰矛暴击(增伤)
     static std::string name;
 
-    void listenerCallback(const DamageInfo &info);
+    void listenerCallback(DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -23,7 +25,7 @@ public:
     // 冰矛暴击回复玄冰
     static std::string name;
 
-    void listenerCallback(const DamageInfo &info) const;
+    void listenerCallback(DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -151,7 +153,7 @@ public:
     static std::string name;
 
 public:
-    void listenerCallback(const DamageInfo &info) const;
+    void listenerCallback(DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -167,7 +169,7 @@ public:
     static std::string name;
 
 public:
-    void listenerCallback(const DamageInfo &info) const;
+    void listenerCallback(DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -183,7 +185,7 @@ public:
     static std::string name;
 
 public:
-    void listenerCallback(const DamageInfo &info) const;
+    void listenerCallback(DamageInfo &info) const;
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -215,7 +217,7 @@ public:
     static std::string name;
 
 public:
-    void listenerCallback(const DamageInfo &info);
+    void listenerCallback(DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -231,7 +233,7 @@ public:
     static std::string name;
 
 public:
-    void listenerCallback(const DamageInfo &info);
+    void listenerCallback(DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -251,7 +253,7 @@ public:
     int extremeLuckTriggerStack = 0;   //极运触发所需层数
 
 public:
-    void listenerCallback(const DamageInfo &info);
+    void listenerCallback(DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
@@ -273,11 +275,27 @@ public:
     static std::string name;
 
 public:
-    void listenerCallback(const DamageInfo &info);
+    void listenerCallback(DamageInfo &info);
     void update(double deltaTime) override;
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
 
     ExtremeLuckDivisor(Person *p, double n);
     ~ExtremeLuckDivisor();
+};
+
+class OccupationalDivisor_Icicle : public Divisor  //职业因子（数值部分）
+{
+public:
+    static std::string name;
+
+public:
+    void listenerCallback(DamageInfo &info);
+    void listenerCallback2(Skill* const skill);
+    void update(double deltaTime) override;
+    bool shouldBeRemoved() override;
+    std::string getBuffName() const override;
+
+    OccupationalDivisor_Icicle(Person *p, double n);
+    ~OccupationalDivisor_Icicle();
 };

@@ -422,7 +422,8 @@ void Person::triggerAction(double count, Args &&...args)
 	auto it = std::make_unique<T>(std::forward<Args>(args)...);
 	if(it)
 	{
-		this->actionQueue.push(ActionInfo(count,std::move(it)));
+		it->execute(count,this);
+		//this->actionQueue.push(ActionInfo(count,std::move(it)));
 	}
 }
 

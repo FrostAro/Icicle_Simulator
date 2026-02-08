@@ -133,7 +133,7 @@ extern void summaryCirculationPrint(
 int main()
 {
     // 1. 初始化日志系统，设置日志级别为INFO
-    Logger::initialize(Logger::Level::INFO);
+    Logger::initialize(Logger::Level::DEBUG);
     
     // 2. 伤害统计结果列表（用于处理进行了循环的数据）
     std::vector<std::unordered_map<std::string, DamageStatistics>> damageStatisticsList;
@@ -154,7 +154,7 @@ int main()
     
     // 5. 汇总输出（如果有多次循环，进行汇总）
     summaryCirculationPrint(damageStatisticsList, maxTime);
-    
+    //std::cout << "end" << std::endl;
     return 0;  // 程序正常退出
 }
 

@@ -105,12 +105,6 @@ DamageInfo Person::Damage(const Skill *skill)
                 luckyDamage = this->luckyDamage();
             }
         }
-        
-        // 冰矛因子：对幸运伤害有额外增幅
-        if (this->findBuffInBuffList(FloodBuff_Icicle::name) != -1)
-        {
-            luckyDamage *= 1.583;  // 增加58.3%
-        }
 
         DamageInfo info(skill->getSkillName(), damage,
                         luckyDamage, this->isSuccess(this->Critical), isLucky);

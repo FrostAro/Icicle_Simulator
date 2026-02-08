@@ -19,7 +19,7 @@ SpearCritialBuff::SpearCritialBuff(Person *p) : Buff(p)
 
     // 构造buff时同步链接监听
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
 
     AttackAction::addListener(std::move(info));
@@ -35,13 +35,13 @@ SpearCritialBuff::SpearCritialBuff(Person *p, const double n) : Buff(p)
     this->isStackable = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
 
     AttackAction::addListener(std::move(info));
 }
 
-void SpearCritialBuff::listenerCallback(const DamageInfo &info)
+void SpearCritialBuff::listenerCallback(DamageInfo &info)
 {
     if (info.isCritical &&
         (info.skillName == Spear::name 
@@ -87,14 +87,14 @@ SpearCritialToRevertIceBuff::SpearCritialToRevertIceBuff(Person *p, double)
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
 
     AttackAction::addListener(std::move(info));
 }
 
 void SpearCritialToRevertIceBuff::listenerCallback(
-    const DamageInfo &info) const
+    DamageInfo &info) const
 {
     if (info.isCritical && (info.skillName == Spear::name))
     {
@@ -392,13 +392,13 @@ MeteoriteRefreshBuff::MeteoriteRefreshBuff(Person *p, double) : Buff(p)
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
 
     AttackAction::addListener(std::move(info));
 }
 
-void MeteoriteRefreshBuff::listenerCallback(const DamageInfo &info) const
+void MeteoriteRefreshBuff::listenerCallback(DamageInfo &info) const
 {
     int a = this->p->findSkillInSkillCDList(Meteorite::name);
     if (a != -1)
@@ -444,12 +444,12 @@ FrostCometBuff::FrostCometBuff(Person *p, double) : Buff(p)
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
     AttackAction::addListener(std::move(info));
 }
 
-void FrostCometBuff::listenerCallback(const DamageInfo &info) const
+void FrostCometBuff::listenerCallback(DamageInfo &info) const
 {
     if (info.skillName == Spear::name)
     {
@@ -482,13 +482,13 @@ MeteoriteSynergyBuff::MeteoriteSynergyBuff(Person *p, double) : Buff(p)
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
 
     AttackAction::addListener(std::move(info));
 }
 
-void MeteoriteSynergyBuff::listenerCallback(const DamageInfo &info) const
+void MeteoriteSynergyBuff::listenerCallback(DamageInfo &info) const
 {
     // 1. 先检查基本条件（不涉及技能列表查找）
     if (!info.isCritical || !info.isLucky)
@@ -581,12 +581,12 @@ PierceSpearBuff::PierceSpearBuff(Person *p, double) : Buff(p)
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
     AttackAction::addListener(std::move(info));
 }
 
-void PierceSpearBuff::listenerCallback(const DamageInfo &info)
+void PierceSpearBuff::listenerCallback(DamageInfo &info)
 {
     if (info.skillName == Spear::name)
     {
@@ -624,12 +624,12 @@ EquipmentSetEffectBuff_Icicle::EquipmentSetEffectBuff_Icicle(Person *p, double) 
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
     AttackAction::addListener(std::move(info));
 }
 
-void EquipmentSetEffectBuff_Icicle::listenerCallback(const DamageInfo &info)
+void EquipmentSetEffectBuff_Icicle::listenerCallback(DamageInfo &info)
 {
     if (info.skillName == Spear::name)
     {
@@ -682,12 +682,12 @@ FantasyImpactBuff::FantasyImpactBuff(Person *p, double)
     this->isInherent = true;
 
     auto info = std::make_unique<DamageListener>(
-        this->getBuffID(), [this](const DamageInfo &damageInfo)
+        this->getBuffID(), [this](DamageInfo &damageInfo)
         { this->listenerCallback(damageInfo); });
     AttackAction::addListener(std::move(info));
 }
 
-void FantasyImpactBuff::listenerCallback(const DamageInfo &info)
+void FantasyImpactBuff::listenerCallback(DamageInfo &info)
 {
     if (info.isLucky && info.skillName != FantasyImpact::name)
     { // 如果触发幸运
@@ -745,8 +745,8 @@ ExtremeLuckDivisor::ExtremeLuckDivisor(Person *p, double) : Divisor(p)
     this->p->triggerAction<PrimaryAttributesPercentModifyAction>(this->number);
 }
 
-void ExtremeLuckDivisor::listenerCallback(const DamageInfo &) {}
-void ExtremeLuckDivisor::update(const double) {}
+void ExtremeLuckDivisor::listenerCallback(DamageInfo &info){}
+void ExtremeLuckDivisor::update(double deltaTime) {}
 bool ExtremeLuckDivisor::shouldBeRemoved() { return this->duration < 0; }
 std::string ExtremeLuckDivisor::getBuffName() const { return ExtremeLuckDivisor::name; }
 
@@ -754,4 +754,56 @@ ExtremeLuckDivisor::~ExtremeLuckDivisor()
 {
     //this->p->changePrimaryAttributesByPersent(-this->number);
     this->p->triggerAction<PrimaryAttributesPercentModifyAction>(-this->number);
+}
+
+// 职业因子（数值部分）
+std::string OccupationalDivisor_Icicle::name = "OccupationalDibisor";
+
+OccupationalDivisor_Icicle::OccupationalDivisor_Icicle(Person *p, double) : Divisor(p)
+{
+    this->stack = 0;
+    this->duration = 999999;
+    this->maxDuration = this->duration;
+    this->isInherent = true;
+
+    //注册攻击事件的回调
+    auto attackInfo = std::make_unique<DamageListener>(
+        this->getBuffID(), [this](DamageInfo &damageInfo)
+        { this->listenerCallback(damageInfo); });
+    AttackAction::addListener(std::move(attackInfo));
+    
+    // 注册创建技能事件的回调
+    auto createSkillInfo = std::make_unique<CreateSkillListener>(
+        this->getBuffID(), [this](Skill* const skill)
+        { this->listenerCallback2(skill); });
+    CreateSkillAction::addListener(std::move(createSkillInfo));
+}
+
+void OccupationalDivisor_Icicle::listenerCallback(DamageInfo &info) 
+{
+    // 检查当前是否处于灌注期
+    int index = p->findBuffInBuffList(FloodBuff_Icicle::name);
+    if(index != -1)
+    {
+        // 幸运伤害增加58.3%
+        info.luckyNum *= (1 + 0.583);
+    }
+}
+
+void OccupationalDivisor_Icicle::listenerCallback2(Skill* const skill) 
+{
+    if(skill->getSkillName() == FrostComet::name || skill->getSkillName() == PierceSpear::name)  
+    {
+        skill->dreamIncreaseAdd += 0.35;
+    } 
+}
+
+void OccupationalDivisor_Icicle::update(double deltaTime) {}
+bool OccupationalDivisor_Icicle::shouldBeRemoved() { return this->duration < 0; }
+std::string OccupationalDivisor_Icicle::getBuffName() const { return OccupationalDivisor_Icicle::name; }
+
+OccupationalDivisor_Icicle::~OccupationalDivisor_Icicle()
+{
+    AttackAction::deleteListener(this->getBuffID());
+    CreateSkillAction::deleteListener(this->getBuffID());
 }
