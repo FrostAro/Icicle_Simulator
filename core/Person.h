@@ -19,6 +19,7 @@ class DamageStatistics;
 class DamageInfo;
 class ActionInfo;
 class ErrorInfo;
+class Initializer;
 
 /**
  * @class DamageStatistics
@@ -102,6 +103,7 @@ protected:
     double castingSpeedRatio = 0;		///< 施法速度转化率：急速 → 施法速度
     double attackSpeedRatio = 0;		///< 攻击速度转化率：急速 → 攻击速度
 	double primaryAttributeRatio = 0;	///< 主属性转化率：主属性 → 攻击力
+	double coolDownReduce = 0;			///< 冷却缩减
 	
 public:
 	friend class Initializer;
@@ -129,7 +131,7 @@ public:
     // ==== 攻击属性 ====
 	double baseATK = 0;                      ///< 基础攻击力（不包含属性转化）
     double ATK = 0;                          ///< 总攻击力
-    double refindATK = 0;                    ///< 精炼攻击力
+    double refineATK = 0;                    ///< 精炼攻击力
     double elementATK = 0;                   ///< 元素攻击力
     double primaryAttributes = 0;            ///< 主属性数值
     int resourceNum = 0;                     ///< 当前玄冰资源数量
@@ -159,8 +161,8 @@ public:
     double luckyMultiplying = 0;             ///< 幸运伤害倍率（基础41.25%，每1%幸运+0.75%）
 
 	// ==== 能量系统 ====
-    double energyIncrease = 0;               ///< 能量回复增加
-    double energyReduceUP = 0;               ///< 能量消耗减少（上行）
+    double energyAddIncrease = 0;               ///< 能量回复增加
+    double energyReduceUP = 0;               ///< 能量消耗增加（上行）
     double energyReduceDOWN = 0;             ///< 能量消耗减少（下行）
 
 	// ==== 统计系统 ====
@@ -180,7 +182,7 @@ public:
 	 * @param Proficient 精通值（百分比）
 	 * @param almighty 全能值（百分比）
 	 * @param atk 攻击力
-	 * @param refindatk 精炼攻击力
+	 * @param refineatk 精炼攻击力
 	 * @param elementatk 元素攻击力
 	 * @param attackSpeed 攻击速度加成（0-1）
 	 * @param castingSpeed 施法速度加成（0-1）
@@ -190,9 +192,10 @@ public:
 	 * @param totalTime 模拟总时间（毫秒）
 	 */
 	Person(const double PrimaryPrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
-        const int atk, const  int refindatk, const  int elementatk, const double attackSpeed, const double castingSpeed,
+        const int atk, const  int refineatk, const  int elementatk, const double attackSpeed, const double castingSpeed,
         const double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const  int totalTime);
-
+	
+	Person();
 	// ==== 属性操作方法（可被子类重写） ====
 	
 	/**
@@ -260,6 +263,8 @@ public:
 	double changePrimaryAttributesByPersent(double PrimaryAttributesPersent);				///< 通过百分比修改主属性
 	double setATK(double atk);                        ///< 设置基础攻击力
 	double resetATK();								  ///< 重新计算攻击力（基于主属性）
+	double changeATKCount(double count);			  ///< 修改攻击力数值
+	double changeRefineATKCount(double n);				  ///< 修改精炼攻击
 
 	double setAattackIncrease();											///< 初始化攻击增加乘区
 	double changeAattackIncrease(double attackIncrease); 					///< 修改攻击增加乘区
@@ -285,6 +290,8 @@ public:
 
 	double changeCastingSpeeaByPersent(const double castingSpeedPersent);	///< 修改施法速度
 	double changeAttackSpeeaByPersent(const double attackSpeedPersent);		///< 修改攻击速度
+
+	double chanageDamageReduce(const double n);								///< 修改减伤区
 
 	// ==== 技能管理 ====
 	void createSkill(std::unique_ptr<Skill> newSkill);				///< 创建并开始释放一个技能
@@ -364,7 +371,7 @@ public:
     double getQuicknessCount() const;
     
     double getATK() const;
-    double getRefindATK() const;
+    double getRefineATK() const;
     double getElementATK() const;
     double getPrimaryAttributes() const;
     int getResourceNum() const;
@@ -393,12 +400,12 @@ public:
     
     bool getIsReleasingSkill() const;
     
-    double getEnergyIncrease() const;
+    double getEnergyAddIncrease() const;
     double getEnergyReduceUP() const;
     double getEnergyReduceDOWN() const;
     
     const AutoAttack* getAutoAttack() const;
-    const Skill* getNowReleasingSkill() const;
+    Skill* const getNowReleasingSkill() const;
 
 	const Skill* getCurtainPointerForAction(std::string skillName) const;
 };
@@ -423,7 +430,13 @@ void Person::triggerAction(double count, Args &&...args)
 	if(it)
 	{
 		it->execute(count,this);
-		//this->actionQueue.push(ActionInfo(count,std::move(it)));
+
+		// 不建议再使用队列处理事件
+		// 队列处理事件会导致模拟DPS偏低
+		// 以及难以实现createSkill监听器回调函数对于技能属性的修改
+		// 若要使用需要修改attackAction逻辑使其接受skillName而非Skill*
+		// 并且取消autoAttack::updatePerson()中更新action的注释
+		// this->actionQueue.push(ActionInfo(count,std::move(it)));
 	}
 }
 

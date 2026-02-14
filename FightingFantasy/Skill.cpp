@@ -14,7 +14,7 @@ MukuChief::MukuChief(Person *p) : FightingFantasy(), InstantSkill()
     this->multiplying = 0;
     this->fixedValue = 0;
 
-    this->MaxCD = 5400;
+    this->MaxCD = 6000;
     this->MaxchargeCD = 100;
     this->CD = 0;
     this->chargeCD = 0;
@@ -64,7 +64,7 @@ MukuScout::MukuScout(Person *p) : FightingFantasy(), InstantSkill()
     this->multiplying = 0;
     this->fixedValue = 0;
 
-    this->MaxCD = 7200;
+    this->MaxCD = 8000;
     this->MaxchargeCD = 100;
     this->CD = 0;
     this->chargeCD = 0;

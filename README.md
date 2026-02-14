@@ -109,3 +109,8 @@ Total Damage Count: XXXX, Total Lucky Damage Count: XXX, Lucky rate: XX.XX%, Cri
 
 详见ExtendExample文件夹
 若使用cmake在写完后记得在cmake中链接
+
+### 拓展的一些建议
+
+1.对于爆发前开的技能，例如幻想，建议将其releasingTime设置较低，以防延迟进入爆发导致爆发次数不足
+2.对于自动战斗，如果职业战斗逻辑为三段式，即大爆发，小爆发，空窗期，可以参考冰矛的autoAttack内的逻辑，不然就需要自己构思自动战斗逻辑了

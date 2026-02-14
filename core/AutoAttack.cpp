@@ -2,6 +2,7 @@
 #include "Person.h"
 #include "Action.h"
 #include "Logger.h"
+#include <string_view>
 
 // 静态成员初始化
 double AutoAttack::timer = 0;
@@ -98,9 +99,22 @@ void AutoAttack::createSkillByAuto()
     // 1. 检查是否正在释放技能（防止打断）
     if (this->isReleasingSkill)
     {
-        this->p->addErrorInfoInList(ErrorInfo(
+        bool end = true;
+        if(!this->priorSkillList.empty())
+        {
+            // 如果优先队列的第一个技能是已装备的无前摇技能，释放此技能
+            for(std::string_view a : this->equippedAndNoReleasingTimeSkill)
+            {
+                if(a == this->priorSkillList[0].skillName)
+                    end = false;
+            }
+        }
+        if(end)
+        {
+            this->p->addErrorInfoInList(ErrorInfo(
             "NONE", ErrorInfo::errorTypeEnum::Now_Releasing_Skill));
-        return;
+            return;
+        }
     }
 
     // 2. 优先处理待释放的优先级技能列表

@@ -1,4 +1,5 @@
 #pragma once
+#include "Buff.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -6,6 +7,7 @@
 
 // 前向声明
 class Person;
+class Initializer;
 
 // ============================================================================
 // Skill 基类声明
@@ -45,6 +47,25 @@ protected:
     
     int skillID = 0;                // 技能唯一ID（实例级别）
     
+    // 技能类型标志
+    bool canTriggerLucky = false;   // 可触发幸运伤害
+    bool canCharge = false;         // 可充能（拥有充能CD）
+    bool isInstant = false;         // 立即触发性技能
+    bool isContinuous = false;      // 持续性技能
+    bool isNoReleasing = false;     // 无前摇技能
+    bool isFacilitation = false;    // 引导性技能
+
+public:
+    friend class Initializer;
+
+    // ============================================================================
+    // 公共成员变量
+    // ============================================================================
+    
+    bool triggered = false;          // 是否已触发技能（是否已造成伤害/产生效果）
+    bool isEquipped = false;         // 是否已装备该技能
+    double damageTriggerTimer = 0;   // 伤害触发计时器（用于持续性技能）
+
     // 能量系统
     double energyAdd = 0;           // 能量回复量
     double energyReduce = 0;        // 能量消耗量
@@ -64,28 +85,10 @@ protected:
     double fixedValue = 0;          // 基础固定值（固定伤害）
     
     // 时间系统
-    double duration = 0;            // 持续时间（毫秒）
-    double damageTriggerInterval = 0; // 伤害触发间隔（毫秒）
-    int singing = 0;                // 吟唱时间（毫秒）
-    int singingTimer = 0;           // 吟唱计时器
-    double releasingTime = 0;       // 前摇时间（毫秒）
-    
-    // 技能类型标志
-    bool canTriggerLucky = false;   // 可触发幸运伤害
-    bool canCharge = false;         // 可充能（拥有充能CD）
-    bool isInstant = false;         // 立即触发性技能
-    bool isContinuous = false;      // 持续性技能
-    bool isNoReleasing = false;     // 无前摇技能
-    bool isFacilitation = false;    // 引导性技能
-
-public:
-    // ============================================================================
-    // 公共成员变量
-    // ============================================================================
-    
-    bool triggered = false;          // 是否已触发技能（是否已造成伤害/产生效果）
-    bool isEquipped = false;         // 是否已装备该技能
-    double damageTriggerTimer = 0;   // 伤害触发计时器（用于持续性技能）
+    double duration = 0;                // 持续时间（毫秒）
+    double damageTriggerInterval = 0;   // 伤害触发间隔（毫秒）
+    int singing = 0;                    // 吟唱时间（毫秒）
+    double releasingTime = 0;           // 前摇时间（毫秒）
     
     // ============================================================================
     // 技能效果加成系统
@@ -95,13 +98,16 @@ public:
      * @brief 技能提供的属性加成效果
      * @details 这些加成会影响Person对象的属性
      */
-    double criticalIncreaseAdd = 0;      // 暴击率加成
+    double criticalIncreaseAdd = 0;      // 爆伤加成
     double elementIncreaseAdd = 0;       // 元素伤害加成
     double damageIncreaseAdd = 0;        // 伤害加成
     double almightyIncreaseAdd = 0;      // 全能伤害加成
     double dreamIncreaseAdd = 0;         // 幻梦伤害加成
     double finalIncreaseAdd = 0;         // 最终伤害加成
     double multiplyingIncrease = 0;      // 技能倍率加成
+
+    // 技能属性针对加成
+    double criticalAdd = 0;             //暴击属性加成
     
     // ============================================================================
     // 技能类型枚举和列表
@@ -298,7 +304,6 @@ public:
     double getDamageTriggerInterval() const;
     double getDamageTriggerTimer() const;
     int getSinging() const;
-    int getSingingTimer() const;
 };
 
 // ============================================================================
@@ -424,4 +429,11 @@ public:
      * @details 子类必须实现此函数定义引导结束的条件
      */
     virtual bool canEndFacilitation(Person *p) = 0;
+
+    /**
+     * @brief 强行停止引导技能
+     * 
+     * @details 通过将duration变为0实现停止
+     */
+    void stop();
 };

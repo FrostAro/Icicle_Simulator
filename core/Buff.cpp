@@ -16,10 +16,14 @@ Buff::Buff(Person *p)
 // 添加层数（堆叠）
 void Buff::addStack(const double n)
 {
+    this->lastStack = stack;  // 保存上一次的层数
     if (this->stack < this->maxStack)
     {
-        this->lastStack = stack;  // 保存上一次的层数
-        this->stack += n;         // 增加层数
+        this->stack += n;     // 增加层数
+    }
+    else
+    {
+        this->stack = this->maxStack;  
     }
 }
 
@@ -32,6 +36,11 @@ bool Buff::reduceDuration(int deltaTime)
         return true;  // 成功减少
     }
     return false;  // 持续时间已耗尽或无效
+}
+
+void Buff::stop()
+{
+    this->duration = 0;
 }
 
 // 重载等于操作符：通过ID比较两个Buff是否相同
@@ -58,3 +67,6 @@ bool Buff::getIsInherent() const { return this->isInherent; }
 
 // 重置静态ID计数器（用于重新开始计数）
 void Buff::resetID() { Buff::ID = 0; }
+
+// buff何时应该被移除，默认为持续时间结束
+bool Buff::shouldBeRemoved() { return this->duration < 0; }

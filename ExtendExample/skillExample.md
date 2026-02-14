@@ -19,6 +19,7 @@ class ContinuousSkill : public virtual Skill {
 class FacilitationSkill : public virtual Skill {
     virtual void trigger(Person *p) = 0;// 每次达到技能触发间隔时所执行的逻辑
     virtual bool canEndFacilitation(Person *p) = 0;  // 判断引导结束
+    void stop();// 通过将duration变为0实现强行中断
 };
 ```
 
@@ -81,6 +82,7 @@ NewSkill::NewSkill(Person *p) : InstantSkill() {
     
     this->duration;                 // 持续时间（持续/引导技能用）
     this->damageTriggerInterval;    // 伤害触发间隔（持续/引导技能用）
+    //补充：对于无前摇的立即触发型技能技能需要将duration设置为等同于damageTriggerInterval
 
     // 吟唱时间
     this->singingTime;              

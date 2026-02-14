@@ -23,3 +23,17 @@ public:
     void execute(double n, Person *p) override; // n为增加的幸运百分比
     std::string getActionName() override;
 };
+
+
+
+// 射线部分
+class EnergyRevertAction_Beam : public EnergyRevertAction
+{
+private:
+    static std::string name;
+
+public:
+    EnergyRevertAction_Beam();
+    void execute(double n, Person *p) override;
+    std::string getActionName() override;
+};

@@ -99,17 +99,8 @@ bool Skill::reduceReleasingTime()
  */
 bool Skill::reduceDuration(const double n)
 {
-    if (this->duration >= n)
-    {
-        this->duration -= n;
-        return true;
-    }
-    else if (n >= 0)  // 即使减少后小于0，也设置为0
-    {
-        this->duration = 0;
-        return true;
-    }
-    return false;
+    this->duration -= n;
+    return true;
 }
 
 /**
@@ -120,12 +111,8 @@ bool Skill::reduceDuration(const double n)
  */
 bool Skill::addDamageTriggerTimer(const double n)
 {
-    if (this->damageTriggerTimer < damageTriggerInterval)
-    {
-        this->damageTriggerTimer += n;
-        return true;
-    }
-    return false;
+    this->damageTriggerTimer += n;
+    return true;
 }
 
 /**
@@ -136,17 +123,8 @@ bool Skill::addDamageTriggerTimer(const double n)
  */
 bool Skill::reduceReleasingTime(const double n)
 {
-    if (this->releasingTime >= n)
-    {
-        this->releasingTime -= n;
-        return true;
-    }
-    else if (n >= 0)  // 即使减少后小于0，也设置为0
-    {
-        this->releasingTime = 0;
-        return true;
-    }
-    return false;
+    this->releasingTime -= n;
+    return true;
 }
 
 // ============================================================================
@@ -343,7 +321,6 @@ double Skill::getDuration() const { return this->duration; }
 double Skill::getDamageTriggerInterval() const { return this->damageTriggerInterval; }
 double Skill::getDamageTriggerTimer() const { return this->damageTriggerTimer; }
 int Skill::getSinging() const { return this->singing; }
-int Skill::getSingingTimer() const { return this->singingTimer; }
 
 // ============================================================================
 // InstantSkill 类实现
@@ -419,4 +396,9 @@ void FacilitationSkill::use(Person* p)
     if(this->damageTriggerTimer >= this->damageTriggerInterval){
         this->trigger(p);  // 触发具体效果
     }
+}
+
+void FacilitationSkill::stop()
+{
+    this->duration = 0;
 }

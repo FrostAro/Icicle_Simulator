@@ -22,8 +22,8 @@ void AutoAttack_Mage_Icicle::checkAndTriggerLargeOutBurst()
     // 更新技能CD，buffCD，释放技能判断，爆发判断
     int mukuChiefIndex = this->p->findSkillInSkillCDList(MukuChief::name);
     int mukuScoutIndex = this->p->findSkillInSkillCDList(MukuScout::name);
-    int ultimateIndex = this->p->findSkillInSkillCDList(Ultimate::name);
-    int floodIndex = this->p->findSkillInSkillCDList(Flood::name);
+    int ultimateIndex = this->p->findSkillInSkillCDList(Ultimate_Icicle::name);
+    int floodIndex = this->p->findSkillInSkillCDList(Flood_Icicle::name);
 
     // 检查索引有效性
     bool canLargeOutBurst = false;
@@ -52,8 +52,8 @@ void AutoAttack_Mage_Icicle::checkAndTriggerSmallOutBurst()
     // 更新技能CD，buffCD，释放技能判断，爆发判断
     int mukuChiefIndex = this->p->findSkillInSkillCDList(MukuChief::name);
     int mukuScoutIndex = this->p->findSkillInSkillCDList(MukuScout::name);
-    int ultimateIndex = this->p->findSkillInSkillCDList(Ultimate::name);
-    int floodIndex = this->p->findSkillInSkillCDList(Flood::name);
+    int ultimateIndex = this->p->findSkillInSkillCDList(Ultimate_Icicle::name);
+    int floodIndex = this->p->findSkillInSkillCDList(Flood_Icicle::name);
 
     // 检查索引有效性
     bool canSmallOutBurst = false;
@@ -117,6 +117,7 @@ void AutoAttack_Mage_Icicle::windowPeriodLogic()
                 }
             }
         }
+        // 资源满了就打一发矛
         if (this->p->getResourceNum() >= 4)
         {
             this->autoAddPriorSkillList(Spear::name);
@@ -153,8 +154,8 @@ void AutoAttack_Mage_Icicle::largeOutBurst()
     { // 标志位，防止重复触发
         this->maniAddPriorSkillList(MukuChief::name);
         this->maniAddPriorSkillList(MukuScout::name);
-        this->maniAddPriorSkillList(Ultimate::name);
-        this->maniAddPriorSkillList(Flood::name);
+        this->maniAddPriorSkillList(Ultimate_Icicle::name);
+        this->maniAddPriorSkillList(Flood_Icicle::name);
         this->maniAddPriorSkillList(Spear::name);
         this->maniAddPriorSkillList(Spear::name);
         this->maniAddPriorSkillList(Spear::name);
@@ -177,7 +178,7 @@ void AutoAttack_Mage_Icicle::smallOutBurst()
     if (!this->signalForRepeatedlyOutBurst)
     { // 标志位，防止重复触发
         this->maniAddPriorSkillList(MukuChief::name);
-        this->maniAddPriorSkillList(Flood::name);
+        this->maniAddPriorSkillList(Flood_Icicle::name);
         this->maniAddPriorSkillList(Spear::name);
         this->maniAddPriorSkillList(Spear::name);
         this->maniAddPriorSkillList(Spear::name);
@@ -195,4 +196,5 @@ void AutoAttack_Mage_Icicle::smallOutBurst()
                                   "Small Out Burst");
     }
 }
-//
+
+

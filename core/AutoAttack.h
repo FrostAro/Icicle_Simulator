@@ -64,6 +64,7 @@ protected:
     std::vector<PriorSkillInfo> priorSkillList{};                          // 优先级技能列表（待释放）
     std::vector<PriorSkillInfo> skillPriority{};                           // 有序的优先级列表（优先级高→低）
     std::vector<judgeConditionStruct> judgingConditionsForCreateSkill{};   // 技能释放的判定条件列表
+    std::vector<std::string> equippedAndNoReleasingTimeSkill{};  // 已装备技能中无前摇，即可同时释放的技能（如射线龙卷）
     
     bool isReleasingSkill = false;          // 当前是否正在释放技能（防止技能打断）
     bool isOutBurst = false;                // 是否处于爆发状态

@@ -62,7 +62,7 @@ class NewPerson : public Person
 public:
     friend class Initializer;
 
-    Mage_Fire(const double attributes, const double critical, const double quickness, 
+    NewPerson(const double attributes, const double critical, const double quickness, 
               const double lucky, const double Proficient, const double almighty,
               const int atk, const int refindatk, const int elementatk, 
               const double attackSpeed, const double castingSpeed,
@@ -92,6 +92,7 @@ NewPerson::NewPerson(const double attributes, const double critical, const doubl
     this->maxResourceNum            // 最大资源数（玄冰）
     this->castingSpeedRatio         // 施法速度转化率：迅捷→施法速度
     this->attackSpeedRatio          // 攻击速度转化率：迅捷→攻击速度
+    this->coolDownReduce            // 冷却缩减
 
     this->damageReduce              // 伤害减免（魔法为10%，物理为30%）
 

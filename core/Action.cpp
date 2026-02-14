@@ -15,7 +15,7 @@ std::string Action::getActionName() { return this->name; }
 std::string AttackAction::name = "AttackAction";
 std::vector<std::unique_ptr<DamageListener>> AttackAction::listeners = {};
 
-AttackAction::AttackAction(Skill* skill)
+AttackAction::AttackAction(Skill *skill)
     : skill(skill) {}
 
 void AttackAction::addListener(std::unique_ptr<DamageListener> listener)
@@ -171,9 +171,14 @@ void EnergyConsumeAction::deleteListener(int buffID)
     }
 }
 
-void EnergyConsumeAction::execute(const double n, Person *p)
+void EnergyConsumeAction::execute(double n, Person *p)
 {
+    n *= (1 - p->energyReduceDOWN) * (1 + p->energyReduceUP);
     p->consumeEnergy(n);
+    Logger::debugAction(AutoAttack::getTimer(), 
+                                this->getActionName(), 
+                                "triggered, consumed energy: " + std::to_string(n)
+                                        + ", currentEnengy:" + std::to_string(p->present_energy));
     // 遍历监听，触发回调
     for (const auto &listener : EnergyConsumeAction::listeners)
     {
@@ -213,9 +218,14 @@ void EnergyRevertAction::deleteListener(int buffID)
     }
 }
 
-void EnergyRevertAction::execute(const double n, Person *p)
+void EnergyRevertAction::execute(double n, Person *p)
 {
+    n *= (1 + p->energyAddIncrease);
     p->revertEnergy(n);
+    Logger::debugAction(AutoAttack::getTimer(),
+                 this->getActionName(), 
+                 "triggered, reverted energy: " + std::to_string(n)
+                        + ", currentEnengy:" + std::to_string(p->present_energy));
     // 遍历监听，触发回调
     for (const auto &listener : EnergyRevertAction::listeners)
     {
@@ -382,25 +392,30 @@ void CreateSkillAction::execute(double, Person *p)
             }
         }
         p->createSkill(std::move(it));
-    }
-    int a = p->findSkillInSkillCDList(this->skillName);
-    if (a != -1)
-    {
-        Logger::debugAction(AutoAttack::getTimer(),
-                            this->getActionName(),
-                            "Skill Created: " + this->skillName +
-                                ", Stack: " +
-                                std::to_string(
-                                    p->getSkillCDListRef().at(a)->getStackRef()) +
-                                "/" +
-                                std::to_string(
-                                    p->getSkillCDListRef().at(a)->getMaxStack()));
+
+        int a = p->findSkillInSkillCDList(this->skillName);
+        if (a != -1)
+        {
+            Logger::debugAction(AutoAttack::getTimer(),
+                                this->getActionName(),
+                                "Skill Created: " + this->skillName +
+                                    ", Stack: " +
+                                    std::to_string(
+                                        p->getSkillCDListRef().at(a)->getStackRef()) +
+                                    "/" +
+                                    std::to_string(
+                                        p->getSkillCDListRef().at(a)->getMaxStack()));
+        }
+        else
+        {
+            Logger::debugAction(AutoAttack::getTimer(),
+                                this->getActionName(),
+                                "Skill Created: " + this->skillName);
+        }
     }
     else
     {
-        Logger::debugAction(AutoAttack::getTimer(),
-                            this->getActionName(),
-                            "Skill Created: " + this->skillName);
+        Logger::debugAction(AutoAttack::getTimer(),this->getActionName(),"Failed to create skill: " + this->skillName + ", because no skill founded");
     }
 }
 
@@ -451,14 +466,18 @@ void CreateBuffAction::execute(double n, Person *p)
             if (existingBuff->getStack() < existingBuff->getMaxStack())
             {
                 existingBuff->addStack(n);
+                Logger::debugAction(AutoAttack::getTimer(),
+                                    this->getActionName(),
+                                    "Buff Stack Increased: " + this->buffName +
+                                        ", buffID: " + std::to_string(existingBuff->getBuffID()) +
+                                        ", Stack: " + std::to_string(existingBuff->getStack()));
             }
             existingBuff->resetDuration();
-
             Logger::debugAction(AutoAttack::getTimer(),
                                 this->getActionName(),
-                                "Buff Stack Increased: " + this->buffName +
-                                    ", buffID: " + std::to_string(existingBuff->getBuffID()) +
-                                    ", Stack: " + std::to_string(existingBuff->getStack()));
+                                "Buff Refreshed: " + this->buffName +
+                                    ", buffID: " + std::to_string(existingBuff->getBuffID()));
+
             return; // 无需创建新buff
         }
 
@@ -626,10 +645,6 @@ void CriticalPercentModifyAction::execute(double n, Person *p)
     if (p->Critical < 0.05)
     {
         p->Critical = 0.05; // 基础5%不能低于
-    }
-    if (p->Critical > 1.0)
-    {
-        p->Critical = 1.0; // 不能超过100%
     }
 }
 
@@ -826,10 +841,6 @@ void LuckyCountModifyAction::execute(double n, Person *p)
     {
         p->Lucky = basePercent;
     }
-    else if (p->Lucky > 1.0)
-    {
-        p->Lucky = 1.0;
-    }
 
     // 遍历监听，触发回调
     for (const auto &listener : LuckyCountModifyAction::listeners)
@@ -964,10 +975,6 @@ void ProficientCountModifyAction::execute(double n, Person *p)
     if (p->Proficient < basePercent)
     {
         p->Proficient = basePercent;
-    }
-    else if (p->Proficient > 1.0)
-    {
-        p->Proficient = 1.0;
     }
 
     // 遍历监听，触发回调
@@ -1164,10 +1171,6 @@ void AlmightyPercentModifyAction::execute(double n, Person *p)
     {
         p->Almighty = 0;
     }
-    else if (p->Almighty > 1.0)
-    {
-        p->Almighty = 1.0;
-    }
 
     // 遍历监听，触发回调
     for (const auto &listener : AlmightyPercentModifyAction::listeners)
@@ -1349,14 +1352,56 @@ void AttackSpeedPercentModifyAction::execute(double n, Person *p)
 
 std::string AttackSpeedPercentModifyAction::getActionName() { return AttackSpeedPercentModifyAction::name; }
 
+// 攻击增加数值
+std::string AttackCountModifyAction::name = "AttackCountModifyAction";
+std::vector<std::unique_ptr<PrimaryAttributeListener>> AttackCountModifyAction::listeners = {};
+
+AttackCountModifyAction::AttackCountModifyAction()
+    : Action() {}
+
+void AttackCountModifyAction::addListener(std::unique_ptr<PrimaryAttributeListener> info)
+{
+    listeners.push_back(std::move(info));
+}
+
+void AttackCountModifyAction::deleteListener(int buffID)
+{
+    const auto it =
+        std::find_if(listeners.begin(), listeners.end(),
+                     [buffID](const std::unique_ptr<PrimaryAttributeListener> &item)
+                     {
+                         return item->buffID == buffID;
+                     });
+
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+}
+
+void AttackCountModifyAction::execute(double n, Person *p)
+{
+    p->changeATKCount(n);
+    // 遍历监听，触发回调
+    for (const auto &listener : AttackCountModifyAction::listeners)
+    {
+        if (listener && listener->callback)
+        {
+            listener->trigger(n);
+        }
+    }
+}
+
+std::string AttackCountModifyAction::getActionName() { return AttackCountModifyAction::name; }
+
 // 攻击增伤百分比
 std::string AttackIncreaseModifyAction::name = "AttackIncreaseModifyAction";
-std::vector<std::unique_ptr<SecondaryAttributeListener>> AttackIncreaseModifyAction::listeners = {};
+std::vector<std::unique_ptr<PrimaryAttributeListener>> AttackIncreaseModifyAction::listeners = {};
 
 AttackIncreaseModifyAction::AttackIncreaseModifyAction()
     : Action() {}
 
-void AttackIncreaseModifyAction::addListener(std::unique_ptr<SecondaryAttributeListener> info)
+void AttackIncreaseModifyAction::addListener(std::unique_ptr<PrimaryAttributeListener> info)
 {
     listeners.push_back(std::move(info));
 }
@@ -1365,7 +1410,7 @@ void AttackIncreaseModifyAction::deleteListener(int buffID)
 {
     const auto it =
         std::find_if(listeners.begin(), listeners.end(),
-                     [buffID](const std::unique_ptr<SecondaryAttributeListener> &item)
+                     [buffID](const std::unique_ptr<PrimaryAttributeListener> &item)
                      {
                          return item->buffID == buffID;
                      });
@@ -1390,6 +1435,48 @@ void AttackIncreaseModifyAction::execute(double n, Person *p)
 }
 
 std::string AttackIncreaseModifyAction::getActionName() { return AttackIncreaseModifyAction::name; }
+
+// 精炼攻击增加数值
+std::string RefineATKCountModifyAction::name = "RefineATKCountModifyAction";
+std::vector<std::unique_ptr<PrimaryAttributeListener>> RefineATKCountModifyAction::listeners = {};
+
+RefineATKCountModifyAction::RefineATKCountModifyAction()
+    : Action() {}
+
+void RefineATKCountModifyAction::addListener(std::unique_ptr<PrimaryAttributeListener> info)
+{
+    listeners.push_back(std::move(info));
+}
+
+void RefineATKCountModifyAction::deleteListener(int buffID)
+{
+    const auto it =
+        std::find_if(listeners.begin(), listeners.end(),
+                     [buffID](const std::unique_ptr<PrimaryAttributeListener> &item)
+                     {
+                         return item->buffID == buffID;
+                     });
+
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+}
+
+void RefineATKCountModifyAction::execute(double n, Person *p)
+{
+    p->changeRefineATKCount(n);
+    // 遍历监听，触发回调
+    for (const auto &listener : RefineATKCountModifyAction::listeners)
+    {
+        if (listener && listener->callback)
+        {
+            listener->trigger(n);
+        }
+    }
+}
+
+std::string RefineATKCountModifyAction::getActionName() { return RefineATKCountModifyAction::name; }
 
 // 伤害增伤百分比
 std::string DamageIncreaseModifyAction::name = "DamageIncreaseModifyAction";

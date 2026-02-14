@@ -28,6 +28,7 @@
 #include "core/AutoAttack.h"     
 #include "Mage/Initializer.hpp"  
 #include "core/Logger.h"    
+#include <iterator>
 #include <memory>           
 #include <vector>       
 
@@ -59,7 +60,17 @@ extern void printDamageStatistics(
  * @param isRandomSeed 是否使用随机种子
  * @param seed 指定的随机数种子
  */
-extern void executeSimulation(
+// 冰矛模拟
+extern void executeSimulation_Icicle(
+        std::vector<std::unordered_map<std::string, DamageStatistics>> &damageStatisticsList,
+        int times,
+        const int maxTime,
+        const int deltaTime,
+        bool isRandomSeed,
+        std::uint32_t seed
+    );
+// 射线模拟
+extern void executeSimulation_Beam(
         std::vector<std::unordered_map<std::string, DamageStatistics>> &damageStatisticsList,
         int times,
         const int maxTime,
@@ -140,6 +151,7 @@ int main()
     
     // 3. 模拟参数配置
     const int maxTime = 18000;       // 最大运行时间：180秒
+    // deltaTime建议值：1-3
     const int deltaTime = 1;         // 时间增量：0.01s
     
     // 4. 执行模拟
@@ -150,7 +162,10 @@ int main()
     // - deltaTime: 时间增量
     // - false: 不使用随机种子
     // - 42: 固定随机种子，确保模拟结果可重现（可更改）
-    executeSimulation(damageStatisticsList, 1, maxTime, deltaTime, false, 42/*建议种子值*/);
+    // 若想模拟冰矛取消下面这行代码注释
+    // executeSimulation_Icicle(damageStatisticsList, 1, maxTime, deltaTime, false, 42/*建议种子值*/);
+    // 若想模拟射线取消下面这行代码注释
+    executeSimulation_Beam(damageStatisticsList, 1, maxTime, deltaTime, true, 42/*建议种子值*/);
     
     // 5. 汇总输出（如果有多次循环，进行汇总）
     summaryCirculationPrint(damageStatisticsList, maxTime);
@@ -183,7 +198,7 @@ int main()
  * 5. 运行模拟直到达到maxTime
  * 6. 收集伤害统计数据并添加到结果列表
  */
-void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatistics>> 
+void executeSimulation_Icicle(std::vector<std::unordered_map<std::string, DamageStatistics>> 
                             &damageStatisticsList,
                        int times,
                        const int maxTime,
@@ -244,6 +259,85 @@ void executeSimulation(std::vector<std::unordered_map<std::string, DamageStatist
             // 更新当前时间
             currentTime += deltaTime;
             p->autoAttackPtr->setTimer() += deltaTime;
+        }
+        
+        // 7. 计算伤害统计信息
+        p->calculateDamageStatistics();
+        std::cout << "Simulation ended." << std::endl;
+        
+        // 8. 打印本次模拟的详细统计
+        printDamageStatistics(p->damageStatsMap, maxTime);
+        
+        // 9. 将统计结果添加到列表中
+        damageStatisticsList.push_back(p->damageStatsMap);
+        
+        // 10. 减少剩余循环次数
+        times--;
+    }
+}
+
+void executeSimulation_Beam(std::vector<std::unordered_map<std::string, DamageStatistics>> 
+                            &damageStatisticsList,
+                       int times,
+                       const int maxTime,
+                       const int deltaTime,
+                       bool isRandomSeed,
+                       std::uint32_t seed)
+{
+    // 1. 参数验证：times必须大于0
+    int totalTimes = times;
+    if (times <= 0) 
+        return;
+    
+    // 2. 循环执行指定次数的模拟
+    while (times > 0)
+    {
+        int currentTime = 0;  // 当前模拟时间
+        
+        // 3. 创建冰法师角色对象
+        // 参数说明（冰法师属性）：
+        // 在此处修改角色各个属性
+        auto p = std::make_unique<Mage_Beam>(
+            /*三维属性*/ 4593,
+            /*暴击*/ 36,
+            /*急速*/ 1.05,
+            /*幸运*/ 61.7,
+            /*精通*/ 6,
+            /*全能*/ 17.58,
+            /*攻击(物理攻击/魔法攻击)*/ 3111,
+            /*精炼攻击*/ 820,
+            /*元素攻击*/ 35,
+            /*攻击速度*/ 0.1,
+            /*施法速度*/ 0,
+            /*爆伤额外值(用于调试)*/ 0,
+            /*增伤额外值(用于调试)*/ 0,
+            /*元素增伤额外值(用于调试)*/ 0,
+            /*程序运行总tick*/ maxTime);
+        
+        // 4. 设置随机种子
+        if (isRandomSeed) {
+            // 使用真随机数种子
+            p->setRandomSeed(std::random_device{}());
+        } else {
+            // 使用固定种子，确保模拟可重现
+            p->setRandomSeed(seed);
+        }
+        
+        // 5. 初始化角色（装备技能、设置buff等）
+        auto Initializer = std::make_unique<Initializer_Mage_Beam>(p.get());
+        Initializer->Initialize();
+        
+        // 6. 开始模拟运行
+        std::cout << "Starting simulation..." << std::endl;
+        while (currentTime < maxTime)
+        {
+            // 更新自动攻击系统
+            p->autoAttackPtr->update(deltaTime);
+            
+            // 更新当前时间
+            currentTime += deltaTime;
+            p->autoAttackPtr->setTimer() += deltaTime;
+            // std::cout << "time:" << currentTime << std::endl;
         }
         
         // 7. 计算伤害统计信息

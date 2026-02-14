@@ -1,6 +1,5 @@
 #pragma once
-#include "Skill.h"
-#include "buff.h"
+#include "Person.h"
 #include <string>
 #include <unordered_map>
 #include <functional>

@@ -3,47 +3,50 @@
 // #include <random>
 #include <ctime>
 #include <memory>
+#include <cassert>
 #include "Action.h"
 #include "AutoAttack.h"
 #include "Buff.h"
 #include "Skill.h"
 #include "Logger.h"
-#include "creators.hpp"
+#include "Creators.hpp"
 #include "../FightingFantasy/Skill.h"
 #include "../Mage/Buff.h"
+
+Person::Person(){};
 
 Person::Person(const double PrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
                const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
                const double criticaldamage_set, const double increase_set, const double elementincrease_set, const int totalTime)
-    : propertyTransformationCoeffcient_General(19975),      // 一般属性转化系数
+    : propertyTransformationCoeffcient_General(19975),     // 一般属性转化系数
       propertyTransformationCoeffcient_Almighty(11200),    // 全能属性转化系数
       totalTime(totalTime),                                // 总模拟时间
       proficientRatio(0),                                  // 精通转化率（子类设置）
       almightyRatio(0),                                    // 全能转化率（子类设置）
-      castingSpeedRatio(1),                                // 施法速度转化率
-      attackSpeedRatio(1),                                 // 攻击速度转化率
+      castingSpeedRatio(1),                                // 施法速度转化率（子类设置）
+      attackSpeedRatio(1),                                 // 攻击速度转化率（子类设置）
       primaryAttributeRatio(0),                            // 主属性转化率（子类设置）
-      max_energy(125),                                     // 最大能量值
+      max_energy(100),                                     // 最大能量值
       present_energy(max_energy),                          // 当前能量值（初始满）
       Critical(critical / 100),                            // 暴击率（百分比转小数）
       Lucky(lucky / 100),                                  // 幸运率（百分比转小数）
       Almighty(almighty / 100),                            // 全能值（百分比转小数）
       Proficient(Proficient / 100),                        // 精通值（百分比转小数）
       Quickness(quickness / 100),                          // 急速值（百分比转小数）
-      refindATK(refindatk),                                // 精炼攻击力
+      refineATK(refindatk),                                // 精炼攻击力
       elementATK(elementatk),                              // 元素攻击力
       primaryAttributes(PrimaryAttributes),                // 主属性数值
-      resourceNum(4),                                      // 初始玄冰资源数量
-      maxResourceNum(4),                                   // 最大玄冰资源数量
+      resourceNum(0),                                      // 初始玄冰资源数量
+      maxResourceNum(0),                                   // 最大玄冰资源数量
       castingSpeed(castingSpeed),                          // 施法速度加成
       attackSpeed(attackSpeed),                            // 攻击速度加成
       criticicalDamage(0.5),                               // 基础暴击伤害加成（+50%）
-      damageReduce(0.1),                                   // 基础减伤率（10%）
+      damageReduce(0),                                     // 基础减伤率
       criticaldamage_set(criticaldamage_set),              // 额外暴击伤害（调试用）
       increase_set(increase_set),                          // 额外增伤（调试用）
       elementincrease_set(elementincrease_set),            // 额外元素增伤（调试用）
       luckyDamageIncrease(Lucky),                          // 幸运伤害增幅（初始等于幸运值）
-      randomEngine(std::random_device{}())            // 初始化随机数引擎
+      randomEngine(std::random_device{}())             // 初始化随机数引擎
       //uniformDist(0.1,1.0)
 {
     // 计算属性数值（将百分比转换为属性点数）
@@ -73,7 +76,7 @@ DamageInfo Person::Damage(const Skill *skill)
         double damage =
             /*基础攻击区*/ ((this->ATK * (1 + this->attackIncrease) * skill->getMutiplying() * (1 + skill->multiplyingIncrease) * (1 - this->damageReduce))
                             /*精炼攻击与元素攻击区*/
-                            + ((this->refindATK + this->elementATK) * skill->getMutiplying() * (1 + skill->multiplyingIncrease))
+                            + ((this->refineATK + this->elementATK) * skill->getMutiplying() * (1 + skill->multiplyingIncrease))
                             /*技能固定值*/
                             + skill->getFixedValue())
             /*增伤区*/
@@ -90,7 +93,8 @@ DamageInfo Person::Damage(const Skill *skill)
         // 暴击期望
         // damage = damage * this->Critical * (1 + this->criticicalDamage + skill->criticalIncreaseAdd) + damage * (1 - this->Critical);
         // 实际暴击模拟
-        if (this->isSuccess(this->Critical))
+        double isCrit = this->isSuccess(this->Critical + skill->criticalAdd);
+        if (isCrit)
         {
             damage *= 1 + this->criticicalDamage + skill->criticalIncreaseAdd;
         }
@@ -107,7 +111,7 @@ DamageInfo Person::Damage(const Skill *skill)
         }
 
         DamageInfo info(skill->getSkillName(), damage,
-                        luckyDamage, this->isSuccess(this->Critical), isLucky);
+                        luckyDamage, isCrit, isLucky);
         // if(info.skillName == Spear::name)
         // {
         //     std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Damage - skill: " << info.skillName << " damaged" << std::endl;
@@ -120,7 +124,7 @@ DamageInfo Person::Damage(const Skill *skill)
 double Person::luckyDamage() const
 {
     // 幸运伤害计算公式
-    double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refindATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
+    double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refineATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
 
     // 幸运伤害也可暴击
     if (this->isSuccess(this->Critical))
@@ -148,22 +152,26 @@ void Person::updateNowReleasingSkill(int deltaTime)
     }
     // 前摇结束，可以进行下一步逻辑
     // 如果是立即触发技能，前摇结束即可直接use()
+
     if (this->nowReleasingSkill->getIsContinuous())
     { // 若是持续性技能则加入技能列表，如涡流
         continuousSkillList.push_back(std::move(this->nowReleasingSkill));
+        this->nowReleasingSkill.reset();
+        this->nowReleasingSkill = nullptr;
+        //  向autoAttack传递技能释放完成消息，提醒autoAttack可以进行下一次技能释放
+        this->autoAttackPtr->updateSkillFinish();
         return;
     }
 
     if (this->nowReleasingSkill->getIsFacilitation())
     { // 若是引导性技能，则检查是否结束引导
-        FacilitationSkill *facilitationSkillPtr = dynamic_cast<FacilitationSkill *>(this->nowReleasingSkill.get());
-        if (!facilitationSkillPtr)
-        {
-            this->nowReleasingSkill.reset();
-            this->nowReleasingSkill = nullptr;
-            this->autoAttackPtr->updateSkillFinish();
-            return;
-        }
+        FacilitationSkill *facilitationSkillPtr = static_cast<FacilitationSkill *>(this->nowReleasingSkill.get());
+        // 添加调试断言来确保设计正确性
+        // std::cout << "now is releasing beam" << std::endl;
+        // std::cout << "current energy:" << this->present_energy << std::endl;
+        assert(dynamic_cast<FacilitationSkill *>(this->nowReleasingSkill.get()) != nullptr && 
+            "getIsFacilitation() is true but type is not FacilitationSkill!");
+
         if (facilitationSkillPtr->canEndFacilitation(this))
         {
             // 结束引导，清空当前技能
@@ -186,7 +194,7 @@ void Person::updateNowReleasingSkill(int deltaTime)
     this->nowReleasingSkill->use(this);
 
     //  清空当前释放技能
-    if (!this->nowReleasingSkill->getIsFacilitation())
+    if (this->nowReleasingSkill->getIsInstant())
     { // 非引导性技能释放完成后清空
         this->nowReleasingSkill.reset();
         this->nowReleasingSkill = nullptr;
@@ -214,11 +222,10 @@ void Person::updateContinuousList(int deltaTime)
         if (skill->getDamageTriggerTimer() < skill->getDamageTriggerInterval())
             continue;
 
-        skill->damageTriggerTimer -= skill->getDamageTriggerInterval();
-
         // 触发伤害
         // 根据技能类型触发不同逻辑
         skill->use(this);
+        skill->damageTriggerTimer -= skill->getDamageTriggerInterval();
     }
     // 清理已完成技能
     cleanupFinishedSkills();
@@ -259,21 +266,24 @@ bool Person::removeSkill(Skill *skill)
 
 void Person::cleanupFinishedSkills()
 {
-    // 移除持续时间结束的技能
-    const auto new_end = std::remove_if(continuousSkillList.begin(), continuousSkillList.end(),
-                                        [](const std::unique_ptr<Skill> &skill)
-                                        {
-                                            // 先检查空指针，避免访问违规
-                                            if (!skill)
-                                            {
-                                                return true;
-                                            }
-                                            // 然后检查持续时间
-                                            return skill->getDuration() < 0;
-                                        });
-
-    // 删除被标记为移除的元素
-    continuousSkillList.erase(new_end, continuousSkillList.end());
+    for (auto it = continuousSkillList.begin(); it != continuousSkillList.end();)
+    {
+        if (!(*it))
+        {
+            it = continuousSkillList.erase(it);
+        }
+        else if ((*it)->duration < 0)
+        {
+            Logger::debugBuff(AutoAttack::getTimer(),
+                                (*it)->getSkillName(),
+                                " - is being removed.");
+            it = continuousSkillList.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 void Person::updateSkillsCD(const int deltaTime)
@@ -434,17 +444,12 @@ bool Person::isSuccess(const double probability) const
 
 bool Person::consumeResource(const int n)
 {
-    if (this->resourceNum >= n)
-    {
-        this->resourceNum -= n;
-        return true;
-    }
-    else
+    this->resourceNum -= n;
+    if(this->resourceNum < 0)
     {
         this->resourceNum = 0;
-        return true;
     }
-    return false;
+    return true;
 }
 
 bool Person::revertResource(const int n)
@@ -460,22 +465,22 @@ bool Person::revertResource(const int n)
 
 bool Person::consumeEnergy(const double n)
 {
-    if (this->present_energy >= n)
+    this->present_energy -= n;
+    if(this->present_energy < 0)
     {
-        this->present_energy -= n;
-        return true;
+        this->present_energy = 0;
     }
-    return false;
+    return true;
 }
 
 bool Person::revertEnergy(const double n)
 {
-    if (this->present_energy <= max_energy - n)
+    this->present_energy += n;
+    if(this->present_energy > this->max_energy)
     {
-        this->present_energy += n;
-        return true;
+        this->present_energy = this->max_energy;
     }
-    return false;
+    return true;
 }
 
 bool Person::reduceSkillCD(std::string skillName, double n)
@@ -682,6 +687,12 @@ double Person::changeDreamIncrease(const double dreamIncrease)
     return this->dreamIncrease;
 }
 
+double Person::chanageDamageReduce(const double n)
+{
+    this->damageReduce += n;
+    return this->damageReduce;
+}
+
 double Person::changeCriticalCount(const int addCount)
 {
     this->CriticalCount = this->getCriticalCount(this->Critical - this->CriticalExtraPercent - 0.05);
@@ -806,7 +817,7 @@ double Person::changeCastingSpeeaByPersent(const double castingSpeedPersent)
 
 double Person::setATK(double atk)
 {
-    // 计算攻击力
+    // 计算基础攻击力（去除智力转化）
     this->baseATK = atk - this->primaryAttributes * this->primaryAttributeRatio * (1 + this->primaryAttributesIncrease);
     return this->baseATK;
 }
@@ -818,6 +829,18 @@ double Person::resetATK()
                 + this->primaryAttributes * this->primaryAttributeRatio 
                 * (1 + this->primaryAttributesIncrease);
     return this->ATK;
+}
+
+double Person::changeATKCount(double count)
+{
+    this->ATK += count;
+    return this->ATK;
+}
+
+double Person::changeRefineATKCount(double n)
+{
+    this->refineATK += n;
+    return this->refineATK;
 }
 
 double Person::changeAttackSpeeaByPersent(const double attackSpeedPersent)
@@ -891,6 +914,7 @@ void Person::equipSkill(std::string skillName)
         }
 
         this->skillCDList.push_back(std::move(it));
+        Logger::debug("Person","skill: " + skillName + " equipped");
     }
 }
 
@@ -899,6 +923,8 @@ void Person::equipInherentBuff(std::string buffName)
     auto it = BuffCreator::createBuff(buffName, this);
     if (it)
     {
+        it->duration = 999999;
+        it->maxDuration = it->duration;
         this->createBuff(std::move(it));
     }
 }
@@ -938,7 +964,7 @@ double Person::getProficientCount() const { return ProficientCount; }
 double Person::getQuicknessCount() const { return QuicknessCount; }
 
 double Person::getATK() const { return ATK; }
-double Person::getRefindATK() const { return refindATK; }
+double Person::getRefineATK() const { return refineATK; }
 double Person::getElementATK() const { return elementATK; }
 double Person::getPrimaryAttributes() const { return primaryAttributes; }
 int Person::getResourceNum() const { return resourceNum; }
@@ -967,12 +993,12 @@ double Person::getAttackSpeedRatio() const { return attackSpeedRatio; }
 
 bool Person::getIsReleasingSkill() const { return isReleasingSkill; }
 
-double Person::getEnergyIncrease() const { return energyIncrease; }
+double Person::getEnergyAddIncrease() const { return energyAddIncrease; }
 double Person::getEnergyReduceUP() const { return energyReduceUP; }
 double Person::getEnergyReduceDOWN() const { return energyReduceDOWN; }
 
 const AutoAttack *Person::getAutoAttack() const { return this->autoAttackPtr.get(); }
-const Skill *Person::getNowReleasingSkill() const { return this->nowReleasingSkill.get(); }
+Skill* const Person::getNowReleasingSkill() const { return this->nowReleasingSkill.get(); }
 
 const Skill* Person::getCurtainPointerForAction(std::string skillName) const 
 {

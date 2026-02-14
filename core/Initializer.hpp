@@ -1,9 +1,19 @@
 #pragma once
 #include "Logger.h"
 #include "Person.h"
+#include "Skill.h"
 #include "AutoAttack.h"
 #include "Creators.hpp"
+#include <memory>
 #include <vector>
+
+// 临时的person类，用于初始化buff判断buff是否为固定
+class temp_Person : public Person
+{   
+public:
+    temp_Person() : Person(){};
+    ~temp_Person(){};
+};
 
 /* ============================================================================
  * @class Initializer
@@ -82,9 +92,9 @@ protected:
         Logger::debug("Initializer",
                       "Registered skill: " + Skill_::name);
         
-        // 添加到角色的指针列表，用于Action系统获取技能指针
-        p->pointerListForAction.push_back(
-                std::make_unique<Skill_>(p));
+        // 添加到角色的指针列表，用于Action系统获取技能指针(弃用)
+        // p->pointerListForAction.push_back(
+        //         std::make_unique<Skill_>(p));
     }
 
     /**
@@ -101,8 +111,10 @@ protected:
                         [](Person* p,double n = 0) { return std::make_unique<Buff_>(p,n); }});
         
         // 检查是否为固有Buff
+        // 创建一个临时的person
+        std::unique_ptr<temp_Person> temp_p = std::make_unique<temp_Person>();
         bool isInherent = false;
-        auto temp = std::make_unique<Buff_>(p,0);
+        auto temp = std::make_unique<Buff_>(temp_p.get(),0);
         isInherent = temp->getIsInherent();
         
         if(isInherent)
@@ -124,12 +136,21 @@ protected:
      */
     void initializeAutoAttack()
     {
-        // 初始化自动攻击系统技能优先级列表
+        // 初始化自动攻击系统技能优先级列表与无前摇技能列表
+        // 创建一个临时的person
+        std::unique_ptr<temp_Person> temp_p = std::make_unique<temp_Person>();
         for(auto & skillName : equippedSkills)
         {
             this->p->autoAttackPtr->skillPriority.push_back(
                             PriorSkillInfo(skillName, 0));
+            
+            auto temp_skill = SkillCreator::createSkill(skillName,temp_p.get());
+            if(temp_skill->getIsNoReleasing())
+            {
+                this->p->autoAttackPtr->equippedAndNoReleasingTimeSkill.push_back(skillName);
+            }
         }
+        temp_p.reset();
 
         // 重置角色资源数
         this->p->resourceNum = this->p->maxResourceNum;
@@ -156,8 +177,15 @@ protected:
             this->p->equipSkill(skillName);
         }
 
+        // 设置冷却缩减
+        for(auto& skill : this->p->getSkillCDListRef())
+        {
+            skill->MaxCD *= (1 - this->p->coolDownReduce);
+        }
+
+
         // 重置技能层数
-        for (const auto &skill : p->skillCDList)
+        for (const auto &skill : this->p->getSkillCDListRef())
         {
             skill->getStackRef() = skill->getMaxStack();
         }
@@ -165,7 +193,7 @@ protected:
         // 创建固有Buff
         for(auto & buffName : inherentBuffs)
         {
-                p->equipInherentBuff(buffName);
+                this->p->equipInherentBuff(buffName);
         }
     }
 

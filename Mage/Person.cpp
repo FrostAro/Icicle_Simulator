@@ -15,8 +15,12 @@ Mage_Icicle::Mage_Icicle(const double PrimaryAttributes, const double critical, 
     this->proficientRatio = 0.65;
     this->almightyRatio = 0.35;
     this->maxResourceNum = 4;
+    this->resourceNum = this->maxResourceNum;
     this->castingSpeedRatio = 2;
     this->attackSpeedRatio = 0.2;
+    this->damageReduce = 0.1;
+    this->coolDownReduce = 0.1;
+    this->max_energy = 125;
 
     this->autoAttackPtr = std::make_unique<AutoAttack_Mage_Icicle>(this);
 
@@ -54,4 +58,44 @@ double Mage_Icicle::changeLuckyPersent(double persent)
     Person::changeLuckyPersent(persent);
     changeLuckyMultiplyingByAddMultiplying(0.15 + this->Lucky / 2);
     return this->Lucky;
+}
+
+
+
+
+// 射线部分
+Mage_Beam::Mage_Beam(const double PrimaryAttributes, const double critical, const double quickness, const double lucky, const double Proficient, const double almighty,
+                         const int atk, const int refindatk, const int elementatk, const double attackSpeed, const double castingSpeed,
+                         const double critialdamage_set, const double increasedamage_set, const double elementdamage_set, const int totalTime)
+    : Person(PrimaryAttributes, critical, quickness, lucky, Proficient, almighty,
+             atk, refindatk, elementatk, attackSpeed, castingSpeed,
+             critialdamage_set, increasedamage_set, elementdamage_set, totalTime)
+{
+    // 覆盖基类中的默认值
+    this->primaryAttributeRatio = 0.6;
+    this->proficientRatio = 0.4;
+    this->almightyRatio = 0.35;
+    this->maxResourceNum = 3;
+    this->castingSpeedRatio = 2;
+    this->attackSpeedRatio = 0.2;
+    this->damageReduce = 0.1;
+    this->coolDownReduce = 0.1;
+    this->max_energy = 165;
+    this->present_energy = max_energy;
+    this->proficientToEnergyRatio = 0.4;
+
+    this->autoAttackPtr = std::make_unique<AutoAttack_Mage_Beam>(this);
+
+    setATK(atk);
+
+    // 因子效果:智力
+    triggerAction<PrimaryAttributesCountModifyAction>(70);
+    changePrimaryAttributesByPersent(0.0184);
+    // 因子效果：暴击，全能
+    triggerAction<CriticalCountModifyAction>(static_cast<int>(this->CriticalCount * 0.1));
+    triggerAction<AlmightyCountModifyAction>(static_cast<int>(this->AlmightyCount * 0.1));
+    
+    initializeIncrease();
+    changeDamageIncrease(0.08);
+    changeElementIncreaseByElementIncrease(0.1);
 }

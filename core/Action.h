@@ -109,7 +109,7 @@ public:
      */
     explicit AttackAction(Skill* skill);
 
-    void execute(double n, Person *p) override; // double n未使用
+    virtual void execute(double n, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<DamageListener> listener);
     static void deleteListener(int buffID); // 通过buffID删除监听器
     std::string getActionName() override;
@@ -133,7 +133,7 @@ public:
      * @param n 消耗的资源数量
      * @param p 执行动作的角色
      */
-    void execute(double n, Person *p) override;
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<ResourceListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -157,7 +157,7 @@ public:
      * @param n 回复的资源数量
      * @param p 执行动作的角色
      */
-    void execute(double n, Person *p) override;
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<ResourceListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -181,7 +181,7 @@ public:
      * @param n 消耗的能量值
      * @param p 执行动作的角色
      */
-    void execute(double n, Person *p) override;
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<EnergyListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -205,7 +205,7 @@ public:
      * @param n 回复的能量值
      * @param p 执行动作的角色
      */
-    void execute(double n, Person *p) override;
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<EnergyListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -234,7 +234,7 @@ public:
      * @param n 减少的冷却时间（毫秒）
      * @param p 执行动作的角色
      */
-    void execute(double n, Person *p) override;
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CDListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -291,7 +291,7 @@ public:
      * @brief 执行技能创建
      * @param p 执行动作的角色
      */
-    void execute(double, Person *p) override; // double n未使用
+    virtual void execute(double, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<CreateSkillListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -320,7 +320,7 @@ public:
      * @param n 对于可叠层Buff作为叠层数，其他情况未使用
      * @param p 执行动作的角色
      */
-    void execute(double n, Person *p) override;
+    virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CreateBuffListener> info);
     static void deleteListener(int buffID);
     std::string getActionName() override;
@@ -562,17 +562,47 @@ public:
     virtual std::string getActionName() override;
 };
 
-// 攻击增伤百分比
+// 攻击增加数值
+class AttackCountModifyAction : public Action
+{
+private:
+    static std::string name;
+    static std::vector<std::unique_ptr<PrimaryAttributeListener>> listeners;
+
+public:
+    AttackCountModifyAction();
+    virtual void execute(double n, Person *p) override; // n为增加的攻击增加百分比
+    static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
+    static void deleteListener(int buffID);
+    virtual std::string getActionName() override;
+};
+
+// 攻击增加百分比
 class AttackIncreaseModifyAction : public Action
 {
 private:
     static std::string name;
-    static std::vector<std::unique_ptr<SecondaryAttributeListener>> listeners;
+    static std::vector<std::unique_ptr<PrimaryAttributeListener>> listeners;
 
 public:
     AttackIncreaseModifyAction();
-    virtual void execute(double n, Person *p) override; // n为增加的攻击增伤百分比
-    static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
+    virtual void execute(double n, Person *p) override; // n为增加的攻击增加百分比
+    static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
+    static void deleteListener(int buffID);
+    virtual std::string getActionName() override;
+};
+
+// 精炼攻击增加数值
+class RefineATKCountModifyAction : public Action
+{
+private:
+    static std::string name;
+    static std::vector<std::unique_ptr<PrimaryAttributeListener>> listeners;
+
+public:
+    RefineATKCountModifyAction();
+    virtual void execute(double n, Person *p) override; // n为增加的攻击增加百分比
+    static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
     static void deleteListener(int buffID);
     virtual std::string getActionName() override;
 };
