@@ -654,10 +654,7 @@ void SwiftCastBuff::update(const double)
 bool SwiftCastBuff::shouldBeRemoved() { return this->duration < 0; }
 std::string SwiftCastBuff::getBuffName() const { return SwiftCastBuff::name; }
 
-SwiftCastBuff::~SwiftCastBuff()
-{
-    p->triggerAction<QuicknessCountModifyAction>(1000);
-}
+SwiftCastBuff::~SwiftCastBuff() {}
 
 // 冰晶之力
 std::string FrostCrystalPowerBuff::name = "FrostCrystalPowerBuff";
@@ -910,7 +907,6 @@ std::string IllusoryDreamBuff::getBuffName() const { return IllusoryDreamBuff::n
 IllusoryDreamBuff::~IllusoryDreamBuff()
 {
     AttackAction::deleteListener(this->getBuffID());
-    this->p->triggerAction<RefineATKCountModifyAction>(-this->number * 0.1);
 }
 
 // 攻击力增加（用于迷幻梦境）
@@ -1117,24 +1113,4 @@ FloatingExtraSecondaryAttributesBuff::~FloatingExtraSecondaryAttributesBuff()
     LuckyCountModifyAction::deleteListener(this->getBuffID());
     ProficientCountModifyAction::deleteListener(this->getBuffID());
     AlmightyCountModifyAction::deleteListener(this->getBuffID());
-    switch (lastAttribute)
-    {
-    case secondaryAttributesEnum::CRITICAL:
-        this->p->triggerAction<CriticalPercentModifyAction>(-this->number);
-        break;
-    case secondaryAttributesEnum::QUICKNESS:
-        this->p->triggerAction<QuicknessPercentModifyAction>(-this->number);
-        break;
-    case secondaryAttributesEnum::LUCKY:
-        this->p->triggerAction<LuckyPercentModifyAction>(-this->number);
-        break;
-    case secondaryAttributesEnum::PROFICIENT:
-        this->p->triggerAction<ProficientPercentModifyAction>(--this->number);
-        break;
-    case secondaryAttributesEnum::ALMIGHTY:
-        this->p->triggerAction<AlmightyPercentModifyAction>(-this->number);
-        break;
-    default:
-        break;
-    }
 }
