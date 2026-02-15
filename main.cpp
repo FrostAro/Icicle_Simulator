@@ -24,9 +24,11 @@
 // 头文件包含
 // ============================================================================
 
-#include "Mage/Person.h"          
+#include "Mage/Beam/Person.h"   
+#include "Mage/Icicle/Person.h"        
 #include "core/AutoAttack.h"     
-#include "Mage/Initializer.hpp"  
+#include "Mage/Beam/Initializer.hpp"  
+#include "Mage/Icicle/Initializer.hpp"  
 #include "core/Logger.h"    
 #include <iterator>
 #include <memory>           
@@ -221,16 +223,16 @@ void executeSimulation_Icicle(std::vector<std::unordered_map<std::string, Damage
         // 在此处修改角色各个属性
         auto p = std::make_unique<Mage_Icicle>(
             /*三维属性*/ 4593,
-            /*暴击*/ 36,
-            /*急速*/ 1.05,
-            /*幸运*/ 61.7,
-            /*精通*/ 6,
-            /*全能*/ 17.58,
+            /*暴击(%)*/ 36,
+            /*急速(%)*/ 1.05,
+            /*幸运(%)*/ 61.7,
+            /*精通(%)*/ 6,
+            /*全能(%)*/ 17.58,
             /*攻击(物理攻击/魔法攻击)*/ 3111,
             /*精炼攻击*/ 820,
             /*元素攻击*/ 35,
-            /*攻击速度*/ 0.1,
-            /*施法速度*/ 0,
+            /*攻击速度(%)*/ 10,
+            /*施法速度(%)*/ 0,
             /*爆伤额外值(用于调试)*/ 0,
             /*增伤额外值(用于调试)*/ 0,
             /*元素增伤额外值(用于调试)*/ 0,
@@ -299,16 +301,16 @@ void executeSimulation_Beam(std::vector<std::unordered_map<std::string, DamageSt
         // 在此处修改角色各个属性
         auto p = std::make_unique<Mage_Beam>(
             /*三维属性*/ 4593,
-            /*暴击*/ 36,
-            /*急速*/ 1.05,
-            /*幸运*/ 61.7,
-            /*精通*/ 6,
-            /*全能*/ 17.58,
+            /*暴击(%)*/ 36,
+            /*急速(%)*/ 22,
+            /*幸运(%)*/ 5,
+            /*精通(%)*/ 30,
+            /*全能(%)*/ 24,
             /*攻击(物理攻击/魔法攻击)*/ 3111,
             /*精炼攻击*/ 820,
             /*元素攻击*/ 35,
-            /*攻击速度*/ 0.1,
-            /*施法速度*/ 0,
+            /*攻击速度(%)*/ 10,
+            /*施法速度(%)*/ 120,
             /*爆伤额外值(用于调试)*/ 0,
             /*增伤额外值(用于调试)*/ 0,
             /*元素增伤额外值(用于调试)*/ 0,

@@ -1,18 +1,6 @@
 #pragma once
 #include "../core/Skill.h"
 
-// 幻想
-class FightingFantasy
-{
-public:
-    virtual void setPassiveEffect(Person *p) = 0;
-    virtual void removePassiveEffect(Person *p) = 0;
-
-	FightingFantasy() = default;
-    virtual ~FightingFantasy() = default;
-};
-
-
 class MukuChief : public FightingFantasy, public InstantSkill
 { // 姆克头目
 public:

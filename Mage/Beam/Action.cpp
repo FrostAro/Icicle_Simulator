@@ -1,0 +1,25 @@
+#include "Action.h"
+#include "../../core/Person.h"
+#include "Person.h"
+
+// 射线部分
+// 能量回复
+std::string EnergyRevertAction_Beam::name = "EnergyRevertAction_Beam";
+
+EnergyRevertAction_Beam::EnergyRevertAction_Beam(const Skill* const skill)
+    : EnergyRevertAction(skill) {}
+
+EnergyRevertAction_Beam::EnergyRevertAction_Beam()
+    : EnergyRevertAction() {}
+
+void EnergyRevertAction_Beam::execute(double n, Person *p)
+{
+    Mage_Beam* Beam_p = static_cast<Mage_Beam*>(p);
+    n *= (1 + Beam_p->Proficient * Beam_p->proficientToEnergyRatio);
+    EnergyRevertAction::execute(n,p);
+}
+
+std::string EnergyRevertAction_Beam::getActionName()
+{
+    return EnergyRevertAction_Beam::name;
+}

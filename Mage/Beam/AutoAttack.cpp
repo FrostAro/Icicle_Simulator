@@ -1,0 +1,6 @@
+#include "AutoAttack.h"
+#include "Skill.h"
+#include "Buff.h"
+#include "../../core/Person.h"
+#include "../../FightingFantasy/Skill.h"
+#include "../../core/Logger.h"

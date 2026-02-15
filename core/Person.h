@@ -161,7 +161,7 @@ public:
     double luckyMultiplying = 0;             ///< 幸运伤害倍率（基础41.25%，每1%幸运+0.75%）
 
 	// ==== 能量系统 ====
-    double energyAddIncrease = 0;               ///< 能量回复增加
+    double energyAddIncrease = 0;            ///< 能量回复增加
     double energyReduceUP = 0;               ///< 能量消耗增加（上行）
     double energyReduceDOWN = 0;             ///< 能量消耗减少（下行）
 

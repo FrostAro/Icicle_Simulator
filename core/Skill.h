@@ -69,6 +69,9 @@ public:
     // 能量系统
     double energyAdd = 0;           // 能量回复量
     double energyReduce = 0;        // 能量消耗量
+    double energyReduceUP = 0;      // 技能独立能量消耗增加
+    double energyReduceDOWN = 0;    // 技能独立能量消耗减少
+    double energyAddIncrease = 0;   // 技能独立能量回复增加
     
     // 冷却系统
     double CD = 0;                  // 当前冷却时间
@@ -436,4 +439,16 @@ public:
      * @details 通过将duration变为0实现停止
      */
     void stop();
+};
+
+
+// 幻想
+class FightingFantasy
+{
+public:
+    virtual void setPassiveEffect(Person *p) = 0;
+    virtual void removePassiveEffect(Person *p) = 0;
+
+	FightingFantasy() = default;
+    virtual ~FightingFantasy() = default;
 };

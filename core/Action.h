@@ -1,5 +1,5 @@
 #pragma once
-#include "listener.hpp"
+#include "Listener.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -98,16 +98,16 @@ public:
 class AttackAction : public Action
 {
 private:
-    static std::string name;  ///< 动作名称："AttackAction"
+    static std::string name;        ///< 动作名称："AttackAction"
     static std::vector<std::unique_ptr<DamageListener>> listeners;  ///< 伤害监听器列表
-    Skill* skill;    ///< 技能名称
+    const Skill* const skill;       ///< 技能指针
 
 public:
     /**
      * @brief 构造函数
      * @param skill 要攻击的技能
      */
-    explicit AttackAction(Skill* skill);
+    explicit AttackAction(const Skill* const skill);
 
     virtual void execute(double n, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<DamageListener> listener);
@@ -170,11 +170,13 @@ public:
 class EnergyConsumeAction : public Action
 {
 private:
-    static std::string name;  ///< 动作名称："EnergyConsumeAction"
+    static std::string name;        ///< 动作名称："EnergyConsumeAction"
     static std::vector<std::unique_ptr<EnergyListener>> listeners;  ///< 能量监听器列表
+    const Skill* const skill;       ///< 技能指针
 
 public:
-    EnergyConsumeAction() : Action() {};
+    EnergyConsumeAction() : Action(), skill(nullptr) {};
+    EnergyConsumeAction(const Skill* const skill) : Action(), skill(skill) {};
     
     /**
      * @brief 执行能量消耗
@@ -196,9 +198,11 @@ class EnergyRevertAction : public Action
 private:
     static std::string name;  ///< 动作名称："EnergyRevertAction"
     static std::vector<std::unique_ptr<EnergyListener>> listeners;  ///< 能量监听器列表
+    const Skill* const skill;       ///< 技能指针
 
 public:
-    EnergyRevertAction() : Action() {};
+    EnergyRevertAction() : Action(), skill(nullptr) {};
+    EnergyRevertAction(const Skill* const skill) : Action(), skill(skill) {};
     
     /**
      * @brief 执行能量回复

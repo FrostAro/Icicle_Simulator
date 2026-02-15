@@ -1,7 +1,6 @@
 #include "Action.h"
 #include "AutoAttack.h"
 #include "Creators.hpp"
-#include "Listener.hpp"
 #include "Logger.h"
 #include "Person.h"
 #include <algorithm>
@@ -15,7 +14,7 @@ std::string Action::getActionName() { return this->name; }
 std::string AttackAction::name = "AttackAction";
 std::vector<std::unique_ptr<DamageListener>> AttackAction::listeners = {};
 
-AttackAction::AttackAction(Skill *skill)
+AttackAction::AttackAction(const Skill* const skill)
     : skill(skill) {}
 
 void AttackAction::addListener(std::unique_ptr<DamageListener> listener)
@@ -173,7 +172,14 @@ void EnergyConsumeAction::deleteListener(int buffID)
 
 void EnergyConsumeAction::execute(double n, Person *p)
 {
-    n *= (1 - p->energyReduceDOWN) * (1 + p->energyReduceUP);
+    if(skill)
+    {
+        n *= (1 - p->energyReduceDOWN - this->skill->energyReduceDOWN) 
+                * (1 + p->energyReduceUP + this->skill->energyReduceUP);
+    }
+    else{
+        n *= (1 - p->energyReduceDOWN) * (1 + p->energyReduceUP);
+    }
     p->consumeEnergy(n);
     Logger::debugAction(AutoAttack::getTimer(), 
                                 this->getActionName(), 
@@ -220,7 +226,14 @@ void EnergyRevertAction::deleteListener(int buffID)
 
 void EnergyRevertAction::execute(double n, Person *p)
 {
-    n *= (1 + p->energyAddIncrease);
+    if(skill)
+    {
+        n *= (1 + p->energyAddIncrease + this->skill->energyAddIncrease);
+    }
+    else
+    {
+        n *= (1 + p->energyAddIncrease);
+    }
     p->revertEnergy(n);
     Logger::debugAction(AutoAttack::getTimer(),
                  this->getActionName(), 

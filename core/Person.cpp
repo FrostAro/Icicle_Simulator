@@ -10,8 +10,6 @@
 #include "Skill.h"
 #include "Logger.h"
 #include "Creators.hpp"
-#include "../FightingFantasy/Skill.h"
-#include "../Mage/Buff.h"
 
 Person::Person(){};
 
@@ -38,8 +36,8 @@ Person::Person(const double PrimaryAttributes, const double critical, const doub
       primaryAttributes(PrimaryAttributes),                // 主属性数值
       resourceNum(0),                                      // 初始玄冰资源数量
       maxResourceNum(0),                                   // 最大玄冰资源数量
-      castingSpeed(castingSpeed),                          // 施法速度加成
-      attackSpeed(attackSpeed),                            // 攻击速度加成
+      castingSpeed(castingSpeed/100),                      // 施法速度加成
+      attackSpeed(attackSpeed/100),                        // 攻击速度加成
       criticicalDamage(0.5),                               // 基础暴击伤害加成（+50%）
       damageReduce(0),                                     // 基础减伤率
       criticaldamage_set(criticaldamage_set),              // 额外暴击伤害（调试用）
