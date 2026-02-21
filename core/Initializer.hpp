@@ -39,6 +39,7 @@ public:
 class Initializer
 {
 protected:
+    double deltaTime = 0;
     Person* p;                        ///< 要初始化的角色指针
     std::vector<std::string> equippedSkills{};      ///< 已装备技能名称列表
     std::vector<std::string> inherentBuffs{};       ///< 固有Buff名称列表
@@ -136,6 +137,7 @@ protected:
      */
     void initializeAutoAttack()
     {
+        AutoAttack::deltaTime = this->deltaTime;
         // 初始化自动攻击系统技能优先级列表与无前摇技能列表
         // 创建一个临时的person
         std::unique_ptr<temp_Person> temp_p = std::make_unique<temp_Person>();
@@ -221,8 +223,8 @@ public:
      * @brief 构造函数
      * @param p 要初始化的角色指针
      */
-    Initializer(Person* p)
-                : p(p){}
+    Initializer(Person* p, double deltaTime)
+                : p(p),deltaTime(deltaTime){}
 
     virtual ~Initializer() = default;
 };

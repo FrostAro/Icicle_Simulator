@@ -8,6 +8,10 @@ class Beam : public FacilitationSkill
 public:
 	static std::string name;
 	int addMultiplyingTimes = 0;
+	double baseMultiplying = 0;
+	double baseFixedValue = 0;
+	int noEnergyConsumeTime = 0;
+	int count = 0;
 
 	void setSkillType() override;
 	void trigger(Person *p) override;

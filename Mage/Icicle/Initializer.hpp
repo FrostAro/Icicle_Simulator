@@ -60,5 +60,5 @@ class Initializer_Mage_Icicle : public Initializer
     }
 
 public:
-    Initializer_Mage_Icicle(Person* p) : Initializer(p){}
+    Initializer_Mage_Icicle(Person* p, double deltaTime) : Initializer(p,deltaTime){}
 };

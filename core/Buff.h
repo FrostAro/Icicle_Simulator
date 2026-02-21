@@ -182,3 +182,10 @@ public:
      */
     static void resetID();
 };
+
+class Divisor : public Buff     // 因子效果
+{     
+public:  
+    Divisor(Person* p) : Buff(p) {};
+    virtual ~Divisor() = default;
+};

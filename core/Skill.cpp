@@ -127,6 +127,29 @@ bool Skill::reduceReleasingTime(const double n)
     return true;
 }
 
+void Skill::changeEnergyReduceUP(double n)
+{
+    this->energyReduceUP += n;
+    if(this->energyReduceUP < 0)
+    {
+        this->energyReduceUP = 0;
+    }
+}
+
+void Skill::changeEnergyReduceDOWN(double n)
+{
+    this->energyReduceDOWN += n;
+    if(this->energyReduceDOWN > 1)
+    {
+        this->energyReduceDOWN = 1;
+    }
+}
+
+void Skill::changeEnergyAddIncrease(double n)
+{
+    this->energyAddIncrease += n;
+}
+
 // ============================================================================
 // 技能类型枚举映射表
 // ============================================================================
@@ -296,6 +319,10 @@ bool Skill::getIsContinuous() const { return this->isContinuous; }
 bool Skill::getIsNoReleasing() const { return this->isNoReleasing; }
 bool Skill::getIsFacilitation() const { return this->isFacilitation; }
 
+double Skill::getEnergyReduceUP() const { return this->energyReduceUP; }
+double Skill::getEnergyReduceDOWN() const { return this->energyReduceDOWN; }
+double Skill::getEnergyAddIncrease() const { return this->energyAddIncrease; }
+
 double Skill::getCriticalIncreaseAdd() const { return this->criticalIncreaseAdd; }
 double Skill::getElementIncreaseAdd() const { return this->elementIncreaseAdd; }
 double Skill::getDamageIncreaseAdd() const { return this->damageIncreaseAdd; }
@@ -368,8 +395,10 @@ ContinuousSkill::ContinuousSkill() : Skill()
  */
 void ContinuousSkill::use(Person *p)
 {
+    addDamageTriggerTimer(AutoAttack::getDeltaTime());
     if(this->damageTriggerTimer >= this->damageTriggerInterval){
         this->trigger(p);  // 触发具体效果
+        this->damageTriggerTimer -= damageTriggerInterval;
     }
 }
 
@@ -393,8 +422,10 @@ FacilitationSkill::FacilitationSkill() : Skill()
  */
 void FacilitationSkill::use(Person* p)
 {
+    addDamageTriggerTimer(AutoAttack::getDeltaTime());
     if(this->damageTriggerTimer >= this->damageTriggerInterval){
         this->trigger(p);  // 触发具体效果
+        this->damageTriggerTimer -= damageTriggerInterval;
     }
 }
 

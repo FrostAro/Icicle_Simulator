@@ -30,9 +30,8 @@ Mage_Icicle::Mage_Icicle(const double PrimaryAttributes, const double critical, 
     changeLuckyMultiplyingByAddMultiplying(0.15 + (this->Lucky - 0.05) / 2);
 
     // 因子效果:智力
-    //this->changePrimaryAttributesByCount(70);
     triggerAction<PrimaryAttributesCountModifyAction>(70);
-    changePrimaryAttributesByPersent(0.0184);
+    triggerAction<PrimaryAttributesPercentModifyAction>(0.0184);
     // 因子效果：暴击，幸运
     //this->changeCriticalCount(static_cast<int>(this->CriticalCount * 0.1));
     triggerAction<CriticalCountModifyAction>(static_cast<int>(this->CriticalCount * 0.1));

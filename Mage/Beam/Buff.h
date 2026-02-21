@@ -31,7 +31,8 @@ class NaturalEnergyRegenBuff : public Buff
 {
 public:
     static std::string name;
-    double timer;
+    double timer = 0;
+    double triggerInterval = 0;
 
 public:
     void update(double deltaTime) override;
@@ -58,7 +59,7 @@ public:
     ~IcePromiseBuff();
 };
 
-// 冰晶共鸣&冰箭速射（射线触发冰箭）
+// 冰晶共鸣&冰光共鸣&冰箭速射（射线触发冰箭）
 class FrostCrystalResonanceBuff : public Buff  
 {
 public:
@@ -99,6 +100,8 @@ class FloodBuff_Beam : public Buff
 {
 public:
     static std::string name;
+    double energyRevertInterval = 0;
+    double timer = 0;
 
 public:
     void update(double deltaTime) override;
@@ -197,6 +200,7 @@ class DoubleProficientBuff : public Buff
 {
 public:
     static std::string name;
+    double timer = 0;       // 用于防止无限递归的计时器
 
 public:
     void listenerCallback(double n);
@@ -383,4 +387,56 @@ public:
 
     FloatingExtraSecondaryAttributesBuff(Person *p, double n);
     ~FloatingExtraSecondaryAttributesBuff() override;
+};
+
+// 职业专属因子
+class OccupationalDivisor_Beam : public Divisor
+{
+public:   
+    static std::string name;
+
+public:
+    void listenerCallback(Skill* const skill);
+    void update(double deltaTime) override;
+    bool shouldBeRemoved() override;
+    std::string getBuffName() const override;
+
+    OccupationalDivisor_Beam(Person *p, double n);
+    ~OccupationalDivisor_Beam() override;
+};
+
+// 冰令脉冲
+class FrostDecreePulseBuff : public Buff
+{
+public:   
+    static std::string name;
+    int triggerCount = 0;
+    int count = 0;
+
+public:
+    void listenerCallback(DamageInfo& info);
+    void update(double deltaTime) override;
+    bool shouldBeRemoved() override;
+    std::string getBuffName() const override;
+
+    FrostDecreePulseBuff(Person *p, double n);
+    ~FrostDecreePulseBuff() override;
+};
+
+// 冷却瞬息
+class InstantCooldownBuff : public Buff
+{
+public:   
+    static std::string name;
+    double triggerNum = 0;
+    double count = 0;
+
+public:
+    void listenerCallback(double n);
+    void update(double deltaTime) override;
+    bool shouldBeRemoved() override;
+    std::string getBuffName() const override;
+
+    InstantCooldownBuff(Person *p, double n);
+    ~InstantCooldownBuff() override;
 };

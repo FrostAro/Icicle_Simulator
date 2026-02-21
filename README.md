@@ -14,6 +14,7 @@
 
 C++17 或更高版本
 CMake 3.10+
+(补充：若不使用cmake等构建工具而使用vscode的某些runner插件，例如compile runner，需自行include对应的.cpp文件)
 GCC/Clang/MSVC 支持C++17
 
 ### 编译运行
@@ -30,17 +31,25 @@ mkdir build && cd build
 cmake ..
 make
 
-//运行程序
-./bin/dps_simulator
+# 运行程序
+# 冰矛
+./bin/dps_simulator_icicle
+# 射线
+./bin/dps_simulator_beam
 ```
+
+### 选择对应main.cpp
+
+`main_icicle.cpp`对应冰矛
+`main_beam.cpp`对应射线
 
 ### 配置角色属性
 
-以冰矛为例，在`main.cpp`中修改`Mage_Icicle`构造函数的参数，例：
+以冰矛为例，在`main_icicle.cpp`中修改`Mage_Icicle`构造函数的参数，例：
 
 ```cpp
 /*main.cpp*/
-auto *p = new Mage_Icicle(
+std::unique_ptr<Mage_Beam> p = std::make_unique<Mage_Beam>(
     /*三维属性*/ xxx,
     /*暴击(%)*/ xx.xx,/*例如51.63*/
     /*急速(%)*/ xx.xx,
@@ -61,7 +70,9 @@ auto *p = new Mage_Icicle(
 
 ## 程序当前配置
 
-### 因子效果
+### 冰矛
+
+#### 因子效果
 
 - 通用攻击：幸运值+9.27%，急速值-5.56%  
 - 通用攻击：暴击值+10%，精通值-6%  
@@ -69,12 +80,17 @@ auto *p = new Mage_Icicle(
 - 职业专属：冰之灌注持续期间，幸运一击梦境伤害+58.3%  
 - 职业专属：贯穿冰矛，冰霜彗星梦境伤害+35%  
 
-### 心相仪
+#### 心相仪
 
 - 幻想冲击
 - 时阶：幻想冲击内置cd+5s，幻想冲击梦境伤害+100%  
 - 二重：幻想冲击有50%固定几率额外触发一次  
 - 极运：每触发10次幸运一击，主属性+10%，持续5s  
+
+#### 幻想
+
+- 5阶姆克头目
+- 5阶姆克尖兵
 
 ## 输出说明
 

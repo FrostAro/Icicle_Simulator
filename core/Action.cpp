@@ -174,8 +174,8 @@ void EnergyConsumeAction::execute(double n, Person *p)
 {
     if(skill)
     {
-        n *= (1 - p->energyReduceDOWN - this->skill->energyReduceDOWN) 
-                * (1 + p->energyReduceUP + this->skill->energyReduceUP);
+        n *= (1 - p->energyReduceDOWN - this->skill->getEnergyReduceDOWN()) 
+                * (1 + p->energyReduceUP + this->skill->getEnergyReduceUP());
     }
     else{
         n *= (1 - p->energyReduceDOWN) * (1 + p->energyReduceUP);
@@ -228,7 +228,7 @@ void EnergyRevertAction::execute(double n, Person *p)
 {
     if(skill)
     {
-        n *= (1 + p->energyAddIncrease + this->skill->energyAddIncrease);
+        n *= (1 + p->energyAddIncrease + this->skill->getEnergyAddIncrease());
     }
     else
     {
@@ -574,39 +574,14 @@ void CriticalCountModifyAction::deleteListener(int buffID)
 
 void CriticalCountModifyAction::execute(double n, Person *p)
 {
-    // 1. 获取当前的数值部分（去除额外百分比的影响）
-    // 注意：基础暴击率是5%，所以要先减去基础5%和额外百分比
-    double basePercent = 0.05;
-    double currentCriticalWithoutExtraAndBase = p->Critical - p->CriticalExtraPercent - basePercent;
+    p->changeCriticalCount(n);
 
-    // 如果当前暴击率小于基础5%+额外百分比，说明数值部分为0
-    if (currentCriticalWithoutExtraAndBase < 0)
+    for (const auto &listener : CriticalCountModifyAction::listeners)
     {
-        currentCriticalWithoutExtraAndBase = 0;
-    }
-
-    double currentCount = p->getCriticalCount(currentCriticalWithoutExtraAndBase);
-
-    // 2. 加上新的数值
-    double newCount = currentCount + n;
-
-    // 3. 重新计算百分比
-    // 数值转换的百分比 = newCount / (newCount + 转换系数)
-    double convertedPercent = 0.0;
-    if (newCount > 0)
-    {
-        convertedPercent = newCount / (newCount + p->getPropertyTransformationCoeffcient_General());
-    }
-
-    // 4. 更新数值和百分比
-    p->CriticalCount = newCount;
-    // 面板百分比 = 基础5% + 数值转换的百分比 + 额外百分比
-    p->Critical = basePercent + convertedPercent + p->CriticalExtraPercent;
-
-    // 确保百分比不超过100%
-    if (p->Critical > 1.0)
-    {
-        p->Critical = 1.0;
+        if (listener && listener->callback)
+        {
+            listener->trigger(n);
+        }
     }
 }
 
@@ -642,22 +617,14 @@ void CriticalPercentModifyAction::deleteListener(int buffID)
 
 void CriticalPercentModifyAction::execute(double n, Person *p)
 {
-    // 1. 增加额外百分比
-    p->CriticalExtraPercent += n;
+    p->changeCritialPersent(n);
 
-    // 2. 直接增加面板百分比
-    p->Critical += n;
-
-    // 确保额外百分比不为负数
-    if (p->CriticalExtraPercent < 0)
+    for (const auto &listener : CriticalPercentModifyAction::listeners)
     {
-        p->CriticalExtraPercent = 0;
-    }
-
-    // 确保面板百分比在合理范围内（0% - 100%）
-    if (p->Critical < 0.05)
-    {
-        p->Critical = 0.05; // 基础5%不能低于
+        if (listener && listener->callback)
+        {
+            listener->trigger(n);
+        }
     }
 }
 
@@ -692,36 +659,7 @@ void QuicknessCountModifyAction::deleteListener(int buffID)
 
 void QuicknessCountModifyAction::execute(double n, Person *p)
 {
-    double currentQuicknessWithoutExtra = p->Quickness - p->QuicknessExtraPersent;
-
-    if (currentQuicknessWithoutExtra < 0)
-    {
-        currentQuicknessWithoutExtra = 0;
-    }
-
-    double currentCount = p->getQuicknessCount(currentQuicknessWithoutExtra);
-    double newCount = currentCount + n;
-
-    double convertedPercent = 0.0;
-    if (newCount > 0)
-    {
-        convertedPercent = newCount / (newCount + p->getPropertyTransformationCoeffcient_General());
-    }
-
-    p->QuicknessCount = newCount;
-    p->Quickness = convertedPercent + p->QuicknessExtraPersent;
-
-    // 更新施法速度和攻击速度
-    p->castingSpeed = p->getCastingSpeedRatio() * p->Quickness + p->castingSpeedExtra;
-    p->attackSpeed = p->getAttackSpeedRatio() * p->Quickness + p->attackSpeedExtra;
-
-    // 确保百分比不为负数
-    if (p->Quickness < 0)
-    {
-        p->Quickness = 0;
-        p->castingSpeed = 0;
-        p->attackSpeed = 0;
-    }
+    p->changeQuicknessCount(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : QuicknessCountModifyAction::listeners)
@@ -764,25 +702,7 @@ void QuicknessPercentModifyAction::deleteListener(int buffID)
 
 void QuicknessPercentModifyAction::execute(double n, Person *p)
 {
-    p->QuicknessExtraPersent += n;
-    p->Quickness += n;
-
-    if (p->QuicknessExtraPersent < 0)
-    {
-        p->QuicknessExtraPersent = 0;
-    }
-
-    // 更新施法速度和攻击速度
-    p->castingSpeed = p->getCastingSpeedRatio() * p->Quickness + p->castingSpeedExtra;
-    p->attackSpeed = p->getAttackSpeedRatio() * p->Quickness + p->attackSpeedExtra;
-
-    // 确保急速不为负数
-    if (p->Quickness < 0)
-    {
-        p->Quickness = 0;
-        p->castingSpeed = 0;
-        p->attackSpeed = 0;
-    }
+    p->changeQuicknessPersent(n);
     // 遍历监听，触发回调
     for (const auto &listener : QuicknessPercentModifyAction::listeners)
     {
@@ -824,36 +744,7 @@ void LuckyCountModifyAction::deleteListener(int buffID)
 
 void LuckyCountModifyAction::execute(double n, Person *p)
 {
-    // 幸运基础百分比为5%
-    double basePercent = 0.05;
-    double currentLuckyWithoutExtraAndBase = p->Lucky - p->LuckyExtraPersent - basePercent;
-
-    if (currentLuckyWithoutExtraAndBase < 0)
-    {
-        currentLuckyWithoutExtraAndBase = 0;
-    }
-
-    double currentCount = p->getLuckyCount(currentLuckyWithoutExtraAndBase);
-    double newCount = currentCount + n;
-
-    double convertedPercent = 0.0;
-    if (newCount > 0)
-    {
-        convertedPercent = newCount / (newCount + p->getPropertyTransformationCoeffcient_General());
-    }
-
-    p->LuckyCount = newCount;
-    p->Lucky = basePercent + convertedPercent + p->LuckyExtraPersent;
-
-    // 更新幸运相关属性
-    p->luckyDamageIncrease = p->Lucky;
-    p->setLuckyMultiplying();
-
-    // 确保百分比在合理范围内
-    if (p->Lucky < basePercent)
-    {
-        p->Lucky = basePercent;
-    }
+    p->changeLuckyCount(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : LuckyCountModifyAction::listeners)
@@ -896,28 +787,7 @@ void LuckyPercentModifyAction::deleteListener(int buffID)
 
 void LuckyPercentModifyAction::execute(double n, Person *p)
 {
-    p->LuckyExtraPersent += n;
-    p->Lucky += n;
-
-    if (p->LuckyExtraPersent < 0)
-    {
-        p->LuckyExtraPersent = 0;
-    }
-
-    // 更新幸运相关属性
-    p->luckyDamageIncrease = p->Lucky;
-    p->setLuckyMultiplying();
-
-    // 确保幸运不低于基础5%
-    double basePercent = 0.05;
-    if (p->Lucky < basePercent)
-    {
-        p->Lucky = basePercent;
-    }
-    else if (p->Lucky > 1.0)
-    {
-        p->Lucky = 1.0;
-    }
+    p->changeLuckyPersent(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : LuckyPercentModifyAction::listeners)
@@ -960,35 +830,7 @@ void ProficientCountModifyAction::deleteListener(int buffID)
 
 void ProficientCountModifyAction::execute(double n, Person *p)
 {
-    // 精通基础百分比为6%
-    double basePercent = 0.06;
-    double currentProficientWithoutExtraAndBase = p->Proficient - p->ProficientExtraPersent - basePercent;
-
-    if (currentProficientWithoutExtraAndBase < 0)
-    {
-        currentProficientWithoutExtraAndBase = 0;
-    }
-
-    double currentCount = p->getProficientCount(currentProficientWithoutExtraAndBase);
-    double newCount = currentCount + n;
-
-    double convertedPercent = 0.0;
-    if (newCount > 0)
-    {
-        convertedPercent = newCount / (newCount + p->getPropertyTransformationCoeffcient_General());
-    }
-
-    p->ProficientCount = newCount;
-    p->Proficient = basePercent + convertedPercent + p->ProficientExtraPersent;
-
-    // 更新元素增伤
-    p->changeElementIncreaseByProficient(p->Proficient);
-
-    // 确保百分比在合理范围内
-    if (p->Proficient < basePercent)
-    {
-        p->Proficient = basePercent;
-    }
+    p->changeProficientCount(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : ProficientCountModifyAction::listeners)
@@ -1031,27 +873,7 @@ void ProficientPercentModifyAction::deleteListener(int buffID)
 
 void ProficientPercentModifyAction::execute(double n, Person *p)
 {
-    p->ProficientExtraPersent += n;
-    p->Proficient += n;
-
-    if (p->ProficientExtraPersent < 0)
-    {
-        p->ProficientExtraPersent = 0;
-    }
-
-    // 更新元素增伤
-    p->changeElementIncreaseByProficient(p->Proficient);
-
-    // 确保精通不低于基础6%
-    double basePercent = 0.06;
-    if (p->Proficient < basePercent)
-    {
-        p->Proficient = basePercent;
-    }
-    else if (p->Proficient > 1.0)
-    {
-        p->Proficient = 1.0;
-    }
+    p->changeProficientPersent(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : ProficientPercentModifyAction::listeners)
@@ -1094,38 +916,7 @@ void AlmightyCountModifyAction::deleteListener(int buffID)
 
 void AlmightyCountModifyAction::execute(double n, Person *p)
 {
-    // 全能没有基础百分比，且使用不同的转换系数
-    double currentAlmightyWithoutExtra = p->Almighty - p->AlmightyExtraPersent;
-
-    if (currentAlmightyWithoutExtra < 0)
-    {
-        currentAlmightyWithoutExtra = 0;
-    }
-
-    double currentCount = p->getAlmightyCount(currentAlmightyWithoutExtra);
-    double newCount = currentCount + n;
-
-    double convertedPercent = 0.0;
-    if (newCount > 0)
-    {
-        convertedPercent = newCount / (newCount + p->getPropertyTransformationCoeffcient_Almighty());
-    }
-
-    p->AlmightyCount = newCount;
-    p->Almighty = convertedPercent + p->AlmightyExtraPersent;
-
-    // 更新全能增伤
-    p->changeAlmightyIncrease(p->Almighty);
-
-    // 确保百分比不为负数
-    if (p->Almighty < 0)
-    {
-        p->Almighty = 0;
-    }
-    else if (p->Almighty > 1.0)
-    {
-        p->Almighty = 1.0;
-    }
+    p->changeAlmightyCount(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : AlmightyCountModifyAction::listeners)
@@ -1168,22 +959,7 @@ void AlmightyPercentModifyAction::deleteListener(int buffID)
 
 void AlmightyPercentModifyAction::execute(double n, Person *p)
 {
-    p->AlmightyExtraPersent += n;
-    p->Almighty += n;
-
-    if (p->AlmightyExtraPersent < 0)
-    {
-        p->AlmightyExtraPersent = 0;
-    }
-
-    // 更新全能增伤
-    p->changeAlmightyIncrease(p->Almighty);
-
-    // 确保全能不为负数
-    if (p->Almighty < 0)
-    {
-        p->Almighty = 0;
-    }
+    p->changeAlmightyPersent(n);
 
     // 遍历监听，触发回调
     for (const auto &listener : AlmightyPercentModifyAction::listeners)

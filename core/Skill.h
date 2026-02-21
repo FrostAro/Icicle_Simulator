@@ -55,6 +55,10 @@ protected:
     bool isNoReleasing = false;     // 无前摇技能
     bool isFacilitation = false;    // 引导性技能
 
+    double energyReduceUP = 0;      // 技能独立能量消耗增加
+    double energyReduceDOWN = 0;    // 技能独立能量消耗减少
+    double energyAddIncrease = 0;   // 技能独立能量回复增加
+
 public:
     friend class Initializer;
 
@@ -69,9 +73,6 @@ public:
     // 能量系统
     double energyAdd = 0;           // 能量回复量
     double energyReduce = 0;        // 能量消耗量
-    double energyReduceUP = 0;      // 技能独立能量消耗增加
-    double energyReduceDOWN = 0;    // 技能独立能量消耗减少
-    double energyAddIncrease = 0;   // 技能独立能量回复增加
     
     // 冷却系统
     double CD = 0;                  // 当前冷却时间
@@ -210,6 +211,14 @@ public:
     bool addDamageTriggerTimer(double n);        // 增加伤害触发计时器（指定步长）
     bool reduceReleasingTime();                  // 减少前摇时间（步长1）
     bool reduceReleasingTime(double n);          // 减少前摇时间（指定步长）
+
+    // ============================================================================
+    // 能量变化管理函数
+    // ============================================================================
+
+    void changeEnergyReduceUP(double n);
+    void changeEnergyReduceDOWN(double n);
+    void changeEnergyAddIncrease(double n);
     
     // ============================================================================
     // 技能类型判断函数
@@ -281,6 +290,10 @@ public:
     bool getIsContinuous() const;
     bool getIsNoReleasing() const;
     bool getIsFacilitation() const;
+
+    double getEnergyReduceUP() const;
+    double getEnergyReduceDOWN() const;
+    double getEnergyAddIncrease() const;
     
     double getCriticalIncreaseAdd() const;
     double getElementIncreaseAdd() const;

@@ -14,8 +14,9 @@ EnergyRevertAction_Beam::EnergyRevertAction_Beam()
 
 void EnergyRevertAction_Beam::execute(double n, Person *p)
 {
+    double proficient = p->getProficient();
     Mage_Beam* Beam_p = static_cast<Mage_Beam*>(p);
-    n *= (1 + Beam_p->Proficient * Beam_p->proficientToEnergyRatio);
+    n *= (1 + proficient * Beam_p->proficientToEnergyRatio);
     EnergyRevertAction::execute(n,p);
 }
 

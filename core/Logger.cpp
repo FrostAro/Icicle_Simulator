@@ -514,7 +514,7 @@ void Logger::debugAutoAttack(double timer, const std::string& message) {
  */
 void Logger::debugSkill(double timer, const std::string& skillName, 
                        const std::string& message) {
-    debug("Skill", "[DEBUG,timer={0}]: Skill   - skill: {1} - {2}", 
+    debug("Skill ", "[DEBUG,timer={0}]: Skill   - skill: {1} - {2}", 
           timer, skillName, message);
 }
 

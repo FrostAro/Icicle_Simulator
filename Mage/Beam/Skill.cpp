@@ -4,6 +4,7 @@
 #include "../../core/Person.h"
 #include "Buff.h"
 #include "../../core/Logger.h"
+#include "../../core/AutoAttack.h"
 
 // 射线
 std::string Beam::name = "Beam";
@@ -15,16 +16,19 @@ Beam::Beam(Person* p)
 
     this->multiplying = 0.42L;
     this->fixedValue = 150;
+    this->baseMultiplying = this->multiplying;
+    this->baseFixedValue = this->fixedValue;
     this->damageTriggerInterval = 30;
     this->damageTriggerInterval = this->damageTriggerInterval / (1 + p->castingSpeed);
     this->MaxCD = 0;
     this->CD = 0;
-    this->releasingTime = 75;
+    this->releasingTime = 85;
 
     this->damageIncreaseAdd = 0.16; 
 
-    this->energyReduce = 15;
+    this->energyReduce = 12 * (this->damageTriggerInterval / 30);
     this->duration = 999999;
+    this->noEnergyConsumeTime = 5;
 
     this->setSkillType();
 }
@@ -38,21 +42,28 @@ void Beam::setSkillType()
 
 void Beam::trigger(Person* p)
 {
-    p->triggerAction<EnergyConsumeAction>(this->energyReduce,this);
+    this->count++;
     p->triggerAction<AttackAction>(0, this);
+    if(this->count > this->noEnergyConsumeTime)
+    {
+        p->triggerAction<EnergyConsumeAction>(this->energyReduce,this);
+    }
     if(addMultiplyingTimes < 10)
     {
-        this->multiplying *= 1.08;
-        this->fixedValue *= 1.08;
+        this->multiplying += this->baseMultiplying * 0.08;
+        this->fixedValue += this->baseFixedValue * 0.08;
         addMultiplyingTimes += 1;
     }
 
-    Logger::debug("Skill","beam triggered, person current energy: " + std::to_string(p->getPresentEnergy()));
+    Logger::debugSkill(AutoAttack::getTimer(),this->getSkillName(),"beam attacked, beam count: " + std::to_string(this->count));
+    Logger::debugSkill(AutoAttack::getTimer(),this->getSkillName(),"beam consumed energy, person current energy: " + std::to_string(p->getPresentEnergy()));
 }
 
 std::string Beam::getSkillName() const{ return Beam::name; }
 
-bool Beam::canEndFacilitation(Person* p){ return p->present_energy < 12 || this->duration <= 0; }
+bool Beam::canEndFacilitation(Person* p){ 
+    return p->present_energy < this->energyReduce * (1 + this->energyReduceUP) * (1 - this->energyReduceDOWN)
+                                                || this->duration <= 0; }
 
 
 // 涡流
@@ -132,6 +143,7 @@ std::string FrostWind::name = "FrostWind";
 
 FrostWind::FrostWind(Person* p) : InstantSkill()
 {
+    this->canTriggerLucky = true;
     this->multiplying = 1.75L;
     this->fixedValue = 1050;
     this->MaxCD = 3000;
@@ -155,8 +167,10 @@ void FrostWind::trigger(Person* p)
     p->triggerAction<ResourceConsumeAction>(6);
     // 触发涌能法则
     p->triggerAction<CreateBuffAction>(0,EnergySurgeLawBuff::name);
-    // 触发冰晶坠落
+    // 触发寒风凝聚
     p->triggerAction<CreateBuffAction>(0,FrostwindFocusBuff::name);
+    // 触发冰晶坠落
+    p->triggerAction<CreateSkillAction>(0,CrystalsHail::name);
 }
 
 std::string FrostWind::getSkillName() const{ return FrostWind::name; }
@@ -167,10 +181,9 @@ std::string Flood_Beam::name = "Flood_Beam";
 Flood_Beam::Flood_Beam(Person* p) : InstantSkill()
 {
     this->MaxCD = 4500;
-    this->energyAdd = 6.0L;
 
     // 无视吟唱时间，默认满玄冰释放
-    this->releasingTime = 80;
+    this->releasingTime = 75;
 
     this->setSkillType();
 }
@@ -184,7 +197,6 @@ void Flood_Beam::setSkillType()
 
 void Flood_Beam::trigger(Person* p)
 {
-    p->triggerAction<EnergyRevertAction_Beam>(this->energyAdd,this);
     // 触发射线的灌注buff
     p->triggerAction<CreateBuffAction>(0,FloodBuff_Beam::name);
 }
@@ -225,6 +237,8 @@ std::string FrostDecreePulse::name = "FrostDecreePulse";
 
 FrostDecreePulse::FrostDecreePulse(Person* p) : InstantSkill()
 {
+    this->duration = 1;
+    this->damageTriggerInterval = 1;
     this->multiplying = 5;
     this->isNoReleasing = true;
 
@@ -242,7 +256,7 @@ void FrostDecreePulse::trigger(Person* p)
     p->triggerAction<AttackAction>(0,this);
 }
 
-std::string FrostDecreePulse::getSkillName() const{ return FrostDecreePulse::name; }
+std::string FrostDecreePulse::getSkillName() const { return FrostDecreePulse::name; }
 
 // 冰箭
 std::string IceArrow_Beam::name = "IceArrow_Beam";
@@ -250,7 +264,7 @@ std::string IceArrow_Beam::name = "IceArrow_Beam";
 IceArrow_Beam::IceArrow_Beam(Person *p) : InstantSkill()
 {
     this->energyAdd = 2;
-    this->multiplying = 0.28;
+    this->multiplying = 0.56;
     this->fixedValue = 0;
     this->duration = 53;
     this->damageTriggerInterval = 53;
@@ -280,7 +294,6 @@ void IceArrow_Beam::trigger(Person *p)
 {
 
     p->triggerAction<AttackAction>(0, this); // 冰箭本体伤害
-    //p->triggerAction<AttackAction>(0, this); // 冰箭本体伤害
     p->triggerAction<EnergyRevertAction_Beam>(this->energyAdd,this);  // 冰光共鸣
 }
 
@@ -294,7 +307,7 @@ std::string FrostBurst::name = "FrostBurst";
 
 FrostBurst::FrostBurst(Person *p) : InstantSkill()
 {
-    this->multiplying = 0.28;
+    this->multiplying = 0.56;
     this->fixedValue = 0;
     this->duration = 53;
     this->damageTriggerInterval = 53;

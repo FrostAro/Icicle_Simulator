@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <queue>
 
 class Person;
 class PriorSkillInfo;
@@ -46,16 +47,28 @@ protected:
      * 1. 条件判断函数
      * 2. 条件不满足时的错误类型
      */
-    struct judgeConditionStruct {
+    struct judgeConditionStruct 
+    {
         std::function<bool(const PriorSkillInfo&)> condition;  // 条件判断函数
         ErrorInfo::errorTypeEnum errorType;                    // 条件不满足时的错误类型
+    };
+
+    /**
+     * @struct certainTimeSkillStruct
+     * @brief 记录时间与该时间应释放的技能
+     */
+    struct certainTimeSkillStruct 
+    {
+        std::string skillName;
+        double time;
     };
 
     // ============================================================================
     // 静态成员变量
     // ============================================================================
     
-    static double timer;  // 全局计时器，用于同步所有AutoAttack实例的时间
+    static double timer;        // 全局计时器，用于同步所有AutoAttack实例的时间
+    static double deltaTime;    // 全局时间变量，用于同步所有更新事件倍速
 
     // ============================================================================
     // 实例成员变量
@@ -64,7 +77,8 @@ protected:
     std::vector<PriorSkillInfo> priorSkillList{};                          // 优先级技能列表（待释放）
     std::vector<PriorSkillInfo> skillPriority{};                           // 有序的优先级列表（优先级高→低）
     std::vector<judgeConditionStruct> judgingConditionsForCreateSkill{};   // 技能释放的判定条件列表
-    std::vector<std::string> equippedAndNoReleasingTimeSkill{};  // 已装备技能中无前摇，即可同时释放的技能（如射线龙卷）
+    std::vector<std::string> equippedAndNoReleasingTimeSkill{};            // 已装备技能中无前摇，即可同时释放的技能（如射线龙卷）
+    std::queue<certainTimeSkillStruct> certainTimeSkillList{};            // 特定时间触发技能列表
     
     bool isReleasingSkill = false;          // 当前是否正在释放技能（防止技能打断）
     bool isOutBurst = false;                // 是否处于爆发状态
@@ -126,6 +140,11 @@ protected:
      * 3.updateSkillsCD
      */
     void updatePerson(int deltaTime);
+
+    /**
+     * @brief 根据模拟时间释放技能
+     */
+    void createSkillInCertainTime(double time, std::string skillName);
     
     // ============================================================================
     // 需要子类实现的具体战斗逻辑，以下函数为大爆发，小爆发，空窗期的三段式轴
@@ -248,6 +267,7 @@ public:
 
     static double getTimer();
     static double& setTimer();
+    static double getDeltaTime();
     bool getIsReleasingSkill() const;
     bool getIsOutBurst() const;
     int getNextOutBurstType() const;

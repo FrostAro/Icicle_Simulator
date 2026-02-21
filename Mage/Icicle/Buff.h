@@ -262,13 +262,6 @@ public:
     ~FantasyImpactBuff() override;
 };
 
-class Divisor : public Buff     // 因子效果
-{     
-public:  
-    Divisor(Person* p);
-    virtual ~Divisor() = default;
-};
-
 class ExtremeLuckDivisor : public Divisor  //极运
 {
 public:

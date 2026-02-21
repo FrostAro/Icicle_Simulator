@@ -22,15 +22,15 @@ Mage_Beam::Mage_Beam(const double PrimaryAttributes, const double critical, cons
     this->coolDownReduce = 0.1;
     this->max_energy = 165;
     this->present_energy = max_energy;
-    this->proficientToEnergyRatio = 0.4;
+    this->proficientToEnergyRatio = 1;
 
     this->autoAttackPtr = std::make_unique<AutoAttack_Mage_Beam>(this);
 
     setATK(atk);
 
     // 因子效果:智力
-    //triggerAction<PrimaryAttributesCountModifyAction>(70);
-    //triggerAction<PrimaryAttributesPercentModifyAction>(0.0184);
+    triggerAction<PrimaryAttributesCountModifyAction>(70);
+    triggerAction<PrimaryAttributesPercentModifyAction>(0.0184);
     // 因子效果：暴击，全能
     triggerAction<CriticalCountModifyAction>(static_cast<int>(this->CriticalCount * 0.1));
     triggerAction<AlmightyCountModifyAction>(static_cast<int>(this->AlmightyCount * 0.1));

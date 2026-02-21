@@ -58,6 +58,7 @@ class Initializer_Mage_Beam : public Initializer
         registerCertainBuff<UltiIncreaseBuff_Beam>();
         registerCertainBuff<MukuChiefBuff>();
         registerCertainBuff<MukuScoutBuff>();
+        registerCertainBuff<FrostDecreePulseBuff>();
 
         // //心相仪与装备套装效果
         registerCertainBuff<EquipmentSetEffectBuff_Beam>();
@@ -67,5 +68,5 @@ class Initializer_Mage_Beam : public Initializer
     }
 
 public:
-    Initializer_Mage_Beam(Person* p) : Initializer(p){}
+    Initializer_Mage_Beam(Person* p, double deltaTime) : Initializer(p,deltaTime){}
 };

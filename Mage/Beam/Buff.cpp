@@ -65,7 +65,7 @@ void BeamBuildBuff::listenerCallback2(double)
     {
         // 减去上次增加的
         skill->damageIncreaseAdd -= this->lastExtraIncrease;
-        skill->energyReduceUP -= this->stack * this->energyRatio;
+        skill->changeEnergyReduceUP(-this->stack * this->energyRatio);
 
         // 设置数值
         this->stack = this->p->getResourceNum();
@@ -73,10 +73,11 @@ void BeamBuildBuff::listenerCallback2(double)
 
         // 重新设置射线增伤与能量增耗
         skill->damageIncreaseAdd += this->lastExtraIncrease;
-        skill->energyReduceUP += this->stack * this->energyRatio;
+        skill->changeEnergyReduceUP(this->stack * this->energyRatio);
+
         Logger::debugBuff(AutoAttack::getTimer(),
                           this->getBuffName(),
-                          "current energyReduceUP: " + std::to_string(this->p->energyReduceUP));
+                          "current energyReduceUP: " + std::to_string(skill->getEnergyReduceUP()));
     }
     else
     {
@@ -104,15 +105,16 @@ NaturalEnergyRegenBuff::NaturalEnergyRegenBuff(Person *p, double) : Buff(p)
     this->duration = 999999;
     this->maxDuration = this->duration;
     this->isInherent = true;
+    this->triggerInterval = 100 / (1 + this->p->Quickness);// 寒流效果
 }
 
 void NaturalEnergyRegenBuff::update(double deltaTime)
 {
-    timer += deltaTime;
-    if (timer >= 100 / (1 + this->p->Quickness)) // 寒流效果
+    this->timer += deltaTime;
+    if (this->timer >= this->triggerInterval) 
     {
         this->p->triggerAction<EnergyRevertAction_Beam>(this->number);
-        timer = 0;
+        this->timer -= this->triggerInterval;
     }
 }
 
@@ -157,7 +159,7 @@ IcePromiseBuff::~IcePromiseBuff()
 
 std::string IcePromiseBuff::getBuffName() const { return IcePromiseBuff::name; }
 
-// 冰晶共鸣&冰箭速射（射线触发冰箭）
+// 冰晶共鸣&冰光共鸣&冰箭速射（射线触发冰箭）
 std::string FrostCrystalResonanceBuff::name = "FrostCrystalResonanceBuff";
 
 FrostCrystalResonanceBuff::FrostCrystalResonanceBuff(Person *p, double)
@@ -195,6 +197,11 @@ void FrostCrystalResonanceBuff::listenerCallback2(Skill *const skill)
     if(skill->getSkillName() == IceArrow_Beam::name)
     {
         skill->finalIncreaseAdd += 0.15;
+        // 冰光共鸣部分
+        if(this->p->findBuffInBuffList(FloodBuff_Beam::name) != -1)
+        {
+            skill->energyAdd *= 2;
+        }
     }
 }
 
@@ -218,7 +225,7 @@ void FrostCrystalResonanceBuff::update(const double deltaTime)
                                   this->getBuffName(),
                                   "more iceArrow triggered ");
             }
-            this->triggerTimer = 0;
+            this->triggerTimer -= this->triggerInterval;
         }
     }
     else
@@ -260,7 +267,7 @@ void ChillPersistenceBuff::listenerCallback(Skill *const skill)
     int index = this->p->findBuffInBuffList(FloodBuff_Beam::name);
     if (skill->getSkillName() == Beam::name && index != -1  && !this->triggered)
     {
-        skill->energyReduceDOWN += this->number;
+        skill->changeEnergyReduceDOWN(this->number);
         this->triggered = true;
         Logger::debugBuff(AutoAttack::getTimer(),
                           this->getBuffName(),
@@ -287,15 +294,25 @@ std::string FloodBuff_Beam::name = "FloodBuff_Beam";
 FloodBuff_Beam::FloodBuff_Beam(Person *p, double)
     : Buff(p)
 {
-    this->number = 6; // 用作回能量
+    this->number = 0.6; // 用作回能量
     this->duration = 1500;
     this->maxDuration = this->duration;
+    this->energyRevertInterval = 10;
 
     this->p->triggerAction<QuicknessCountModifyAction>(1040);
     this->p->triggerAction<QuicknessPercentModifyAction>(0.21);
 }
 
-void FloodBuff_Beam::update(const double) {}
+void FloodBuff_Beam::update(const double deltaTime) 
+{
+    this->timer += deltaTime;
+    if(this->timer >= this->energyRevertInterval)
+    {
+        this->p->triggerAction<EnergyRevertAction_Beam>(this->number);
+        this->timer -= this->energyRevertInterval;
+    }
+}
+
 bool FloodBuff_Beam::shouldBeRemoved() { return this->duration < 0; }
 std::string FloodBuff_Beam::getBuffName() const { return FloodBuff_Beam::name; }
 
@@ -324,6 +341,7 @@ IntellectCrystalBuff::IntellectCrystalBuff(Person *p, double)
     }
     p->max_energy += index;
     this->maxEnergyAdd = index;
+    p->present_energy = p->max_energy;
 
     auto info = std::make_unique<PrimaryAttributeListener>(
         this->getBuffID(), [this](double n)
@@ -381,8 +399,11 @@ IceTideBuff::IceTideBuff(Person *p, double)
 void IceTideBuff::listenerCallback(DamageInfo &info)
 {
     // 射线出伤20%概率回1玄冰
-    if (info.skillName == Beam::name && this->p->isSuccess(this->number))
+    if(info.skillName != Beam::name)
+        return;
+    if (this->p->isSuccess(this->number))
     {
+        this->number = 0.2;
         if (this->p->getResourceNum() < this->p->getMaxResourceNum())
         {
             this->p->triggerAction<ResourceRevertAction>(1);
@@ -398,6 +419,10 @@ void IceTideBuff::listenerCallback(DamageInfo &info)
                               this->getBuffName(),
                               "element increased ");
         }
+    }
+    else
+    {
+        this->number += 0.1;
     }
 }
 
@@ -533,9 +558,14 @@ void BeamMagnumOpusBuff::listenerCallback(DamageInfo &info)
         if (this->p->isSuccess(this->number))
         {
             this->p->triggerAction<CreateBuffAction>(0, DoubleProficientBuff::name);
+            this->number = 0.1;
             Logger::debugBuff(AutoAttack::getTimer(),
                               this->getBuffName(),
                               " triggered ");
+        }
+        else
+        {
+            this->number += 0.1;
         }
     }
 }
@@ -564,17 +594,26 @@ DoubleProficientBuff::DoubleProficientBuff(Person *p, double)
         { this->listenerCallback(n); });
     ProficientCountModifyAction::addListener(std::move(info));
 
-    p->changeProficientCount(static_cast<int>(this->number));
+    p->triggerAction<ProficientCountModifyAction>(this->number);
+    Logger::debugBuff(AutoAttack::getTimer(),this->getBuffName(),"triggered, current proficient: " + std::to_string(this->p->getProficient()));
 }
 
 void DoubleProficientBuff::listenerCallback(double n)
 {
-    this->p->changeProficientCount(static_cast<int>(-this->number));
+    if(this->timer < 10)
+        return;
+    this->p->triggerAction<ProficientCountModifyAction>(-this->number);
     this->number = this->p->getProficientCount();
-    this->p->changeProficientCount(static_cast<int>(this->number));
+    this->p->triggerAction<ProficientCountModifyAction>(this->number);
+    this->timer = 0;
+    Logger::debugBuff(AutoAttack::getTimer(),this->getBuffName(),"triggered, current proficient: " + std::to_string(this->p->getProficient()));
 }
 
-void DoubleProficientBuff::update(const double) {}
+void DoubleProficientBuff::update(const double deltaTime) 
+{
+    this->timer += deltaTime;
+}
+
 bool DoubleProficientBuff::shouldBeRemoved() { return this->duration < 0; }
 std::string DoubleProficientBuff::getBuffName() const { return DoubleProficientBuff::name; }
 
@@ -598,17 +637,15 @@ FrostwindFocusBuff::FrostwindFocusBuff(Person *p, double)
         this->getBuffID(), [this](Skill *const skill)
         { this->listenerCallback(skill); });
     CreateSkillAction::addListener(std::move(info));
-
-    p->changeProficientCount(static_cast<int>(this->number));
 }
 
 void FrostwindFocusBuff::listenerCallback(Skill *const skill)
 {
     // 技能耗能减少
-    skill->energyReduceDOWN += this->number;
+    skill->changeEnergyReduceDOWN(this->number);
     Logger::debugBuff(AutoAttack::getTimer(),
                       this->getBuffName(),
-                      " triggered, skill:" + skill->getSkillName() +  ", energyReduce: " + std::to_string(skill->energyReduce));
+                      " triggered, skill:" + skill->getSkillName() +  ", energyReduceDOWN: " + std::to_string(skill->energyReduce));
 }
 
 void FrostwindFocusBuff::update(const double) {}
@@ -631,7 +668,8 @@ SwiftCastBuff::SwiftCastBuff(Person *p, double)
     this->maxDuration = this->duration;
     this->isInherent = true;
 
-    p->triggerAction<QuicknessCountModifyAction>(1000);
+    // 1000急速已经包含在了面板里面
+    //p->triggerAction<QuicknessCountModifyAction>(1000);
 }
 
 void SwiftCastBuff::update(const double)
@@ -684,11 +722,13 @@ void FrostCrystalPowerBuff::listenerCallback(double)
     if (this->p->getPresentEnergy() >= this->p->getMaxEnergy() / 2 && !triggered)
     {
         this->p->triggerAction<ElementIncreaseModifyAction>(this->number);
+        this->triggered = true;
     }
 
     if (this->p->getPresentEnergy() < this->p->getMaxEnergy() / 2 && triggered)
     {
         this->p->triggerAction<ElementIncreaseModifyAction>(-this->number);
+        this->triggered = false;
     }
 }
 
@@ -732,9 +772,10 @@ void EnergySurgeLawBuff::listenerCallback(DamageInfo &info)
     {
         info.damageNum *= 3;
         this->p->triggerAction<CreateBuffAction>(0, EnergyRevertBuff_EnergySurgeLaw::name);
+        this->count -= 50;
         Logger::debugBuff(AutoAttack::getTimer(),
                           this->getBuffName(),
-                          "can trigger ");
+                          "triggered");
     }
 }
 
@@ -745,8 +786,7 @@ std::string EnergySurgeLawBuff::getBuffName() const { return EnergySurgeLawBuff:
 
 EnergySurgeLawBuff::~EnergySurgeLawBuff()
 {
-    EnergyRevertAction::deleteListener(this->getBuffID());
-    EnergyConsumeAction::deleteListener(this->getBuffID());
+    AttackAction::deleteListener(this->getBuffID());
 }
 
 // 能量回复（用于涌能法则）
@@ -755,11 +795,11 @@ std::string EnergyRevertBuff_EnergySurgeLaw::name = "EnergyRevertBuff_EnergySurg
 EnergyRevertBuff_EnergySurgeLaw::EnergyRevertBuff_EnergySurgeLaw(Person *p, double)
     : Buff(p)
 {
-    this->number = 0.03; // 回复能量比率
-    this->duration = 500;
+    this->number = 0.003; // 回复能量比率
+    this->duration = 1000;
     this->maxDuration = this->duration;
 
-    this->triggerInterval = 100;
+    this->triggerInterval = 10;
     this->triggerInterval /= (1 + this->p->getCastingSpeed());
 }
 
@@ -769,32 +809,37 @@ void EnergyRevertBuff_EnergySurgeLaw::update(const double deltaTime)
     if (this->timer >= this->triggerInterval)
     {
         this->p->triggerAction<EnergyRevertAction_Beam>(this->number * this->p->getMaxEnergy());
+        Logger::debugBuff(AutoAttack::getTimer(),
+                          this->getBuffName(),
+                          "triggered");
+        this->timer -= triggerInterval;
     }
 }
 
 bool EnergyRevertBuff_EnergySurgeLaw::shouldBeRemoved() { return this->duration < 0; }
-std::string EnergyRevertBuff_EnergySurgeLaw::getBuffName() const { return EnergySurgeLawBuff::name; }
+std::string EnergyRevertBuff_EnergySurgeLaw::getBuffName() const { return EnergyRevertBuff_EnergySurgeLaw::name; }
 
 // 大招冰伤
 std::string UltiIncreaseBuff_Beam::name = "UltiIncreaseBuff_Beam";
 
 UltiIncreaseBuff_Beam::UltiIncreaseBuff_Beam(Person *p, double) : Buff(p)
 {
-    this->number = 0.45; // 回能数
+    this->number = 0.45; // 冰伤
     this->duration = 1000;
     this->maxDuration = this->duration;
-    this->triggerInterval = 100;
+    this->triggerInterval = 10;
 
     this->p->triggerAction<ElementIncreaseModifyAction>(this->number);
 }
 
 void UltiIncreaseBuff_Beam::listenerCallback(double) {}
-void UltiIncreaseBuff_Beam::update(const double)
+void UltiIncreaseBuff_Beam::update(const double deltaTime)
 {
-    this->timer++;
+    this->timer += deltaTime;
     if (this->timer >= this->triggerInterval)
     {
-        this->p->triggerAction<EnergyRevertAction_Beam>(22);
+        this->p->triggerAction<EnergyRevertAction_Beam>(2.2);
+        this->timer -= this->triggerInterval;
     }
 }
 
@@ -888,7 +933,7 @@ void IllusoryDreamBuff::update(const double deltaTime)
     if (this->timer >= this->simulateAttackTriggerInterval)
     {
         this->count++;
-        this->timer = 0;
+        this->timer -= this->simulateAttackTriggerInterval;
     }
 
     if (this->count >= this->triggerCount)
@@ -1040,7 +1085,7 @@ void FloatingExtraSecondaryAttributesBuff::listenerCallback(double n)
         this->p->triggerAction<LuckyPercentModifyAction>(-this->number);
         break;
     case secondaryAttributesEnum::PROFICIENT:
-        this->p->triggerAction<ProficientPercentModifyAction>(--this->number);
+        this->p->triggerAction<ProficientPercentModifyAction>(-this->number);
         break;
     case secondaryAttributesEnum::ALMIGHTY:
         this->p->triggerAction<AlmightyPercentModifyAction>(-this->number);
@@ -1113,4 +1158,118 @@ FloatingExtraSecondaryAttributesBuff::~FloatingExtraSecondaryAttributesBuff()
     LuckyCountModifyAction::deleteListener(this->getBuffID());
     ProficientCountModifyAction::deleteListener(this->getBuffID());
     AlmightyCountModifyAction::deleteListener(this->getBuffID());
+}
+
+// 职业专属因子
+std::string OccupationalDivisor_Beam::name = "OccupationalDivisor_Beam";
+
+OccupationalDivisor_Beam::OccupationalDivisor_Beam(Person *p, double) : Divisor(p)
+{
+    this->duration = 999999;
+    this->maxDuration = this->duration;
+    this->isInherent = true;
+
+    auto info = std::make_unique<CreateSkillListener>(
+        this->getBuffID(), [this](Skill *const skill)
+        { this->listenerCallback(skill); });
+    CreateSkillAction::addListener(std::move(info));
+}
+
+void OccupationalDivisor_Beam::listenerCallback(Skill *const skill)
+{
+    if (skill->getSkillName() == IceArrow_Beam::name)
+    {
+        skill->damageIncreaseAdd += 0.211;
+    }
+    if (skill->getSkillName() == WaterSpout::name)
+    {
+        skill->dreamIncreaseAdd += 0.25;
+    }
+    if (skill->getSkillName() == Beam::name)
+    {
+        skill->dreamIncreaseAdd += 0.10;    
+    }
+}
+
+void OccupationalDivisor_Beam::update(const double) {}
+
+bool OccupationalDivisor_Beam::shouldBeRemoved() { return this->duration < 0; }
+std::string OccupationalDivisor_Beam::getBuffName() const { return OccupationalDivisor_Beam::name; }
+
+OccupationalDivisor_Beam::~OccupationalDivisor_Beam()
+{
+    CreateSkillAction::deleteListener(this->getBuffID());
+}
+
+// 冰令脉冲
+std::string FrostDecreePulseBuff::name = "FrostDecreePulseBuff";
+
+FrostDecreePulseBuff::FrostDecreePulseBuff(Person *p, double n) : Buff(p)
+{
+    this->duration = 999999;
+    this->maxDuration = this->duration;
+    this->isInherent = true;
+    this->triggerCount = 50;
+
+    auto info = std::make_unique<DamageListener>(
+        this->getBuffID(), [this](DamageInfo& info)
+        { this->listenerCallback(info); });
+    AttackAction::addListener(std::move(info));
+}
+
+void FrostDecreePulseBuff::listenerCallback(DamageInfo& info)
+{
+    if(info.skillName == Beam::name)
+    {
+        this->count += 1;
+    }
+    if(this->count >= this->triggerCount)
+    {
+        this->p->triggerAction<CreateSkillAction>(0,FrostDecreePulse::name);
+        this->count = 0;
+    }
+}
+
+void FrostDecreePulseBuff::update(const double) {}
+bool FrostDecreePulseBuff::shouldBeRemoved() { return this->duration < 0; }
+std::string FrostDecreePulseBuff::getBuffName() const { return FrostDecreePulseBuff::name; }
+
+FrostDecreePulseBuff::~FrostDecreePulseBuff()
+{
+    AttackAction::deleteListener(this->getBuffID());
+}
+
+// 冷却瞬息
+std::string InstantCooldownBuff::name = "InstantCooldownBuff";
+
+InstantCooldownBuff::InstantCooldownBuff(Person *p, double n) : Buff(p)
+{
+    this->duration = 999999;
+    this->maxDuration = this->duration;
+    this->isInherent = true;
+    this->triggerNum = 35;
+
+    auto info = std::make_unique<EnergyListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    EnergyRevertAction::addListener(std::move(info));
+}
+
+void InstantCooldownBuff::listenerCallback(double n)
+{
+    this->count += n;
+    if(this->count >= this->triggerNum)
+    {
+        this->p->triggerAction<CDReduceAction>(1.3,FrostWind::name);
+        this->count -= triggerNum;
+    }
+}
+
+void InstantCooldownBuff::update(const double) {}
+bool InstantCooldownBuff::shouldBeRemoved() { return this->duration < 0; }
+std::string InstantCooldownBuff::getBuffName() const { return InstantCooldownBuff::name; }
+
+InstantCooldownBuff::~InstantCooldownBuff()
+{
+    EnergyRevertAction::deleteListener(this->getBuffID());
 }

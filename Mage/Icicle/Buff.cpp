@@ -690,8 +690,8 @@ void FantasyImpactBuff::listenerCallback(DamageInfo &info)
     { // 如果触发幸运
         this->stack += 1;
         if (this->triggerTimer < this->triggerInterval)
-        { // 如果计时器达到触发间隔
-            this->triggerTimer += 30;
+        { // 如果计时器未达到触发间隔
+            this->triggerTimer += 30 * AutoAttack::getDeltaTime();
         }
         if (static_cast<int>(this->stack) % this->triggerStack == 0 &&
             this->triggerTimer >= this->triggerInterval)
@@ -699,7 +699,7 @@ void FantasyImpactBuff::listenerCallback(DamageInfo &info)
             this->p->triggerAction<CreateSkillAction>(0, FantasyImpact::name);
             // 触发幻想冲击
             // 时阶加伤效果写在对应skill中
-            this->triggerTimer = 0;
+            this->triggerTimer -= this->triggerInterval;
         }
         // 极运相关逻辑
         if (static_cast<int>(this->stack) % this->extremeLuckTriggerStack == 0)
@@ -711,10 +711,7 @@ void FantasyImpactBuff::listenerCallback(DamageInfo &info)
 
 void FantasyImpactBuff::update(const double deltaTime)
 {
-    if (this->triggerTimer < this->triggerInterval)
-    {
         this->triggerTimer += deltaTime;
-    }
 }
 
 bool FantasyImpactBuff::shouldBeRemoved() { return this->duration < 0; }
@@ -724,9 +721,6 @@ FantasyImpactBuff::~FantasyImpactBuff()
 {
     AttackAction::deleteListener(this->getBuffID());
 }
-
-// 因子
-Divisor::Divisor(Person *p) : Buff(p) {}
 
 // 极运
 std::string ExtremeLuckDivisor::name = "ExtremeLuckDivisor";

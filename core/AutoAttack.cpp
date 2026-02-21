@@ -6,6 +6,7 @@
 
 // 静态成员初始化
 double AutoAttack::timer = 0;
+double AutoAttack::deltaTime = 1;
 
 // 构造函数
 AutoAttack::AutoAttack(Person *p)
@@ -96,6 +97,21 @@ void AutoAttack::changePriority(std::string skillName, int priority)
 // 自动释放技能的核心逻辑
 void AutoAttack::createSkillByAuto()
 {
+    // 优先检查certainTimeSkillList
+    if(!certainTimeSkillList.empty())
+    {
+        auto& a = certainTimeSkillList.front();
+        if(this->timer >= a.time)
+        {
+            std::string skillName = a.skillName;
+            this->p->triggerAction<CreateSkillAction>(0,skillName);
+            certainTimeSkillList.pop();
+            Logger::debugAutoAttack(this->timer, "certain time skill created, Skill: " + skillName);
+            return;
+        }
+    }
+
+
     // 1. 检查是否正在释放技能（防止打断）
     if (this->isReleasingSkill)
     {
@@ -206,6 +222,11 @@ void AutoAttack::updatePerson(int deltaTime)
     //this->p->updateAction(deltaTime);
 }
 
+void AutoAttack::createSkillInCertainTime(double time, std::string skillName)
+{
+    certainTimeSkillList.push({skillName,time});
+}
+
 // 添加技能释放的禁止条件
 void AutoAttack::addJudgingConditionsForCantCreateSkill(std::function<bool(const PriorSkillInfo &)> condition,
                                                         ErrorInfo::errorTypeEnum errorType)
@@ -251,6 +272,7 @@ void AutoAttack::updateSkillFinish()
 // 访问器实现
 double AutoAttack::getTimer() { return AutoAttack::timer; }
 double &AutoAttack::setTimer() { return AutoAttack::timer; }
+double AutoAttack::getDeltaTime() { return AutoAttack::deltaTime; }
 bool AutoAttack::getIsReleasingSkill() const { return this->isReleasingSkill; }
 bool AutoAttack::getIsOutBurst() const { return this->isOutBurst; }
 int AutoAttack::getNextOutBurstType() const { return this->nextOutBurstType; }
