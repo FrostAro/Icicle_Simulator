@@ -93,27 +93,22 @@ DamageInfo Person::Damage(const Skill *skill)
             * (1 + skill->finalIncreaseAdd);
 
         // 暴击期望
-        // damage = damage * this->Critical * (1 + this->criticicalDamage + skill->criticalIncreaseAdd) + damage * (1 - this->Critical);
+        damage = damage * this->Critical * (1 + this->criticicalDamage + skill->criticalIncreaseAdd) + damage * (1 - this->Critical);
         // 实际暴击模拟
-        double isCrit = this->isSuccess(this->Critical + skill->criticalAdd);
-        if (isCrit)
-        {
-            damage *= 1 + this->criticicalDamage + skill->criticalIncreaseAdd;
-        }
+        // double isCrit = this->isSuccess(this->Critical + skill->criticalAdd);
+        // if (isCrit)
+        // {
+        //     damage *= 1 + this->criticicalDamage + skill->criticalIncreaseAdd;
+        // }
 
         double luckyDamage = 0;
-        bool isLucky = false;
         if (skill->getCanTriggerLucky())
         {
-            isLucky = this->isSuccess(this->Lucky);
-            if (isLucky)
-            {
-                luckyDamage = this->luckyDamage();
-            }
+            luckyDamage = this->luckyDamage();
         }
 
         DamageInfo info(skill->getSkillName(), damage,
-                        luckyDamage, isCrit, isLucky);
+                        luckyDamage, this->isSuccess(this->Critical + skill->criticalAdd), this->isSuccess(this->Lucky));
         // if(info.skillName == Spear::name)
         // {
         //     std::cout << "[DEBUG,timer=" << AutoAttack::getTimer() << "]: Damage - skill: " << info.skillName << " damaged" << std::endl;
@@ -125,14 +120,17 @@ DamageInfo Person::Damage(const Skill *skill)
 
 double Person::luckyDamage() const
 {
-    // 幸运伤害计算公式
-    double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refineATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
+    // 幸运伤害计算公式(概率)
+    //double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refineATK + this->elementATK) * this->luckyMultiplying)) * (1 + this->elementIncrease) * (1 + this->damageIncrease + this->luckyDamageIncrease) * (1 + this->almightyIncrease);
+    // (期望)
+    double damage = ((this->ATK * this->luckyMultiplying * (1 + this->attackIncrease) * (1 - this->damageReduce) + (this->refineATK + this->elementATK) * this->luckyMultiplying)) 
+                        * (1 + this->elementIncrease) 
+                        * (1 + this->damageIncrease + this->luckyDamageIncrease) 
+                        * (1 + this->almightyIncrease)
+                        * this->Lucky;
 
     // 幸运伤害也可暴击
-    if (this->isSuccess(this->Critical))
-    {
-        damage *= 1 + this->criticicalDamage;
-    }
+    damage = damage * this->Critical * (1 + this->criticicalDamage) + damage * (1 - this->Critical);
     return damage;
 }
 
