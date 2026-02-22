@@ -29,11 +29,11 @@ Visual C++ 2015-2022 Redistributable
 
 ### 环境要求
 
-支持C++17 或更高版本
-CMake 3.10+
-(补充：若不使用cmake等构建工具而使用vscode的某些runner插件，例如compile runner，需自行修改程序链接，或者怕麻烦也可以include对应的.cpp文件(bushi))
-GCC/Clang/MSVC 支持C++17
-Qt 6.10.2及以上
+支持C++17 或更高版本  
+CMake 3.10+  
+(补充：若不使用cmake等构建工具而使用vscode的某些runner插件，例如compile runner，需自行修改程序链接，或者怕麻烦也可以include对应的.cpp文件(bushi))  
+GCC/Clang/MSVC 支持C++17  
+Qt 6.10.2及以上  
 
 ### 编译运行
 
