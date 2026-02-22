@@ -8,22 +8,22 @@
 
 程序目前仅支持冰矛，但是支持拓展(PS:射线的还在写喵)。  
 
-本程序有一个简单的图形化页面，没有c++基础的可以使用此图形化页面，但是目前为beta版本可能会导致一系列问题(例如现在实时日志框中无法输出debug信息)，有c++基础者仍建议自行编译并运行dps_simulator_icicle.exe
+本程序有一个简单的图形化页面，没有c++基础的可以使用此图形化页面，但是目前为beta版本可能会导致一系列问题(例如现在实时日志框中无法输出debug信息)，有c++基础者仍建议自行编译并运行dps_simulator_icicle.exe  
 
 (孩子第一次写这种东西，代码写的烂，多多见谅谢谢喵)
 
 ## 快速开始(简单版)
 
-1.本文件目录找到Icicle_Simulator.exe双击运行
-2.勾选随机种子
-3.点击下方的运行模拟
-4.滑动下方的统计数据栏查看数据
+1.本文件目录找到Icicle_Simulator.exe双击运行  
+2.勾选随机种子  
+3.点击下方的运行模拟  
+4.滑动下方的统计数据栏查看数据  
 
 ### 环境要求
 
-支持C++17 或更高版本
-Visual C++ 2015-2022 Redistributable
-下载地址：<https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170>
+支持C++17 或更高版本  
+Visual C++ 2015-2022 Redistributable  
+下载地址：<https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170>  
 
 ## 快速开始(复杂版)
 
