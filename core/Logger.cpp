@@ -22,6 +22,9 @@ const std::unordered_map<Logger::Level, Logger::LevelInfo> Logger::levelInfoMap_
     {Logger::Level::CRITICAL, {"CRITICAL", Colors::MAGENTA,5}}   // 洋红色，严重程度5
 };
 
+Logger::LogCallback Logger::s_callback = nullptr;
+std::mutex Logger::s_callbackMutex;
+
 // ============================================================================
 // detail 命名空间 - 内部辅助函数
 // ============================================================================
@@ -290,14 +293,22 @@ void Logger::logInternal(Level level, const std::string& category,
     if (useAsync_) {
         // 1. 格式化消息（包含时间戳、级别等）
         std::string formatted = formatMessage(level, category, message);
+
+        // 2.调用回调（如果有）
+        {
+            std::lock_guard<std::mutex> lock(s_callbackMutex);
+            if (s_callback) {
+                s_callback(formatted);
+            }
+        }
         
-        // 2. 加锁保护队列，添加消息
+        // 3. 加锁保护队列，添加消息
         {
             std::lock_guard<std::mutex> lock(asyncMutex_);
             asyncQueue_.push(std::move(formatted));  // 使用move避免复制
         }
         
-        // 3. 通知异步线程有新消息
+        // 4. 通知异步线程有新消息
         asyncCondition_.notify_one();
     }
     // 同步处理模式
@@ -684,4 +695,9 @@ Logger::Statistics Logger::getStatistics() {
 void Logger::resetStatistics() {
     // 简化实现：无操作
     // 实际实现应该重置全局统计计数器
+}
+
+void Logger::setLogCallback(LogCallback cb) {
+    std::lock_guard<std::mutex> lock(s_callbackMutex);
+    s_callback = cb;
 }

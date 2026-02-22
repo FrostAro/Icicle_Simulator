@@ -154,7 +154,7 @@ bool IcePromiseBuff::shouldBeRemoved() { return this->duration < 0; }
 
 IcePromiseBuff::~IcePromiseBuff()
 {
-    AttackAction::deleteListener(this->getBuffID());
+    CreateSkillAction::deleteListener(this->getBuffID());
 }
 
 std::string IcePromiseBuff::getBuffName() const { return IcePromiseBuff::name; }

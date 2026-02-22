@@ -188,7 +188,7 @@ FloodBuff_Icicle::FloodBuff_Icicle(Person *p, double)
 
     // p->changeCriticalDamage(0.15);
     this->p->triggerAction<CriticalDamageModifyAction>(0.15);
-    p->Critical += 0.03;
+    p->triggerAction<CriticalPercentModifyAction>(0.03);
     p->elementATK += 100;
     p->triggerAction<CreateBuffAction>(0, DoubleSpearBuff::name);
 }
@@ -206,7 +206,7 @@ void FloodBuff_Icicle::update(double)
 FloodBuff_Icicle::~FloodBuff_Icicle()
 {
     this->p->triggerAction<CriticalDamageModifyAction>(-0.15);
-    this->p->Critical -= 0.03;
+    this->p->triggerAction<CriticalPercentModifyAction>(-0.03);
     this->p->elementATK -= 100;
     this->p->resourceNum = this->iceNumber;
 }

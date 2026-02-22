@@ -30,4 +30,5 @@ output/
 *.zip
 temp.text
 text.text
+.vs
 

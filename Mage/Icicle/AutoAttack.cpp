@@ -127,7 +127,6 @@ void AutoAttack_Mage_Icicle::windowPeriodLogic()
 
 void AutoAttack_Mage_Icicle::update(int deltaTime)
 {
-
     // 大爆发
     checkAndTriggerLargeOutBurst();
 

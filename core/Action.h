@@ -15,6 +15,7 @@ class Skill;
 class CreateSkillListener;
 class CreateBuffListener;
 class SecondaryAttributeListener;
+class SimulationWorker;
 
 /* ============================================================================
  * @class Action
@@ -47,9 +48,9 @@ class SecondaryAttributeListener;
  */
 class Action
 {
-public:
+private:
     static std::string name;  ///< 动作名称（静态成员，所有实例共享）
-
+public:
     Action() = default;
     
     // 移动构造函数
@@ -97,7 +98,7 @@ public:
  */
 class AttackAction : public Action
 {
-private:
+public:
     static std::string name;        ///< 动作名称："AttackAction"
     static std::vector<std::unique_ptr<DamageListener>> listeners;  ///< 伤害监听器列表
     const Skill* const skill;       ///< 技能指针
@@ -112,6 +113,7 @@ public:
     virtual void execute(double n, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<DamageListener> listener);
     static void deleteListener(int buffID); // 通过buffID删除监听器
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -136,6 +138,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<ResourceListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -160,6 +163,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<ResourceListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -186,6 +190,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<EnergyListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -212,6 +217,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<EnergyListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -241,6 +247,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CDListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -270,6 +277,7 @@ public:
     void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CDListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -298,6 +306,7 @@ public:
     virtual void execute(double, Person *p) override; // double n未使用
     static void addListener(std::unique_ptr<CreateSkillListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -327,6 +336,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<CreateBuffListener> info);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     std::string getActionName() override;
 };
 
@@ -358,6 +368,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -383,6 +394,7 @@ public:
     virtual void execute(double n, Person *p) override;
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -398,6 +410,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的急速数值
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -413,6 +426,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的急速百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -428,6 +442,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的幸运数值
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -443,6 +458,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的幸运百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -458,6 +474,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的精通数值
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -473,6 +490,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的精通百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -488,6 +506,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的全能数值
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -503,6 +522,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的全能百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -518,6 +538,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的主属性数值
     static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -533,6 +554,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的主属性百分比
     static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -548,6 +570,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的施法速度百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -563,6 +586,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的攻击速度百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -578,6 +602,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的攻击增加百分比
     static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -593,6 +618,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的攻击增加百分比
     static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -608,6 +634,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的攻击增加百分比
     static void addListener(std::unique_ptr<PrimaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -623,6 +650,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的伤害增伤百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -638,6 +666,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的元素增伤百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -653,6 +682,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的全能增伤百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -668,6 +698,7 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的爆伤百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };
 
@@ -683,5 +714,6 @@ public:
     virtual void execute(double n, Person *p) override; // n为增加的梦境增伤百分比
     static void addListener(std::unique_ptr<SecondaryAttributeListener> listener);
     static void deleteListener(int buffID);
+    static auto& getListeners() { return listeners; } // 获取监听器列表（调试用）
     virtual std::string getActionName() override;
 };

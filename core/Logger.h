@@ -17,6 +17,7 @@
 #include <thread>         // 线程库
 #include <atomic>         // 原子操作
 #include <type_traits>    // 类型特征
+#include <functional>
 
 /**
  * @class Logger
@@ -56,6 +57,8 @@ public:
         CRITICAL,   // 严重错误，可能导致程序崩溃
         NONE        // 关闭所有日志输出
     };
+
+    using LogCallback = std::function<void(const std::string&)>;
 
 private:
     // ============================================================================
@@ -108,6 +111,9 @@ private:
      * 在Logger.cpp中初始化，将Level枚举映射到LevelInfo结构
      */
     static const std::unordered_map<Level, LevelInfo> levelInfoMap_;
+
+    static LogCallback s_callback;
+    static std::mutex s_callbackMutex; // 保护回调设置
 
 public:
     // ============================================================================
@@ -406,6 +412,8 @@ public:
     template<typename... Args>
     static void logIf(bool condition, Level level, const std::string& category,
                      const std::string& format, Args... args);
+
+    static void setLogCallback(LogCallback cb);
 };
 
 // ============================================================================

@@ -65,6 +65,9 @@ Person::~Person()
 {
     clearSkills();  // 清理所有技能
     clearBuffs();   // 清理所有buff
+    this->pointerListForAction.clear();  // 清理动作指针列表
+    this->noReleasingSkillList.clear();  // 清理无前摇技能列表
+    this->skillCDList.clear();  // 清理技能冷却列表
 }
 
 DamageInfo Person::Damage(const Skill *skill)

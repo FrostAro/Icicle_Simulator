@@ -79,7 +79,7 @@ void executeSimulation_Icicle(std::vector<std::unordered_map<std::string, Damage
         Initializer->Initialize();
         
         // 开始模拟运行
-        std::cout << "Starting simulation..." << std::endl;
+        std::cout << "Starting simulation(times:" << times << ")..." << std::endl;
         while (currentTime < maxTime)
         {
             // 更新自动攻击系统
@@ -118,7 +118,7 @@ void executeSimulation_Icicle(std::vector<std::unordered_map<std::string, Damage
 int main()
 {
     // 1. 初始化日志系统，设置日志级别为DEBUG
-    Logger::initialize(Logger::Level::DEBUG);
+    Logger::initialize(Logger::Level::INFO);
     
     // 2. 伤害统计结果列表（用于存储多次模拟的结果）
     std::vector<std::unordered_map<std::string, DamageStatistics>> damageStatisticsList;
@@ -135,10 +135,11 @@ int main()
     // - deltaTime: 时间增量
     // - false: 不使用随机种子（固定种子）
     // - 42: 固定随机种子值
-    executeSimulation_Icicle(damageStatisticsList, 1, maxTime, deltaTime, false, 42);
+    executeSimulation_Icicle(damageStatisticsList, 20, maxTime, deltaTime, true, 42);
     
     // 5. 汇总输出（如果有多次循环，进行汇总）
     summaryCirculationPrint(damageStatisticsList, maxTime);
     
+    system("pause"); // Windows系统下暂停，等待用户按键后退出
     return 0;  // 程序正常退出
 }

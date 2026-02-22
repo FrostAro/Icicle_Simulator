@@ -83,11 +83,41 @@ void summaryCirculationPrint(const std::vector<std::unordered_map<std::string, D
         return;
     
     std::cout << "Summary of multiple simulations:" << std::endl;
+    size_t simCount = damageStatisticsList.size();
     
-    for (auto &statsMap : damageStatisticsList)
+    // 用于累加所有模拟中各技能的数据
+    std::unordered_map<std::string, DamageStatistics> accumulatedMap;
+    
+    // 遍历每次模拟
+    for (const auto& statsMap : damageStatisticsList)
     {
-        printDamageStatistics(statsMap, maxTime);
+        for (const auto& [skillName, stat] : statsMap)
+        {
+            auto& acc = accumulatedMap[skillName]; // 自动创建新条目或获取已有
+            acc.skillName = skillName;             // 技能名保持一致
+            // 累加各项统计数据
+            acc.damage += stat.damage;
+            acc.damageCount += stat.damageCount;
+            acc.luckyDamage += stat.luckyDamage;
+            acc.luckyDamageCount += stat.luckyDamageCount;
+            acc.CritDamageCount += stat.CritDamageCount;
+            // totalTime 在此处无用，忽略
+        }
     }
+    
+    // 计算平均值
+    for (auto& [skillName, acc] : accumulatedMap)
+    {
+        acc.damage /= simCount;
+        acc.damageCount /= simCount;
+        acc.luckyDamage /= simCount;
+        acc.luckyDamageCount /= simCount;
+        acc.CritDamageCount /= simCount;
+    }
+    
+    // 输出平均后的统计结果
+    std::cout << "Average statistics over " << simCount << " simulations:" << std::endl;
+    printDamageStatistics(accumulatedMap, maxTime);
 }
 
 /**

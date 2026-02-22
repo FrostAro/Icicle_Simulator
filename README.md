@@ -1,29 +1,43 @@
 # 星痕共鸣非侵入性可拓展DPS模拟
 
-这是一个基于`C++17`与`cmake`构建的可扩展DPS模拟器，主要用于模拟《星痕共鸣》中的3分钟输出循环。  
+这是一个基于`C++17`、`cmake`、`Qt6`构建的可扩展DPS模拟器，主要用于模拟《星痕共鸣》中的3分钟输出循环。  
 
-程序模拟数据与游戏内实际数据会有所出入，但是对于提升的模拟是相对精确的，所以本程序不能用于对自身配置的预测，而应用于对于后续未知配置的提升推测，并根据游戏变动适当拓展。  
+程序模拟数据与游戏内实际数据会有所出入，并且由于程序内有随机算法，使得数据会有所波动，在运行时建议调高循环次数，目前20的循环次数能保证在2%范围的数据波动，如需更精确数据，则应再次调高模拟次数
 
-程序目前仅支持冰矛，但是支持非侵入性的拓展。  
+本程序不能用于对自身配置的预测，而应用于对于后续未知配置的提升推测，并根据游戏变动适当拓展。  
 
-本程序没有窗口界面，需要使用者有一定c++环境配置以及代码调试能力。  
+程序目前仅支持冰矛，但是支持拓展(PS:射线的还在写喵)。  
 
-## 快速开始
+本程序有一个简单的图形化页面，没有c++基础的可以使用此图形化页面，但是目前为beta版本可能会导致一系列问题(例如现在实时日志框中无法输出debug信息)，有c++基础者仍建议自行编译并运行dps_simulator_icicle.exe
+
+(孩子第一次写这种东西，代码写的烂，多多见谅谢谢喵)
+
+## 快速开始(简单版)
+
+1.本文件目录找到Icicle_Simulator.exe双击运行
+2.勾选随机种子
+3.点击下方的运行模拟
+4.滑动下方的统计数据栏查看数据
 
 ### 环境要求
 
-C++17 或更高版本
+支持C++17 或更高版本
+Visual C++ 2015-2022 Redistributable
+下载地址：<https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170>
+
+## 快速开始(复杂版)
+
+### 环境要求
+
+支持C++17 或更高版本
 CMake 3.10+
-(补充：若不使用cmake等构建工具而使用vscode的某些runner插件，例如compile runner，需自行include对应的.cpp文件)
+(补充：若不使用cmake等构建工具而使用vscode的某些runner插件，例如compile runner，需自行修改程序链接，或者怕麻烦也可以include对应的.cpp文件(bushi))
 GCC/Clang/MSVC 支持C++17
+Qt 6.10.2及以上
 
 ### 编译运行
 
 ```bash
-# 克隆项目
-git clone https://github.com/FrostAro/Icicle_Simulator.git
-cd dps_simulator
-
 # 创建构建目录
 mkdir build && cd build
 
@@ -34,8 +48,6 @@ make
 # 运行程序
 # 冰矛
 ./bin/dps_simulator_icicle
-# 射线
-./bin/dps_simulator_beam
 ```
 
 ### 选择对应main.cpp
