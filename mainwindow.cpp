@@ -238,7 +238,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupUI()
 {
-    setWindowTitle("DPS Simulator (Beta)");
+    setWindowTitle("DPS Simulator (Beta)  by 星玥");
     setMinimumSize(1200, 800);
 
     QWidget *central = new QWidget(this);

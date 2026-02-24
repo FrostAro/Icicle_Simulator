@@ -642,10 +642,12 @@ FrostwindFocusBuff::FrostwindFocusBuff(Person *p, double)
 void FrostwindFocusBuff::listenerCallback(Skill *const skill)
 {
     // 技能耗能减少
+    if(skill->getSkillName() != Beam::name)
+        return;
     skill->changeEnergyReduceDOWN(this->number);
     Logger::debugBuff(AutoAttack::getTimer(),
                       this->getBuffName(),
-                      " triggered, skill:" + skill->getSkillName() +  ", energyReduceDOWN: " + std::to_string(skill->energyReduce));
+                      " triggered, skill:" + skill->getSkillName() +  ", energyReduceDOWN: " + std::to_string(skill->getEnergyReduceDOWN()));
 }
 
 void FrostwindFocusBuff::update(const double) {}
@@ -991,9 +993,9 @@ ATKIncreaseBuff_IllusoryDream::~ATKIncreaseBuff_IllusoryDream()
 }
 
 // 浮动额外副属性百分比
-std::string FloatingExtraSecondaryAttributesBuff::name = "FloatingExtraSecondaryAttributesBuff";
+std::string FloatingExtraSecondaryAttributesBuff_Beam::name = "FloatingExtraSecondaryAttributesBuff_Beam";
 
-FloatingExtraSecondaryAttributesBuff::FloatingExtraSecondaryAttributesBuff(Person *p, double)
+FloatingExtraSecondaryAttributesBuff_Beam::FloatingExtraSecondaryAttributesBuff_Beam(Person *p, double)
     : Buff(p)
 {
     this->number = 0.085; // 百分比
@@ -1071,7 +1073,7 @@ FloatingExtraSecondaryAttributesBuff::FloatingExtraSecondaryAttributesBuff(Perso
     AlmightyCountModifyAction::addListener(std::move(info5));
 }
 
-void FloatingExtraSecondaryAttributesBuff::listenerCallback(double n)
+void FloatingExtraSecondaryAttributesBuff_Beam::listenerCallback(double n)
 {
     switch (lastAttribute)
     {
@@ -1147,11 +1149,11 @@ void FloatingExtraSecondaryAttributesBuff::listenerCallback(double n)
                       "secondary attributes floated");
 }
 
-void FloatingExtraSecondaryAttributesBuff::update(const double deltaTime) {}
-bool FloatingExtraSecondaryAttributesBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string FloatingExtraSecondaryAttributesBuff::getBuffName() const { return FloatingExtraSecondaryAttributesBuff::name; }
+void FloatingExtraSecondaryAttributesBuff_Beam::update(const double deltaTime) {}
+bool FloatingExtraSecondaryAttributesBuff_Beam::shouldBeRemoved() { return this->duration < 0; }
+std::string FloatingExtraSecondaryAttributesBuff_Beam::getBuffName() const { return FloatingExtraSecondaryAttributesBuff_Beam::name; }
 
-FloatingExtraSecondaryAttributesBuff::~FloatingExtraSecondaryAttributesBuff()
+FloatingExtraSecondaryAttributesBuff_Beam::~FloatingExtraSecondaryAttributesBuff_Beam()
 {
     CriticalCountModifyAction::deleteListener(this->getBuffID());
     QuicknessCountModifyAction::deleteListener(this->getBuffID());
@@ -1240,9 +1242,9 @@ FrostDecreePulseBuff::~FrostDecreePulseBuff()
 }
 
 // 冷却瞬息
-std::string InstantCooldownBuff::name = "InstantCooldownBuff";
+std::string InstantCooldownBuff_Beam::name = "InstantCooldownBuff_Beam";
 
-InstantCooldownBuff::InstantCooldownBuff(Person *p, double n) : Buff(p)
+InstantCooldownBuff_Beam::InstantCooldownBuff_Beam(Person *p, double n) : Buff(p)
 {
     this->duration = 999999;
     this->maxDuration = this->duration;
@@ -1255,7 +1257,7 @@ InstantCooldownBuff::InstantCooldownBuff(Person *p, double n) : Buff(p)
     EnergyRevertAction::addListener(std::move(info));
 }
 
-void InstantCooldownBuff::listenerCallback(double n)
+void InstantCooldownBuff_Beam::listenerCallback(double n)
 {
     this->count += n;
     if(this->count >= this->triggerNum)
@@ -1265,11 +1267,11 @@ void InstantCooldownBuff::listenerCallback(double n)
     }
 }
 
-void InstantCooldownBuff::update(const double) {}
-bool InstantCooldownBuff::shouldBeRemoved() { return this->duration < 0; }
-std::string InstantCooldownBuff::getBuffName() const { return InstantCooldownBuff::name; }
+void InstantCooldownBuff_Beam::update(const double) {}
+bool InstantCooldownBuff_Beam::shouldBeRemoved() { return this->duration < 0; }
+std::string InstantCooldownBuff_Beam::getBuffName() const { return InstantCooldownBuff_Beam::name; }
 
-InstantCooldownBuff::~InstantCooldownBuff()
+InstantCooldownBuff_Beam::~InstantCooldownBuff_Beam()
 {
     EnergyRevertAction::deleteListener(this->getBuffID());
 }

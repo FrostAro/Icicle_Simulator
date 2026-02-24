@@ -292,3 +292,47 @@ public:
     OccupationalDivisor_Icicle(Person *p, double n);
     ~OccupationalDivisor_Icicle();
 };
+
+// 冷却瞬息
+class InstantCooldownBuff_Icicle : public Buff
+{
+public:   
+    static std::string name;
+    double triggerNum = 0;
+    double count = 0;
+
+public:
+    void listenerCallback(double n);
+    void update(double deltaTime) override;
+    bool shouldBeRemoved() override;
+    std::string getBuffName() const override;
+
+    InstantCooldownBuff_Icicle(Person *p, double n);
+    ~InstantCooldownBuff_Icicle() override;
+};
+
+// 浮动额外副属性值
+class FloatingExtraSecondaryAttributesBuff_Icicle : public Buff
+{
+private:
+    enum class secondaryAttributesEnum
+    {
+        CRITICAL,
+        QUICKNESS,
+        LUCKY,
+        PROFICIENT,
+        ALMIGHTY
+    };
+public: 
+    static std::string name;
+    secondaryAttributesEnum lastAttribute = secondaryAttributesEnum::CRITICAL;
+
+public:
+    void listenerCallback(double n);
+    void update(double deltaTime) override;
+    bool shouldBeRemoved() override;
+    std::string getBuffName() const override;
+
+    FloatingExtraSecondaryAttributesBuff_Icicle(Person *p, double n);
+    ~FloatingExtraSecondaryAttributesBuff_Icicle() override;
+};

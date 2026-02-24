@@ -57,6 +57,8 @@ class Initializer_Mage_Icicle : public Initializer
         registerCertainBuff<FantasyImpactBuff>();
         registerCertainBuff<ExtremeLuckDivisor>();
         registerCertainBuff<OccupationalDivisor_Icicle>();
+        registerCertainBuff<InstantCooldownBuff_Icicle>();
+        registerCertainBuff<FloatingExtraSecondaryAttributesBuff_Icicle>();
     }
 
 public:

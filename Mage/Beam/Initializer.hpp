@@ -59,12 +59,13 @@ class Initializer_Mage_Beam : public Initializer
         registerCertainBuff<MukuChiefBuff>();
         registerCertainBuff<MukuScoutBuff>();
         registerCertainBuff<FrostDecreePulseBuff>();
+        registerCertainBuff<InstantCooldownBuff_Beam>();
 
         // //心相仪与装备套装效果
         registerCertainBuff<EquipmentSetEffectBuff_Beam>();
         registerCertainBuff<IllusoryDreamBuff>();
         registerCertainBuff<ATKIncreaseBuff_IllusoryDream>();
-        registerCertainBuff<FloatingExtraSecondaryAttributesBuff>();
+        registerCertainBuff<FloatingExtraSecondaryAttributesBuff_Beam>();
     }
 
 public:

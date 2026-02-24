@@ -364,7 +364,7 @@ public:
 };
 
 // 浮动额外副属性百分比
-class FloatingExtraSecondaryAttributesBuff : public Buff
+class FloatingExtraSecondaryAttributesBuff_Beam : public Buff
 {
 private:
     enum class secondaryAttributesEnum
@@ -385,8 +385,8 @@ public:
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
 
-    FloatingExtraSecondaryAttributesBuff(Person *p, double n);
-    ~FloatingExtraSecondaryAttributesBuff() override;
+    FloatingExtraSecondaryAttributesBuff_Beam(Person *p, double n);
+    ~FloatingExtraSecondaryAttributesBuff_Beam() override;
 };
 
 // 职业专属因子
@@ -424,7 +424,7 @@ public:
 };
 
 // 冷却瞬息
-class InstantCooldownBuff : public Buff
+class InstantCooldownBuff_Beam : public Buff
 {
 public:   
     static std::string name;
@@ -437,6 +437,6 @@ public:
     bool shouldBeRemoved() override;
     std::string getBuffName() const override;
 
-    InstantCooldownBuff(Person *p, double n);
-    ~InstantCooldownBuff() override;
+    InstantCooldownBuff_Beam(Person *p, double n);
+    ~InstantCooldownBuff_Beam() override;
 };

@@ -185,6 +185,10 @@ void EnergyConsumeAction::execute(double n, Person *p)
                                 this->getActionName(), 
                                 "triggered, consumed energy: " + std::to_string(n)
                                         + ", currentEnengy:" + std::to_string(p->present_energy));
+    Logger::debugAction(AutoAttack::getTimer(), 
+                                this->getActionName(), 
+                                "skill.energyReduceDOWN:" + std::to_string(this->skill ? this->skill->getEnergyReduceDOWN() : 0) +
+                                        + ", p.energyReduceDOWN:" + std::to_string(p->energyReduceDOWN));
     // 遍历监听，触发回调
     for (const auto &listener : EnergyConsumeAction::listeners)
     {

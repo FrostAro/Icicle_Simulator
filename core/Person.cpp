@@ -937,13 +937,13 @@ double Person::changeAlmightyPersent(const double persent)
 void Person::addCastingSpeed(double persent)
 {
     this->castingSpeedExtra += persent;
-    this->castingSpeed += this->castingSpeedExtra;
+    this->castingSpeed += persent;
 }
 
 void Person::addAttackSpeed(double persent)
 {
     this->attackSpeedExtra += persent;
-    this->attackSpeed += this->attackSpeedExtra;
+    this->attackSpeed += persent;
 }
 
 double Person::changePrimaryAttributesByCount(const double primaryAttributesCount)

@@ -797,3 +797,208 @@ OccupationalDivisor_Icicle::~OccupationalDivisor_Icicle()
     AttackAction::deleteListener(this->getBuffID());
     CreateSkillAction::deleteListener(this->getBuffID());
 }
+
+// 冷却瞬息
+std::string InstantCooldownBuff_Icicle::name = "InstantCooldownBuff";
+
+InstantCooldownBuff_Icicle::InstantCooldownBuff_Icicle(Person *p, double n) : Buff(p)
+{
+    this->duration = 999999;
+    this->maxDuration = this->duration;
+    this->isInherent = true;
+    this->triggerNum = 35;
+
+    auto info = std::make_unique<EnergyListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    EnergyRevertAction::addListener(std::move(info));
+}
+
+void InstantCooldownBuff_Icicle::listenerCallback(double n)
+{
+    this->count += n;
+    if(this->count >= this->triggerNum)
+    {
+        this->p->triggerAction<CDReduceAction>(1.3,Meteorite::name);
+        this->count -= triggerNum;
+    }
+}
+
+void InstantCooldownBuff_Icicle::update(const double) {}
+bool InstantCooldownBuff_Icicle::shouldBeRemoved() { return this->duration < 0; }
+std::string InstantCooldownBuff_Icicle::getBuffName() const { return InstantCooldownBuff_Icicle::name; }
+
+InstantCooldownBuff_Icicle::~InstantCooldownBuff_Icicle()
+{
+    EnergyRevertAction::deleteListener(this->getBuffID());
+}
+
+// 浮动额外副属性值
+std::string FloatingExtraSecondaryAttributesBuff_Icicle::name = "FloatingExtraSecondaryAttributesBuff";
+
+FloatingExtraSecondaryAttributesBuff_Icicle::FloatingExtraSecondaryAttributesBuff_Icicle(Person *p, double)
+    : Buff(p)
+{
+    this->number = 800; // 数值
+    this->duration = 999999;
+    this->maxDuration = this->duration;
+    this->isInherent = true;
+
+    // 寻找属性最大值
+    double temp = 0;
+    if (this->p->getCriticalCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::CRITICAL;
+        temp = this->p->getCriticalCount();
+    }
+    if (this->p->getQuicknessCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::QUICKNESS;
+        temp = this->p->getQuicknessCount();
+    }
+    if (this->p->getLuckyCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::LUCKY;
+        temp = this->p->getLuckyCount();
+    }
+    if (this->p->getProficientCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::PROFICIENT;
+        temp = this->p->getProficientCount();
+    }
+    if (this->p->getAlmightyCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::ALMIGHTY;
+        temp = this->p->getAlmightyCount();
+    }
+    switch (lastAttribute)
+    {
+    case secondaryAttributesEnum::CRITICAL:
+        this->p->changeCriticalCount(this->number);
+        break;
+    case secondaryAttributesEnum::QUICKNESS:
+        this->p->changeQuicknessCount(this->number);
+        break;
+    case secondaryAttributesEnum::LUCKY:
+        this->p->changeLuckyCount(this->number);
+        break;
+    case secondaryAttributesEnum::PROFICIENT:
+        this->p->changeProficientCount(this->number);
+        break;
+    case secondaryAttributesEnum::ALMIGHTY:
+        this->p->changeAlmightyCount(this->number);
+        break;
+    default:
+        break;
+    }
+
+    auto info1 = std::make_unique<SecondaryAttributeListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    CriticalCountModifyAction::addListener(std::move(info1));
+    auto info2 = std::make_unique<SecondaryAttributeListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    QuicknessCountModifyAction::addListener(std::move(info2));
+    auto info3 = std::make_unique<SecondaryAttributeListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    LuckyCountModifyAction::addListener(std::move(info3));
+    auto info4 = std::make_unique<SecondaryAttributeListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    ProficientCountModifyAction::addListener(std::move(info4));
+    auto info5 = std::make_unique<SecondaryAttributeListener>(
+        this->getBuffID(), [this](double n)
+        { this->listenerCallback(n); });
+    AlmightyCountModifyAction::addListener(std::move(info5));
+}
+
+void FloatingExtraSecondaryAttributesBuff_Icicle::listenerCallback(double n)
+{
+    switch (lastAttribute)
+    {
+    case secondaryAttributesEnum::CRITICAL:
+        this->p->changeCriticalCount(-this->number);
+        break;
+    case secondaryAttributesEnum::QUICKNESS:
+        this->p->changeQuicknessCount(-this->number);
+        break;
+    case secondaryAttributesEnum::LUCKY:
+        this->p->changeLuckyCount(-this->number);
+        break;
+    case secondaryAttributesEnum::PROFICIENT:
+        this->p->changeProficientCount(-this->number);
+        break;
+    case secondaryAttributesEnum::ALMIGHTY:
+        this->p->changeAlmightyCount(-this->number);
+        break;
+    default:
+        break;
+    }
+
+    // 寻找属性最大值
+    double temp = 0;
+    if (this->p->getCriticalCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::CRITICAL;
+        temp = this->p->getCriticalCount();
+    }
+    if (this->p->getQuicknessCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::QUICKNESS;
+        temp = this->p->getQuicknessCount();
+    }
+    if (this->p->getLuckyCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::LUCKY;
+        temp = this->p->getLuckyCount();
+    }
+    if (this->p->getProficientCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::PROFICIENT;
+        temp = this->p->getProficientCount();
+    }
+    if (this->p->getAlmightyCount() > temp)
+    {
+        this->lastAttribute = secondaryAttributesEnum::ALMIGHTY;
+        temp = this->p->getAlmightyCount();
+    }
+    switch (lastAttribute)
+    {
+    case secondaryAttributesEnum::CRITICAL:
+        this->p->changeCriticalCount(this->number);
+        break;
+    case secondaryAttributesEnum::QUICKNESS:
+        this->p->changeQuicknessCount(this->number);
+        break;
+    case secondaryAttributesEnum::LUCKY:
+        this->p->changeLuckyCount(this->number);
+        break;
+    case secondaryAttributesEnum::PROFICIENT:
+        this->p->changeProficientCount(this->number);
+        break;
+    case secondaryAttributesEnum::ALMIGHTY:
+        this->p->changeAlmightyCount(this->number);
+        break;
+    default:
+        break;
+    }
+
+    Logger::debugBuff(AutoAttack::getTimer(),
+                      this->getBuffName(),
+                      "secondary attributes floated");
+}
+
+void FloatingExtraSecondaryAttributesBuff_Icicle::update(const double deltaTime) {}
+bool FloatingExtraSecondaryAttributesBuff_Icicle::shouldBeRemoved() { return this->duration < 0; }
+std::string FloatingExtraSecondaryAttributesBuff_Icicle::getBuffName() const { return FloatingExtraSecondaryAttributesBuff_Icicle::name; }
+
+FloatingExtraSecondaryAttributesBuff_Icicle::~FloatingExtraSecondaryAttributesBuff_Icicle()
+{
+    CriticalCountModifyAction::deleteListener(this->getBuffID());
+    QuicknessCountModifyAction::deleteListener(this->getBuffID());
+    LuckyCountModifyAction::deleteListener(this->getBuffID());
+    ProficientCountModifyAction::deleteListener(this->getBuffID());
+    AlmightyCountModifyAction::deleteListener(this->getBuffID());
+}
