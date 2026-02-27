@@ -44,7 +44,7 @@ void executeSimulation_Beam(std::vector<std::unordered_map<std::string, DamageSt
     // 循环执行指定次数的模拟
     while (times > 0)
     {
-        int currentTime = 0;  // 当前模拟时间
+        int currentTime = 0;  // 当前模拟时间g
         
         // 创建射线法师角色对象，并设置基础属性
         // 参数顺序：三维属性,暴击,急速,幸运,精通,全能,攻击,精炼攻击,元素攻击,攻击速度,施法速度,

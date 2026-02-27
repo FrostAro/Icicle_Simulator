@@ -28,12 +28,13 @@ Mage_Beam::Mage_Beam(const double PrimaryAttributes, const double critical, cons
 
     setATK(atk);
 
+    // 奇妙bug：因子效果不可删
     // 因子效果:智力
-    triggerAction<PrimaryAttributesCountModifyAction>(70);
-    triggerAction<PrimaryAttributesPercentModifyAction>(0.0184);
+    triggerAction<PrimaryAttributesCountModifyAction>(1);
+    triggerAction<PrimaryAttributesPercentModifyAction>(0.0000000184);
     // 因子效果：暴击，全能
-    triggerAction<CriticalCountModifyAction>(static_cast<int>(this->CriticalCount * 0.1));
-    triggerAction<AlmightyCountModifyAction>(static_cast<int>(this->AlmightyCount * 0.1));
+    triggerAction<CriticalCountModifyAction>(static_cast<int>(this->CriticalCount * 0.0000001));
+    triggerAction<AlmightyCountModifyAction>(static_cast<int>(this->AlmightyCount * 0.0000001));
     
     initializeIncrease();
     changeDamageIncrease(0.08);
